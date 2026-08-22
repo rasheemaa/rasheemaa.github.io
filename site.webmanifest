@@ -1,0 +1,17 @@
+{
+  "name": "The Sheema Edit",
+  "short_name": "Sheema Edit",
+  "description": "Soft thoughts. Real life. No filter.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fff9ef",
+  "theme_color": "#ff4fa3",
+  "icons": [
+    {
+      "src": "/assets/images/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

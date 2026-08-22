@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>The Sheema Edit</title>
+    <link>https://rasheemaa.net/</link>
+    <description>Soft thoughts. Real life. No filter.</description>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 22 Aug 2026 12:00:00 -0400</lastBuildDate>
+    <atom:link href="https://rasheemaa.net/feed.xml" rel="self" type="application/rss+xml"/>
+    <item>
+      <title>Unmasking Is Messy, Tender, and Worth It</title>
+      <link>https://rasheemaa.net/posts/unmasking-is-messy-and-worth-it.html</link>
+      <guid>https://rasheemaa.net/posts/unmasking-is-messy-and-worth-it.html</guid>
+      <pubDate>Sat, 22 Aug 2026 12:00:00 -0400</pubDate>
+      <description>Becoming more yourself, one honest choice at a time.</description>
+    </item>
+    <item>
+      <title>Motherhood Without the Highlight Reel</title>
+      <link>https://rasheemaa.net/posts/motherhood-without-the-highlight-reel.html</link>
+      <guid>https://rasheemaa.net/posts/motherhood-without-the-highlight-reel.html</guid>
+      <pubDate>Thu, 20 Aug 2026 12:00:00 -0400</pubDate>
+      <description>Deep love, cold coffee, overstimulation, and the whole beautiful truth.</description>
+    </item>
+    <item>
+      <title>My Body Changed the Schedule, Not the Dream</title>
+      <link>https://rasheemaa.net/posts/my-body-changed-the-schedule.html</link>
+      <guid>https://rasheemaa.net/posts/my-body-changed-the-schedule.html</guid>
+      <pubDate>Tue, 18 Aug 2026 12:00:00 -0400</pubDate>
+      <description>A softer definition of progress for life with chronic illness.</description>
+    </item>
+    <item>
+      <title>Lip Gloss, Little Joys, and Laughing Anyway</title>
+      <link>https://rasheemaa.net/posts/lip-gloss-little-joys-and-laughing-anyway.html</link>
+      <guid>https://rasheemaa.net/posts/lip-gloss-little-joys-and-laughing-anyway.html</guid>
+      <pubDate>Sun, 16 Aug 2026 12:00:00 -0400</pubDate>
+      <description>Healing can wear a cute outfit and still be completely real.</description>
+    </item>
+  </channel>
+</rss>
