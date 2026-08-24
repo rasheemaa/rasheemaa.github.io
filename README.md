@@ -1,6 +1,6 @@
 # The Sheema Edit
 
-The standalone source for [rasheemaa.net](https://rasheemaa.net), a playful Y2K personal blog by Sheema.
+The standalone source for [thesheemaedit.com](https://thesheemaedit.com), a playful Y2K personal blog by Sheema.
 
 ## What is included
 
