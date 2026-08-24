@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "repository": "rasheemaa/rasheemaa.github.io",
+  "approval_rule": "Publish only items whose status is exactly APPROVED. Never treat drafts, ideas, chat suggestions, or missing statuses as approval.",
+  "max_items_per_run": 1,
+  "protected_paths": [
+    "CNAME"
+  ],
+  "item_schema": {
+    "id": "Unique short identifier",
+    "title": "Human-readable edit title",
+    "status": "DRAFT or APPROVED or PUBLISHED",
+    "publish_on": "YYYY-MM-DD in America/New_York",
+    "type": "post or page_copy or design or asset",
+    "target_files": [
+      "Exact repository paths allowed to change"
+    ],
+    "approved_content": "The exact approved copy or precise approved instructions",
+    "approved_at": "ISO 8601 timestamp",
+    "published_at": null,
+    "published_commit": null
+  },
+  "items": []
+}
