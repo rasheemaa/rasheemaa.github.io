@@ -16,7 +16,7 @@ The standalone source for [thesheemaedit.com](https://thesheemaedit.com), a play
 
 ## Publishing a new edit
 
-Ask ChatGPT to add a post to this repository. Include the title, topic, draft, and preferred publication date. The new page should be added inside `posts`, linked from the homepage, and included in `sitemap.xml` and `feed.xml`.
+Add each new story inside `posts`, link it from the homepage, and include it in `sitemap.xml` and `feed.xml`. GitHub Pages publishes updates from the `main` branch.
 
 ## Local preview
 

@@ -1349,3 +1349,190 @@ button {
     transition-duration: 0.01ms !important;
   }
 }
+
+
+/* Soft Reset Issue */
+.soft-reset-hero {
+  min-height: 700px;
+  background-image:
+    linear-gradient(90deg, rgba(225, 197, 238, 0.97) 0%, rgba(225, 197, 238, 0.84) 42%, rgba(225, 197, 238, 0.08) 68%),
+    url("../images/hero.webp");
+}
+.soft-reset-hero .hero-copy { width: 64%; min-height: 700px; }
+.soft-reset-hero .hero-title {
+  max-width: 780px;
+  font-size: clamp(3rem, 6.4vw, 5.9rem);
+  line-height: 0.98;
+}
+.soft-reset-hero .hero-title .chrome { display: inline-block; margin-top: 8px; }
+.hero-text-secondary { margin-top: -12px; }
+
+.soft-reset-band {
+  position: relative;
+  padding: 105px 0 96px;
+  overflow: hidden;
+  border-block: var(--border);
+  background:
+    radial-gradient(circle at 86% 8%, rgba(146, 217, 255, 0.62), transparent 28%),
+    radial-gradient(circle at 10% 90%, rgba(255, 199, 226, 0.78), transparent 30%),
+    #f6efff;
+}
+.soft-reset-band::before {
+  content: "✦  rest counts  ✦  tomorrow gets another chance";
+  position: absolute;
+  top: 30px;
+  right: -76px;
+  padding: 9px 72px;
+  border-block: var(--border);
+  background: var(--lime);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  transform: rotate(5deg);
+}
+.soft-reset-inner { position: relative; z-index: 1; }
+.reset-letter {
+  position: relative;
+  max-width: 900px;
+  margin: 0 auto 62px;
+  padding: clamp(34px, 6vw, 68px);
+  border: var(--border);
+  border-radius: 18px 8px 18px 8px;
+  background:
+    linear-gradient(rgba(141, 98, 214, 0.11) 1px, transparent 1px) 0 0 / 100% 34px,
+    var(--white);
+  box-shadow: 11px 11px 0 var(--ink);
+  transform: rotate(-0.45deg);
+}
+.reset-letter::after {
+  content: "♡";
+  position: absolute;
+  top: -27px;
+  right: 8%;
+  display: grid;
+  width: 62px;
+  height: 62px;
+  place-items: center;
+  border: var(--border);
+  border-radius: 50%;
+  color: var(--white);
+  background: var(--pink);
+  box-shadow: 5px 5px 0 var(--ink);
+  font-size: 1.8rem;
+  transform: rotate(8deg);
+}
+.reset-letter h2 {
+  max-width: 760px;
+  margin: 0 0 30px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.7rem, 6vw, 4.8rem);
+  font-weight: 700;
+  letter-spacing: -0.055em;
+  line-height: 0.98;
+}
+.reset-copy { max-width: 700px; }
+.reset-copy p {
+  margin: 0 0 18px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.16rem;
+  line-height: 1.72;
+}
+.reset-signoff, .reset-reminder {
+  color: var(--hot-pink);
+  font-family: "Comic Sans MS", "Bradley Hand", cursive;
+  font-weight: 800;
+}
+.reset-signoff {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 1.5rem;
+  transform: rotate(-4deg);
+}
+.comfort-grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.comfort-card {
+  position: relative;
+  min-height: 350px;
+  padding: 34px;
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.comfort-pink { background: #fff2f8; }
+.comfort-blue { background: #ecfaff; transform: rotate(0.55deg); }
+.comfort-lime { background: #f8ffe2; }
+.comfort-icon {
+  position: absolute;
+  top: 24px;
+  right: 25px;
+  display: grid;
+  width: 56px;
+  height: 56px;
+  place-items: center;
+  border: var(--border);
+  border-radius: 50%;
+  background: var(--white);
+  box-shadow: var(--shadow-small);
+  font-size: 1.55rem;
+}
+.comfort-card .section-kicker { max-width: calc(100% - 76px); }
+.comfort-card h3 {
+  max-width: 490px;
+  margin: 50px 0 16px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2rem, 4vw, 3.15rem);
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+.comfort-card > p:not(.section-kicker):not(.reset-reminder) {
+  max-width: 530px;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.72;
+}
+.comfort-card .text-link { display: inline-block; margin-top: 12px; }
+.good-before-you-go {
+  grid-column: 1 / -1;
+  min-height: 300px;
+  text-align: center;
+}
+.good-before-you-go .section-kicker { max-width: none; }
+.good-before-you-go blockquote {
+  max-width: 880px;
+  margin: 48px auto 24px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2rem, 5vw, 3.8rem);
+  font-style: italic;
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+}
+.reset-reminder { margin: 0; font-size: 1.2rem; }
+
+@media (max-width: 900px) {
+  .soft-reset-hero {
+    min-height: 790px;
+    background-image:
+      linear-gradient(180deg, rgba(225, 197, 238, 0.98) 0%, rgba(225, 197, 238, 0.82) 48%, rgba(225, 197, 238, 0.06) 72%),
+      url("../images/hero.webp");
+  }
+  .soft-reset-hero .hero-copy { width: 82%; min-height: 570px; }
+}
+@media (max-width: 720px) {
+  .soft-reset-hero { min-height: 800px; }
+  .soft-reset-hero .hero-copy { width: 100%; min-height: auto; }
+  .soft-reset-hero .hero-title { font-size: clamp(2.85rem, 14vw, 4.8rem); }
+  .soft-reset-band { padding: 96px 0 70px; }
+  .soft-reset-band::before { right: -205px; font-size: 0.62rem; }
+  .reset-letter { margin-bottom: 46px; padding: 36px 24px; box-shadow: 7px 7px 0 var(--ink); }
+  .reset-letter::after { right: 5%; width: 54px; height: 54px; }
+  .reset-copy p { font-size: 1.08rem; }
+  .comfort-grid { grid-template-columns: 1fr; }
+  .comfort-card { min-height: 0; padding: 30px 23px; }
+  .comfort-blue { transform: none; }
+  .good-before-you-go { grid-column: auto; }
+  .good-before-you-go blockquote { margin-top: 52px; }
+}

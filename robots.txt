@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://rasheemaa.net/sitemap.xml
+Sitemap: https://thesheemaedit.com/sitemap.xml
