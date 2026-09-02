@@ -1495,6 +1495,8 @@ button {
   line-height: 1.72;
 }
 .comfort-card .text-link { display: inline-block; margin-top: 12px; }
+.comfort-card .comfort-meta { margin-top: 22px; }
+.good-before-you-go .comfort-meta { justify-content: center; }
 .good-before-you-go {
   grid-column: 1 / -1;
   min-height: 300px;
