@@ -1,3 +1,17 @@
+// Google Analytics 4
+const googleAnalyticsId = "G-C7XV3YJCZE";
+window.dataLayer = window.dataLayer || [];
+function gtag() {
+  window.dataLayer.push(arguments);
+}
+gtag("js", new Date());
+gtag("config", googleAnalyticsId);
+
+const googleAnalyticsScript = document.createElement("script");
+googleAnalyticsScript.async = true;
+googleAnalyticsScript.src = `https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`;
+document.head.appendChild(googleAnalyticsScript);
+
 const menuButton = document.querySelector(".menu-toggle");
 const siteNav = document.querySelector(".site-nav");
 
