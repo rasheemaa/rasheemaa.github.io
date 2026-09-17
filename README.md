@@ -6,7 +6,7 @@ The standalone source for [thesheemaedit.com](https://thesheemaedit.com), a play
 
 * A responsive homepage
 * An About page
-* Six published essays
+* Seven published essays
 * Topic filtering
 * Mobile navigation
 * Search and social metadata
