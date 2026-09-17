@@ -78,6 +78,59 @@ document.querySelectorAll("[data-current-year]").forEach((element) => {
   element.textContent = new Date().getFullYear();
 });
 
+const isHomePage = window.location.pathname === "/" || window.location.pathname === "/index.html";
+
+if (isHomePage) {
+  document.title = "I Wanted to Be Able To | The Sheema Edit";
+
+  const description = "It hurts to need help when what I wanted was to help.";
+  const metaDescription = document.querySelector('meta[name="description"]');
+  const ogTitle = document.querySelector('meta[property="og:title"]');
+  const ogDescription = document.querySelector('meta[property="og:description"]');
+
+  if (metaDescription) metaDescription.setAttribute("content", description);
+  if (ogTitle) ogTitle.setAttribute("content", "I Wanted to Be Able To | The Sheema Edit");
+  if (ogDescription) ogDescription.setAttribute("content", description);
+
+  document.querySelectorAll(".marquee-track span").forEach((item) => {
+    item.textContent = "I wanted to be able to ✦ Asking for help is hard ✦ Trying in ways nobody can see ✦ Leave the apology out of it ✦";
+  });
+
+  const heroCopy = document.querySelector(".hero-copy");
+  if (heroCopy) {
+    heroCopy.innerHTML = `
+      <p class="eyebrow">✦ A spontaneous edit · September 17, 2026</p>
+      <h1 class="hero-title" id="hero-title">I wanted<br><span class="chrome">to be able to.</span></h1>
+      <p class="hero-text">It hurts to need help when what I wanted was to help.</p>
+      <p class="hero-text hero-text-secondary">Some days, the guilt of being sick hurts in a place I don’t know how to explain.</p>
+      <div class="button-row"><a class="button" href="/posts/i-wanted-to-be-able-to.html">Read the spontaneous edit <span aria-hidden="true">→</span></a></div>
+      <p class="tiny-note">when I tell you I can’t, please know how much I wanted to. ♡</p>
+    `;
+  }
+
+  const featuredSection = document.querySelector('[aria-labelledby="featured-heading"]');
+  if (featuredSection) {
+    const featuredHeadingCopy = featuredSection.querySelector(".section-heading > p");
+    if (featuredHeadingCopy) {
+      featuredHeadingCopy.textContent = "For anyone carrying guilt over what their body won’t let them do.";
+    }
+
+    const featuredCard = featuredSection.querySelector(".featured-card");
+    if (featuredCard) {
+      featuredCard.innerHTML = `
+        <div aria-label="Moon on a blue and lavender background" class="featured-art art-chronic" role="img"></div>
+        <div class="featured-copy">
+          <span class="category-tag">Chronic illness and real life</span>
+          <h3>I Wanted to Be Able To</h3>
+          <p>It hurts to need help when what I wanted was to help.</p>
+          <div class="post-meta">September 17, 2026 · 5 min read</div>
+          <a class="button lime" href="/posts/i-wanted-to-be-able-to.html">Read the story <span aria-hidden="true">→</span></a>
+        </div>
+      `;
+    }
+  }
+}
+
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("/service-worker.js").catch(() => {
