@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ page.title | escape }} | The Sheema Edit</title>
+    <meta name="description" content="{{ page.description | escape }}">
+    <meta name="theme-color" content="#8d62d6">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Sheema Edit">
+    <link rel="canonical" href="{{ site.url }}{{ page.url }}">
+    <link rel="icon" href="/assets/images/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="{{ page.title | escape }}">
+    <meta property="og:description" content="{{ page.description | escape }}">
+    <meta property="og:url" content="{{ site.url }}{{ page.url }}">
+    <meta property="og:image" content="{{ site.url }}/assets/images/social-card.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <script type="application/ld+json">
+      {
+        "@context":"https://schema.org",
+        "@type":"BlogPosting",
+        "headline":{{ page.title | jsonify }},
+        "datePublished":{{ page.date | date: "%Y-%m-%d" | jsonify }},
+        "author":{"@type":"Person","name":"Sheema"},
+        "publisher":{"@type":"Organization","name":"The Sheema Edit"},
+        "mainEntityOfPage":{{ site.url | append: page.url | jsonify }},
+        "image":"https://thesheemaedit.com/assets/images/social-card.png"
+      }
+    </script>
+  </head>
+  <body>
+    <div class="reading-progress" aria-hidden="true"></div>
+    <a class="skip-link" href="#article">Skip to the story</a>
+    <header class="site-header">
+      <div class="site-shell header-inner">
+        <a class="brand" href="/" aria-label="The Sheema Edit home"><span class="brand-mark" aria-hidden="true"></span><span>The Sheema Edit</span></a>
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-navigation" aria-label="Open navigation menu"><span></span></button>
+        <nav class="site-nav" id="site-navigation" aria-label="Main navigation" data-open="false"><a href="/">Home</a><a href="/#latest">The edits</a><a href="/about.html">About</a><a class="nav-pill" href="https://www.instagram.com/_rasheemaa/" target="_blank" rel="noopener noreferrer">Say hey ↗</a></nav>
+      </div>
+    </header>
+
+    {% assign cover_class = "cover-unmasking" %}
+    {% assign cover_label = "Purple and pink Y2K butterfly collage" %}
+    {% if page.category contains "Chronic" %}
+      {% assign cover_class = "cover-chronic" %}
+      {% assign cover_label = "Blue and lavender Y2K moon collage" %}
+    {% elsif page.category contains "Motherhood" %}
+      {% assign cover_class = "cover-motherhood" %}
+      {% assign cover_label = "Pink and golden Y2K teddy bear collage" %}
+    {% elsif page.category contains "Lifestyle" %}
+      {% assign cover_class = "cover-lifestyle" %}
+      {% assign cover_label = "Pink and lime Y2K lipstick collage" %}
+    {% endif %}
+
+    <main id="article">
+      <header class="site-shell article-header">
+        <a class="back-link" href="/#latest">← Back to all edits</a><br>
+        <span class="category-tag">{{ page.category }}</span>
+        {% if page.edit_type and page.edit_type != "" %}<p class="section-kicker">{{ page.edit_type }}</p>{% endif %}
+        <h1 class="post-title">{{ page.title }}</h1>
+        <div class="post-meta"><span>{{ page.date | date: "%B %-d, %Y" }}</span>{% if page.read_time and page.read_time != "" %}<span>{{ page.read_time }}</span>{% endif %}</div>
+      </header>
+
+      <div class="site-shell article-cover {{ cover_class }}" role="img" aria-label="{{ cover_label }}">
+        <span class="cover-note">{{ page.cover_note | newline_to_br }}</span>
+      </div>
+
+      <div class="site-shell article-layout">
+        <article class="article-body">
+          {{ content }}
+        </article>
+
+        {% if page.aside_title != "" or page.aside_text != "" %}
+        <aside class="article-aside">{% if page.aside_title != "" %}<strong>{{ page.aside_title }}</strong>{% endif %}{{ page.aside_text }}</aside>
+        {% endif %}
+      </div>
+
+      <section class="site-shell article-end" aria-labelledby="next-edit">
+        <h2 id="next-edit">Keep reading</h2>
+        <p>There’s more waiting in The Sheema Edit.</p>
+        <a class="button" href="/#latest">See all edits →</a>
+      </section>
+    </main>
+
+    <footer class="site-footer"><div class="site-shell"><div class="footer-grid"><div><h2>The Sheema Edit</h2><p>Soft thoughts, real life, and no filter. A personal blog by Sheema.</p></div><div class="footer-links"><h3>Explore</h3><a href="/">Home</a><a href="/#latest">The edits</a><a href="/about.html">About</a></div><div class="footer-links"><h3>Find me</h3><a href="https://www.instagram.com/_rasheemaa/" target="_blank" rel="noopener noreferrer">Instagram @_rasheemaa</a><a href="https://www.tiktok.com/@_rasheemaa" target="_blank" rel="noopener noreferrer">TikTok @_rasheemaa</a></div></div><div class="footer-bottom"><span>© <span data-current-year>2026</span> The Sheema Edit. All feelings reserved.</span><span>Personal stories only. Nothing here is medical advice.</span></div></div></footer>
+    <script src="/assets/js/main.js" defer></script>
+  </body>
+</html>
