@@ -26,15 +26,11 @@ collections:
     editor:
       preview: false
     summary: "{{title}} · {{date}}"
-    sortable_fields:
-      fields: ["date", "title", "category"]
-      default:
-        field: "date"
-        direction: "Descending"
+    sortable_fields: ["date", "title", "category"]
     fields:
       - { label: "Layout", name: "layout", widget: "hidden", default: "post" }
       - { label: "Title", name: "title", widget: "string" }
-      - { label: "Publish date", name: "date", widget: "datetime", format: "YYYY-MM-DD", date_format: "MMMM D, YYYY", time_format: false }
+      - { label: "Publish date", name: "date", widget: "datetime", date_format: "YYYY-MM-DD", time_format: false, picker_utc: true }
       - { label: "Short description", name: "description", widget: "text", hint: "This appears on the homepage card and in search/social previews." }
       - label: "Category"
         name: "category"
