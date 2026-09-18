@@ -1,0 +1,19 @@
+title: "The Sheema Edit"
+description: "A personal blog about mental wellness, unmasking, motherhood, chronic illness, lifestyle, beauty, and funny real life stories."
+url: "https://thesheemaedit.com"
+baseurl: ""
+timezone: "America/New_York"
+
+collections:
+  edits:
+    output: true
+    permalink: /posts/:name.html
+
+defaults:
+  - scope:
+      path: ""
+      type: edits
+    values:
+      layout: post
+
+markdown: kramdown
