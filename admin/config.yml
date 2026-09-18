@@ -1,0 +1,53 @@
+backend:
+  name: turbo-github
+  turbo_site_id: "PASTE_YOUR_TURBO_SITE_ID_HERE"
+  branch: main
+  deploy_status: false
+
+site_url: "https://thesheemaedit.com"
+display_url: "https://thesheemaedit.com"
+show_preview_links: true
+
+media_folder: "assets/uploads"
+public_folder: "/assets/uploads"
+
+collections:
+  - name: "edits"
+    label: "The Edits"
+    label_singular: "Edit"
+    description: "Write, update, and publish stories for The Sheema Edit."
+    folder: "_edits"
+    create: true
+    delete: true
+    slug: "{{slug}}"
+    extension: "md"
+    format: "frontmatter"
+    preview_path: "posts/{{slug}}.html"
+    editor:
+      preview: false
+    summary: "{{title}} · {{date}}"
+    sortable_fields:
+      fields: ["date", "title", "category"]
+      default:
+        field: "date"
+        direction: "Descending"
+    fields:
+      - { label: "Layout", name: "layout", widget: "hidden", default: "post" }
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Publish date", name: "date", widget: "datetime", format: "YYYY-MM-DD", date_format: "MMMM D, YYYY", time_format: false }
+      - { label: "Short description", name: "description", widget: "text", hint: "This appears on the homepage card and in search/social previews." }
+      - label: "Category"
+        name: "category"
+        widget: "select"
+        options:
+          - "Mental wellness and healing"
+          - "Mental wellness and unmasking"
+          - "Motherhood and family life"
+          - "Chronic illness and real life"
+          - "Lifestyle, beauty and funny stories"
+      - { label: "Edit type", name: "edit_type", widget: "string", required: false, default: "A personal edit", hint: "Example: A spontaneous edit" }
+      - { label: "Read time", name: "read_time", widget: "string", required: false, default: "4 min read" }
+      - { label: "Cover words", name: "cover_note", widget: "text", required: false, hint: "Short phrase shown on the colorful cover art." }
+      - { label: "Side note heading", name: "aside_title", widget: "string", required: false }
+      - { label: "Side note", name: "aside_text", widget: "text", required: false }
+      - { label: "Story", name: "body", widget: "markdown" }
