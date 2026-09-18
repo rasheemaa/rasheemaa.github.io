@@ -1,48 +1,21 @@
+---
+layout: null
+---
 <?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0">
   <channel>
     <title>The Sheema Edit</title>
-    <link>https://thesheemaedit.com/</link>
-    <description>Soft thoughts. Real life. No filter.</description>
-    <language>en-us</language>
-    <lastBuildDate>Thu, 17 Sep 2026 08:00:00 -0400</lastBuildDate>
-    <atom:link href="https://thesheemaedit.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <item><title>I Wanted to Be Able To</title><link>https://thesheemaedit.com/posts/i-wanted-to-be-able-to.html</link><guid>https://thesheemaedit.com/posts/i-wanted-to-be-able-to.html</guid><pubDate>Thu, 17 Sep 2026 08:00:00 -0400</pubDate><description>It hurts to need help when what I wanted was to help.</description></item>
-    <item><title>To Old New Beginnings</title><link>https://thesheemaedit.com/posts/to-old-new-beginnings.html</link><guid>https://thesheemaedit.com/posts/to-old-new-beginnings.html</guid><pubDate>Tue, 15 Sep 2026 12:00:00 -0400</pubDate><description>Opening a door I thought was closed, and making room for a beginning I didn’t expect.</description></item>
+    <link>{{ site.url }}/</link>
+    <description>{{ site.description | xml_escape }}</description>
+    {% assign edits = site.edits | sort: "date" | reverse %}
+    {% for edit in edits %}
     <item>
-      <title>The Forgiveness I Never Saw Coming</title>
-      <link>https://thesheemaedit.com/posts/the-forgiveness-i-never-saw-coming.html</link>
-      <guid>https://thesheemaedit.com/posts/the-forgiveness-i-never-saw-coming.html</guid>
-      <pubDate>Tue, 08 Sep 2026 12:00:00 -0400</pubDate>
-      <description>New understanding reached an old wound, and forgiveness arrived without asking me to forget.</description>
+      <title>{{ edit.title | xml_escape }}</title>
+      <link>{{ site.url }}{{ edit.url }}</link>
+      <guid>{{ site.url }}{{ edit.url }}</guid>
+      <pubDate>{{ edit.date | date_to_rfc822 }}</pubDate>
+      <description>{{ edit.description | xml_escape }}</description>
     </item>
-    <item>
-      <title>Unmasking Is Messy, Tender, and Worth It</title>
-      <link>https://thesheemaedit.com/posts/unmasking-is-messy-and-worth-it.html</link>
-      <guid>https://thesheemaedit.com/posts/unmasking-is-messy-and-worth-it.html</guid>
-      <pubDate>Sat, 22 Aug 2026 12:00:00 -0400</pubDate>
-      <description>Becoming more yourself, one honest choice at a time.</description>
-    </item>
-    <item>
-      <title>Motherhood Without the Highlight Reel</title>
-      <link>https://thesheemaedit.com/posts/motherhood-without-the-highlight-reel.html</link>
-      <guid>https://thesheemaedit.com/posts/motherhood-without-the-highlight-reel.html</guid>
-      <pubDate>Thu, 20 Aug 2026 12:00:00 -0400</pubDate>
-      <description>Deep love, cold coffee, overstimulation, and the whole beautiful truth.</description>
-    </item>
-    <item>
-      <title>My Body Changed the Schedule, Not the Dream</title>
-      <link>https://thesheemaedit.com/posts/my-body-changed-the-schedule.html</link>
-      <guid>https://thesheemaedit.com/posts/my-body-changed-the-schedule.html</guid>
-      <pubDate>Tue, 18 Aug 2026 12:00:00 -0400</pubDate>
-      <description>A softer definition of progress for life with chronic illness.</description>
-    </item>
-    <item>
-      <title>Lip Gloss, Little Joys, and Laughing Anyway</title>
-      <link>https://thesheemaedit.com/posts/lip-gloss-little-joys-and-laughing-anyway.html</link>
-      <guid>https://thesheemaedit.com/posts/lip-gloss-little-joys-and-laughing-anyway.html</guid>
-      <pubDate>Sun, 16 Aug 2026 12:00:00 -0400</pubDate>
-      <description>Healing can wear a cute outfit and still be completely real.</description>
-    </item>
+    {% endfor %}
   </channel>
 </rss>

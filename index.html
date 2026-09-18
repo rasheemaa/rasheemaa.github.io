@@ -1,3 +1,6 @@
+---
+layout: null
+---
 <!DOCTYPE html>
 
 <html lang="en">
@@ -149,69 +152,35 @@
 <button aria-pressed="false" class="filter-button" data-filter="chronic" type="button">Chronic illness</button>
 <button aria-pressed="false" class="filter-button" data-filter="lifestyle" type="button">Lifestyle and laughs</button>
 </div>
-<div class="post-grid"><article class="post-card" data-category="chronic">
-<div aria-label="Moon on a blue and lavender background" class="post-art art-chronic" role="img"></div>
+<div class="post-grid">
+{% assign edits = site.edits | sort: "date" | reverse %}
+{% for edit in edits %}
+{% assign category_key = "mind" %}
+{% assign art_class = "art-unmasking" %}
+{% assign art_label = "Butterfly on a purple and pink background" %}
+{% if edit.category contains "Chronic" %}
+  {% assign category_key = "chronic" %}
+  {% assign art_class = "art-chronic" %}
+  {% assign art_label = "Moon on a blue and lavender background" %}
+{% elsif edit.category contains "Motherhood" %}
+  {% assign category_key = "motherhood" %}
+  {% assign art_class = "art-motherhood" %}
+  {% assign art_label = "Teddy bear on a pink and golden background" %}
+{% elsif edit.category contains "Lifestyle" %}
+  {% assign category_key = "lifestyle" %}
+  {% assign art_class = "art-lifestyle" %}
+  {% assign art_label = "Lipstick on a pink and lime background" %}
+{% endif %}
+<article class="post-card" data-category="{{ category_key }}">
+<div aria-label="{{ art_label }}" class="post-art {{ art_class }}" role="img"></div>
 <div class="post-card-copy">
-<span class="category-tag">Chronic illness and real life</span>
-<h3><a href="/posts/i-wanted-to-be-able-to.html">I Wanted to Be Able To</a></h3>
-<p>It hurts to need help when what I wanted was to help.</p>
-<div class="post-meta"><span>September 17, 2026</span><span>5 min read</span></div>
+<span class="category-tag">{{ edit.category }}</span>
+<h3><a href="{{ edit.url }}">{{ edit.title }}</a></h3>
+<p>{{ edit.description }}</p>
+<div class="post-meta"><span>{{ edit.date | date: "%B %-d, %Y" }}</span>{% if edit.read_time and edit.read_time != "" %}<span>{{ edit.read_time }}</span>{% endif %}</div>
 </div>
 </article>
-<article class="post-card" data-category="mind">
-<div aria-label="Butterfly on a purple and pink background" class="post-art art-unmasking" role="img"></div>
-<div class="post-card-copy">
-<span class="category-tag">Mind and healing</span>
-<h3><a href="/posts/to-old-new-beginnings.html">To Old New Beginnings</a></h3>
-<p>Opening a door I thought was closed, and making room for a beginning I didn’t expect.</p>
-<div class="post-meta"><span>September 15, 2026</span><span>2 min read</span></div>
-</div>
-</article>
-<article class="post-card" data-category="mind">
-<div aria-label="Butterfly on a purple and pink background" class="post-art art-unmasking" role="img"></div>
-<div class="post-card-copy">
-<span class="category-tag">Mind and healing</span>
-<h3><a href="/posts/the-forgiveness-i-never-saw-coming.html">The Forgiveness I Never Saw Coming</a></h3>
-<p>What happened when new understanding reached an old wound, and I learned that forgiveness did not mean betraying myself.</p>
-<div class="post-meta"><span>September 8, 2026</span><span>6 min read</span></div>
-</div>
-</article>
-<article class="post-card" data-category="mind">
-<div aria-label="Butterfly on a purple and pink background" class="post-art art-unmasking" role="img"></div>
-<div class="post-card-copy">
-<span class="category-tag">Mind and unmasking</span>
-<h3><a href="/posts/unmasking-is-messy-and-worth-it.html">Unmasking Is Messy, Tender, and Worth It</a></h3>
-<p>What it can look like to come home to yourself without turning healing into another performance.</p>
-<div class="post-meta"><span>August 22, 2026</span><span>5 min read</span></div>
-</div>
-</article>
-<article class="post-card" data-category="motherhood">
-<div aria-label="Teddy bear on a pink and golden background" class="post-art art-motherhood" role="img"></div>
-<div class="post-card-copy">
-<span class="category-tag">Motherhood and family</span>
-<h3><a href="/posts/motherhood-without-the-highlight-reel.html">Motherhood Without the Highlight Reel</a></h3>
-<p>Deep love, cold coffee, overstimulation, and the freedom to tell the whole beautiful truth.</p>
-<div class="post-meta"><span>August 20, 2026</span><span>4 min read</span></div>
-</div>
-</article>
-<article class="post-card" data-category="chronic">
-<div aria-label="Moon on a blue and lavender background" class="post-art art-chronic" role="img"></div>
-<div class="post-card-copy">
-<span class="category-tag">Chronic illness and real life</span>
-<h3><a href="/posts/my-body-changed-the-schedule.html">My Body Changed the Schedule, Not the Dream</a></h3>
-<p>A softer definition of progress for the days when your body edits the plan without asking.</p>
-<div class="post-meta"><span>August 18, 2026</span><span>5 min read</span></div>
-</div>
-</article>
-<article class="post-card" data-category="lifestyle">
-<div aria-label="Lipstick on a pink and lime background" class="post-art art-lifestyle" role="img"></div>
-<div class="post-card-copy">
-<span class="category-tag">Lifestyle, beauty and laughs</span>
-<h3><a href="/posts/lip-gloss-little-joys-and-laughing-anyway.html">Lip Gloss, Little Joys, and Laughing Anyway</a></h3>
-<p>Because healing can wear a cute outfit, tell a ridiculous story, and still be completely real.</p>
-<div class="post-meta"><span>August 16, 2026</span><span>4 min read</span></div>
-</div>
-</article>
+{% endfor %}
 </div>
 </section>
 <section aria-labelledby="about-heading" class="site-shell section about-slice">
