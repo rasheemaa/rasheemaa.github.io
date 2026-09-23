@@ -1,10 +1,12 @@
-const CACHE_NAME = "sheema-edit-v6";
+const CACHE_NAME = "sheema-edit-v7";
 
 const APP_SHELL = [
   "/",
   "/index.html",
   "/about.html",
   "/offline.html",
+  "/posts/better-late-than-never.html",
+  "/posts/forgive-them-anyway.html",
   "/posts/i-wanted-to-be-able-to.html",
   "/posts/to-old-new-beginnings.html",
   "/posts/the-forgiveness-i-never-saw-coming.html",
