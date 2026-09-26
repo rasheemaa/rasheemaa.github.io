@@ -44,7 +44,15 @@ collections:
       - { label: "Edit type", name: "edit_type", widget: "string", required: false, default: "A personal edit", hint: "Example: A spontaneous edit" }
       - { label: "Read time", name: "read_time", widget: "string", required: false, default: "4 min read" }
       - { label: "Cover words", name: "cover_note", widget: "text", required: false, hint: "Short phrase shown on the colorful cover art." }
-      - { label: "Cover style", name: "cover_style", widget: "hidden", required: false }
+      - label: "Cover style"
+        name: "cover_style"
+        widget: "select"
+        required: false
+        default: "category"
+        hint: "Keep Diary selected for posts that use the lilac and pink diary cover. Category style uses the cover tied to the post category."
+        options:
+          - { label: "Category style", value: "category" }
+          - { label: "Diary style", value: "diary" }
       - { label: "Side note heading", name: "aside_title", widget: "string", required: false }
       - { label: "Side note", name: "aside_text", widget: "text", required: false }
       - { label: "Story", name: "body", widget: "markdown" }
