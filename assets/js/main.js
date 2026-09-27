@@ -78,9 +78,17 @@ document.querySelectorAll("[data-current-year]").forEach((element) => {
   element.textContent = new Date().getFullYear();
 });
 
+// Keep older Base44 shop links working while the site moves to its own free shop page.
+const legacyShopUrl = "https://sheema-edit-space.base44.app";
+document.querySelectorAll(`a[href="${legacyShopUrl}"]`).forEach((link) => {
+  link.setAttribute("href", "/shop/");
+});
+
 // Shop The Edit welcome popup. Shows once per browser session across the main site.
 (() => {
-  const shopUrl = "https://sheema-edit-space.base44.app";
+  if (window.location.pathname.startsWith("/shop")) return;
+
+  const shopUrl = "/shop/";
   const sessionKey = "sheemaEditShopPopupSeen";
   let alreadySeen = false;
 
