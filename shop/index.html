@@ -1,0 +1,488 @@
+---
+layout: null
+permalink: /shop/
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-C7XV3YJCZE"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-C7XV3YJCZE');
+  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shop The Edit | The Sheema Edit</title>
+  <meta name="description" content="Shop The Sheema Edit digital reflection journal, gentle weekly planner, and Soft Reset bundle." />
+  <meta name="theme-color" content="#ff4fa3" />
+  <link rel="canonical" href="https://thesheemaedit.com/shop/" />
+  <link rel="icon" href="/assets/images/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png" />
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Shop The Edit | The Sheema Edit" />
+  <meta property="og:description" content="Gentle digital tools for reflecting, resetting, and planning at your own pace." />
+  <meta property="og:url" content="https://thesheemaedit.com/shop/" />
+  <meta property="og:image" content="https://thesheemaedit.com/assets/images/soft-reset-collection.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <style>
+    :root {
+      --shop-ink: #36233f;
+      --shop-pink: #ff4fa3;
+      --shop-lilac: #e5dcf0;
+      --shop-cream: #fffaf5;
+      --shop-lime: #dfff7a;
+      --shop-blue: #d9efff;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at 10% 8%, rgba(255,79,163,.12), transparent 24rem),
+        radial-gradient(circle at 90% 28%, rgba(144,117,196,.13), transparent 22rem),
+        #fffdfb;
+    }
+
+    .shop-hero {
+      padding-top: clamp(42px, 7vw, 86px);
+      padding-bottom: 18px;
+      text-align: center;
+    }
+
+    .shop-hero .eyebrow {
+      margin-bottom: 14px;
+    }
+
+    .shop-hero h1 {
+      max-width: 900px;
+      margin: 0 auto;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(3.2rem, 10vw, 7.5rem);
+      line-height: .88;
+      letter-spacing: -.055em;
+      color: var(--shop-ink);
+    }
+
+    .shop-hero h1 span {
+      display: inline-block;
+      color: var(--shop-pink);
+      text-shadow: 4px 4px 0 var(--shop-lilac);
+    }
+
+    .shop-lede {
+      max-width: 680px;
+      margin: 26px auto 0;
+      font-size: clamp(1rem, 2.3vw, 1.22rem);
+      line-height: 1.7;
+      color: #65566a;
+    }
+
+    .shop-window {
+      margin-top: clamp(28px, 5vw, 54px);
+      overflow: hidden;
+      border: 2px solid var(--shop-ink);
+      border-radius: 26px;
+      background: var(--shop-cream);
+      box-shadow: 10px 10px 0 var(--shop-lilac);
+    }
+
+    .shop-window-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 2px solid var(--shop-ink);
+      background: #f3e7ff;
+      color: var(--shop-ink);
+      font-size: .78rem;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .shop-window-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .shop-window-dots i {
+      width: 10px;
+      height: 10px;
+      border: 1px solid var(--shop-ink);
+      border-radius: 50%;
+      background: var(--shop-pink);
+    }
+
+    .shop-window-dots i:nth-child(2) { background: var(--shop-lime); }
+    .shop-window-dots i:nth-child(3) { background: #b9ddff; }
+
+    .collection-art {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: #eaddea;
+    }
+
+    .shop-intro {
+      padding: clamp(22px, 4vw, 44px);
+      text-align: left;
+    }
+
+    .shop-intro h2 {
+      margin: 0 0 10px;
+      font-size: clamp(1.6rem, 4vw, 2.5rem);
+      color: var(--shop-ink);
+    }
+
+    .shop-intro p {
+      max-width: 760px;
+      margin: 0;
+      line-height: 1.7;
+      color: #665b68;
+    }
+
+    .product-section {
+      padding-top: clamp(48px, 7vw, 86px);
+      padding-bottom: clamp(60px, 8vw, 100px);
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 24px;
+      margin-top: 28px;
+    }
+
+    .product-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+      overflow: hidden;
+      border: 2px solid var(--shop-ink);
+      border-radius: 24px;
+      background: var(--shop-cream);
+      box-shadow: 7px 7px 0 var(--shop-lilac);
+    }
+
+    .product-card.featured {
+      transform: translateY(-8px);
+      box-shadow: 10px 10px 0 #ffc0dd;
+    }
+
+    .product-top {
+      min-height: 172px;
+      display: grid;
+      place-items: center;
+      padding: 28px 22px;
+      border-bottom: 2px solid var(--shop-ink);
+      text-align: center;
+      background:
+        linear-gradient(rgba(54,35,63,.08) 1px, transparent 1px),
+        #f5e8ff;
+      background-size: 100% 28px;
+    }
+
+    .product-card:nth-child(2) .product-top { background-color: var(--shop-blue); }
+    .product-card:nth-child(3) .product-top { background-color: #ffd9ea; }
+
+    .product-icon {
+      font-size: 3rem;
+      filter: drop-shadow(3px 3px 0 rgba(54,35,63,.16));
+    }
+
+    .product-top small {
+      display: block;
+      margin-top: 10px;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: #6e5573;
+    }
+
+    .product-copy {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      padding: 24px;
+    }
+
+    .product-copy h2 {
+      margin: 0;
+      font-size: clamp(1.35rem, 3vw, 1.85rem);
+      color: var(--shop-ink);
+    }
+
+    .product-copy p {
+      line-height: 1.65;
+      color: #655d67;
+    }
+
+    .product-copy ul {
+      margin: 0 0 22px;
+      padding-left: 1.2em;
+      line-height: 1.65;
+      color: #5d5360;
+    }
+
+    .price-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: auto;
+      padding-top: 6px;
+    }
+
+    .price {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 2.25rem;
+      font-weight: 900;
+      color: var(--shop-ink);
+    }
+
+    .save-tag,
+    .digital-tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 6px 10px;
+      border: 1px solid var(--shop-ink);
+      border-radius: 999px;
+      background: var(--shop-lime);
+      color: var(--shop-ink);
+      font-size: .74rem;
+      font-weight: 900;
+    }
+
+    .digital-tag {
+      background: #fff;
+    }
+
+    .buy-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 54px;
+      margin-top: 18px;
+      padding: 14px 18px;
+      border: 2px solid var(--shop-ink);
+      border-radius: 14px;
+      background: var(--shop-pink);
+      color: #fff;
+      font-weight: 900;
+      text-decoration: none;
+      box-shadow: 5px 5px 0 var(--shop-ink);
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+
+    .buy-button:hover,
+    .buy-button:focus-visible {
+      transform: translate(2px, 2px);
+      box-shadow: 3px 3px 0 var(--shop-ink);
+      outline: none;
+    }
+
+    .checkout-note {
+      margin: 15px 0 0;
+      text-align: center;
+      font-size: .78rem;
+      color: #766d78;
+    }
+
+    .shop-note {
+      margin-top: 34px;
+      padding: 22px;
+      border: 2px dashed #9b7da5;
+      border-radius: 18px;
+      background: #fff;
+      text-align: center;
+      color: #665769;
+      line-height: 1.65;
+    }
+
+    .shop-note strong { color: var(--shop-ink); }
+
+    @media (max-width: 900px) {
+      .product-grid { grid-template-columns: 1fr; }
+      .product-card.featured { transform: none; }
+      .product-top { min-height: 145px; }
+    }
+
+    @media (max-width: 560px) {
+      .shop-window { border-radius: 20px; box-shadow: 6px 6px 0 var(--shop-lilac); }
+      .shop-window-bar { font-size: .65rem; }
+      .product-card { border-radius: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to the good stuff</a>
+
+  <header class="site-header">
+    <div class="site-shell header-inner">
+      <a aria-label="The Sheema Edit home" class="brand" href="/">
+        <span aria-hidden="true" class="brand-mark"></span>
+        <span>The Sheema Edit</span>
+      </a>
+      <button aria-controls="site-navigation" aria-expanded="false" aria-label="Open navigation menu" class="menu-toggle" type="button"><span></span></button>
+      <nav aria-label="Main navigation" class="site-nav" data-open="false" id="site-navigation">
+        <a href="/">Home</a>
+        <a href="/#latest">The edits</a>
+        <a aria-current="page" href="/shop/">Shop</a>
+        <a href="/about.html">About</a>
+        <a class="nav-pill" href="https://www.instagram.com/_rasheemaa/" rel="noopener noreferrer" target="_blank">Say hey ↗</a>
+      </nav>
+    </div>
+  </header>
+
+  <div aria-hidden="true" class="marquee">
+    <div class="marquee-track">
+      <span>Soft reset ✦ Your pace ✦ Your story ✦ Shop The Edit ✦</span>
+      <span>Soft reset ✦ Your pace ✦ Your story ✦ Shop The Edit ✦</span>
+    </div>
+  </div>
+
+  <main id="main">
+    <section class="site-shell shop-hero" aria-labelledby="shop-title">
+      <p class="eyebrow">💿 A little shop tucked inside the diary</p>
+      <h1 id="shop-title">Shop <span>The Edit</span></h1>
+      <p class="shop-lede">Gentle digital tools for the beautiful, messy middle. Reflect without performing. Plan without hustle culture. Reset without pretending life is perfectly organized.</p>
+
+      <div class="shop-window">
+        <div class="shop-window-bar">
+          <span class="shop-window-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span>the soft reset collection</span>
+          <span aria-hidden="true">♡</span>
+        </div>
+        <img class="collection-art" src="/assets/images/soft-reset-collection.png" width="1512" height="710" alt="The Soft Reset Collection with scrapbook style reflection journal and gentle planner previews" />
+        <div class="shop-intro">
+          <h2>Your thoughts. Your plans. Your pace.</h2>
+          <p>Everything here is digital, so there is no physical item to ship. Choose what fits your season, then check out securely through Stripe.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="site-shell product-section" aria-labelledby="products-heading">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">Choose your soft reset</p>
+          <h2 class="section-title" id="products-heading">Three ways to <span class="scribble">start</span></h2>
+        </div>
+        <p>Keep it simple, or grab both and save.</p>
+      </div>
+
+      <div class="product-grid">
+        <article class="product-card">
+          <div class="product-top">
+            <div>
+              <div class="product-icon" aria-hidden="true">📓✨</div>
+              <small>Reflection and processing</small>
+            </div>
+          </div>
+          <div class="product-copy">
+            <span class="digital-tag">Digital PDF</span>
+            <h2>The Sheema Edit Reflection Journal</h2>
+            <p>A soft place to put the thoughts that keep circling your brain. Made for honest reflection, emotional processing, and checking in with yourself without turning healing into homework.</p>
+            <ul>
+              <li>30 page reflection journal</li>
+              <li>Scrapbook inspired Y2K design</li>
+              <li>Use digitally or print your own copy</li>
+            </ul>
+            <div class="price-row">
+              <span class="price">$14</span>
+            </div>
+            <a class="buy-button" href="https://buy.stripe.com/8x24gAetT5zb0sU5TOgjC06" data-product="reflection-journal" aria-label="Buy The Sheema Edit Reflection Journal for 14 dollars through Stripe">Buy the Journal ♡</a>
+            <p class="checkout-note">Secure checkout powered by Stripe</p>
+          </div>
+        </article>
+
+        <article class="product-card">
+          <div class="product-top">
+            <div>
+              <div class="product-icon" aria-hidden="true">🗓️🌷</div>
+              <small>Gentle structure</small>
+            </div>
+          </div>
+          <div class="product-copy">
+            <span class="digital-tag">Digital PDF</span>
+            <h2>Gentle Weekly Planner</h2>
+            <p>Structure for people whose energy, brain, and real life do not always cooperate with a perfect schedule. Plan what matters without making your week feel like a performance review.</p>
+            <ul>
+              <li>16 page planner</li>
+              <li>Monthly, weekly, and daily pages</li>
+              <li>Made for flexible, low pressure planning</li>
+            </ul>
+            <div class="price-row">
+              <span class="price">$9</span>
+            </div>
+            <a class="buy-button" href="https://buy.stripe.com/3cI28sdpPe5H3F6cicgjC07" data-product="gentle-weekly-planner" aria-label="Buy the Gentle Weekly Planner for 9 dollars through Stripe">Buy the Planner ✦</a>
+            <p class="checkout-note">Secure checkout powered by Stripe</p>
+          </div>
+        </article>
+
+        <article class="product-card featured">
+          <div class="product-top">
+            <div>
+              <div class="product-icon" aria-hidden="true">💿💗</div>
+              <small>The full soft reset</small>
+            </div>
+          </div>
+          <div class="product-copy">
+            <span class="save-tag">Save $4</span>
+            <h2>Reset Bundle</h2>
+            <p>The reflection journal and gentle weekly planner together. One space for what you are feeling, another for what comes next, with no demand to have either one figured out perfectly.</p>
+            <ul>
+              <li>Reflection Journal included</li>
+              <li>Gentle Weekly Planner included</li>
+              <li>Best value if you want the full collection</li>
+            </ul>
+            <div class="price-row">
+              <span class="price">$19</span>
+            </div>
+            <a class="buy-button" href="https://buy.stripe.com/7sY7sMbhHbXzgrSbe8gjC05" data-product="reset-bundle" aria-label="Buy the Reset Bundle for 19 dollars through Stripe">Get the Bundle ✨</a>
+            <p class="checkout-note">Secure checkout powered by Stripe</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="shop-note">
+        <strong>A tiny note before checkout:</strong> these are digital products, so nothing physical will arrive in the mail. Your payment is processed on Stripe's secure checkout page.
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-shell">
+      <div class="footer-grid">
+        <div>
+          <h2>The Sheema Edit</h2>
+          <p>Soft thoughts, real life, and no filter. A personal blog by Sheema.</p>
+        </div>
+        <div class="footer-links">
+          <h3>Explore</h3>
+          <a href="/">Home</a>
+          <a href="/#latest">The edits</a>
+          <a href="/shop/">Shop</a>
+          <a href="/about.html">About</a>
+        </div>
+      </div>
+      <p class="footer-bottom">© <span data-current-year></span> The Sheema Edit. Made with feelings and WiFi.</p>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+  <script>
+    document.querySelectorAll('[data-product]').forEach((link) => {
+      link.addEventListener('click', () => {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ event: 'shop_checkout_click', product: link.dataset.product });
+      });
+    });
+  </script>
+</body>
+</html>
