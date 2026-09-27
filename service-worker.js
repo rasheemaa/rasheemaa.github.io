@@ -1,9 +1,10 @@
-const CACHE_NAME = "sheema-edit-v7";
+const CACHE_NAME = "sheema-edit-v8";
 
 const APP_SHELL = [
   "/",
   "/index.html",
   "/about.html",
+  "/shop/",
   "/offline.html",
   "/posts/better-late-than-never.html",
   "/posts/forgive-them-anyway.html",
@@ -21,7 +22,8 @@ const APP_SHELL = [
   "/assets/images/app-icon-512.png",
   "/assets/images/app-icon-maskable-512.png",
   "/assets/images/apple-touch-icon.png",
-  "/assets/images/hero.webp"
+  "/assets/images/hero.webp",
+  "/assets/images/soft-reset-collection.png"
 ];
 
 self.addEventListener("install", (event) => {
