@@ -5,23 +5,14 @@ permalink: /shop/
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-C7XV3YJCZE"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-C7XV3YJCZE');
-  </script>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Shop The Edit | The Sheema Edit</title>
-  <meta name="description" content="Shop The Sheema Edit Reflection Journal, Gentle Weekly Planner, and Reset Bundle with secure checkout and automatic digital delivery." />
-  <meta name="theme-color" content="#f28ac1" />
+  <meta name="description" content="Choose The Sheema Edit Reflection Journal, Gentle Weekly Planner, or Reset Bundle with secure checkout and automatic digital delivery." />
+  <meta name="theme-color" content="#1d1b43" />
   <link rel="canonical" href="https://thesheemaedit.com/shop/" />
   <link rel="icon" href="/assets/images/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png" />
-  <link rel="stylesheet" href="/assets/css/styles.css" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Shop The Edit | The Sheema Edit" />
   <meta property="og:description" content="Gentle digital tools for reflecting, resetting, and planning at your own pace." />
@@ -29,469 +20,414 @@ permalink: /shop/
   <meta property="og:image" content="https://thesheemaedit.com/assets/images/soft-reset-collection.png" />
   <meta name="twitter:card" content="summary_large_image" />
 
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-C7XV3YJCZE"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-C7XV3YJCZE');
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+
   <style>
     :root {
-      --ink: #1c1b42;
-      --pink: #ee8bc1;
-      --rose: #b85b82;
-      --paper: #fbfaf0;
-      --grid: rgba(55, 66, 89, .075);
-      --muted: #817f8b;
-      --lime: #dfe97b;
-      --line: #d9d8dc;
-      --white: #fffefa;
+      --navy:#1c1b43;
+      --pink:#ed8dc3;
+      --paper:#faf9ef;
+      --grid:rgba(54,58,86,.075);
+      --text:#1d1c43;
+      --muted:#86838d;
+      --border:#dddcdf;
+      --rose:#b85e82;
+      --lime:#dfe87d;
+      --card:#fffefa;
     }
 
-    * { box-sizing: border-box; }
-
+    * { box-sizing:border-box; }
+    html, body { margin:0; min-height:100%; }
     body {
-      margin: 0;
-      color: var(--ink);
-      background: #f6f4ef;
+      font-family:"Inter", Arial, sans-serif;
+      color:var(--text);
+      background:#f4f2ed;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
     }
 
-    .shop-book {
-      position: relative;
-      max-width: 980px;
-      margin: 0 auto clamp(48px, 8vw, 96px);
-      overflow: hidden;
+    .page-shell {
+      width:100%;
+      max-width:760px;
+      min-height:100vh;
+      margin:0 auto;
+      position:relative;
+      overflow:hidden;
       background:
         linear-gradient(var(--grid) 1px, transparent 1px),
         linear-gradient(90deg, var(--grid) 1px, transparent 1px),
         var(--paper);
-      background-size: 38px 38px;
-      border-right: 1px solid rgba(28, 27, 66, .08);
-      border-bottom: 1px solid rgba(28, 27, 66, .08);
-      box-shadow: 0 24px 70px rgba(28,27,66,.10);
+      background-size:35px 35px;
     }
 
-    .shop-book::before {
-      content: "";
-      position: absolute;
-      inset: 0 auto 0 0;
-      width: 28px;
-      z-index: 2;
+    .page-shell::before {
+      content:"";
+      position:absolute;
+      z-index:3;
+      top:0;
+      bottom:0;
+      left:0;
+      width:20px;
       background:
-        radial-gradient(circle at 50% 18px, var(--paper) 0 4px, transparent 4.5px) 0 0 / 28px 42px repeat-y,
+        radial-gradient(circle at 9px 18px, #fff 0 4px, transparent 4.5px) 0 0/20px 55px repeat-y,
         var(--pink);
-      border-right: 1px solid rgba(28, 27, 66, .08);
-      pointer-events: none;
+      pointer-events:none;
     }
 
-    .shop-navy-band {
-      min-height: 122px;
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 24px 36px 22px 66px;
-      color: #fff;
-      background: var(--ink);
+    .top-band {
+      height:103px;
+      margin-left:20px;
+      background:var(--navy);
     }
 
-    .shop-navy-band strong {
-      font-size: .8rem;
-      letter-spacing: .13em;
-      text-transform: uppercase;
+    .content {
+      padding:116px 32px 68px 52px;
     }
 
-    .shop-navy-band a {
-      color: #fff;
-      text-decoration: none;
-      font-size: .86rem;
-      opacity: .88;
+    .kicker {
+      margin:0 0 4px;
+      color:var(--rose);
+      font-family:"Caveat", cursive;
+      font-size:41px;
+      font-weight:600;
+      line-height:1;
+      letter-spacing:.01em;
     }
 
-    .shop-page {
-      padding: clamp(74px, 9vw, 118px) clamp(26px, 7vw, 78px) clamp(52px, 8vw, 82px) clamp(54px, 8vw, 92px);
+    h1 {
+      max-width:630px;
+      margin:0;
+      font-family:"Playfair Display", Georgia, serif;
+      font-size:56px;
+      font-weight:400;
+      line-height:1.06;
+      letter-spacing:-.043em;
     }
 
-    .script-kicker {
-      margin: 0 0 8px;
-      color: var(--rose);
-      font-family: "Brush Script MT", "Segoe Script", cursive;
-      font-size: clamp(2rem, 5vw, 3rem);
-      font-weight: 500;
-      line-height: 1;
-      transform: rotate(-1deg);
+    .choices {
+      display:grid;
+      gap:20px;
+      margin-top:58px;
     }
 
-    .shop-title {
-      max-width: 760px;
-      margin: 0;
-      font-family: Georgia, "Times New Roman", serif;
-      font-size: clamp(3rem, 7vw, 5.7rem);
-      font-weight: 400;
-      line-height: .98;
-      letter-spacing: -.045em;
+    .choice {
+      position:relative;
+      width:100%;
+      min-height:120px;
+      display:grid;
+      grid-template-columns:48px minmax(0,1fr) 80px;
+      align-items:center;
+      gap:16px;
+      padding:18px 25px;
+      border:3px solid var(--border);
+      border-radius:21px;
+      background:rgba(255,255,255,.58);
+      color:var(--text);
+      text-align:left;
+      font:inherit;
+      cursor:pointer;
+      transition:border-color .15s ease, background .15s ease, box-shadow .15s ease;
     }
 
-    .product-picker {
-      display: grid;
-      gap: 22px;
-      margin-top: clamp(52px, 8vw, 78px);
+    .choice[aria-pressed="true"] {
+      border-color:var(--navy);
+      background:rgba(255,255,255,.92);
+      box-shadow:0 7px 0 rgba(28,27,67,.04);
     }
 
-    .product-choice {
-      position: relative;
-      width: 100%;
-      display: grid;
-      grid-template-columns: 52px minmax(0, 1fr) auto;
-      align-items: center;
-      gap: 16px;
-      min-height: 118px;
-      padding: 20px 25px;
-      border: 3px solid #e0dfe2;
-      border-radius: 22px;
-      background: rgba(255,255,255,.56);
-      color: var(--ink);
-      text-align: left;
-      font: inherit;
-      cursor: pointer;
-      transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease, background .16s ease;
+    .choice:focus-visible {
+      outline:3px solid rgba(237,141,195,.52);
+      outline-offset:3px;
     }
 
-    .product-choice:hover,
-    .product-choice:focus-visible {
-      border-color: #aaa5b3;
-      outline: none;
-      transform: translateY(-1px);
+    .radio {
+      width:39px;
+      height:39px;
+      display:grid;
+      place-items:center;
+      border:3px solid #b9b9bf;
+      border-radius:50%;
+      color:transparent;
+      font-size:22px;
+      font-weight:700;
+      line-height:1;
     }
 
-    .product-choice[aria-pressed="true"] {
-      border-color: var(--ink);
-      background: rgba(255,255,255,.88);
-      box-shadow: 0 10px 0 rgba(28,27,66,.05);
-    }
-
-    .radio-dot {
-      width: 42px;
-      height: 42px;
-      display: grid;
-      place-items: center;
-      border: 3px solid #b7b7bd;
-      border-radius: 50%;
-      color: transparent;
-      font-size: 1.35rem;
-      font-weight: 900;
-      transition: all .16s ease;
-    }
-
-    .product-choice[aria-pressed="true"] .radio-dot {
-      border-color: var(--ink);
-      background: var(--ink);
-      color: #fff;
+    .choice[aria-pressed="true"] .radio {
+      border-color:var(--navy);
+      background:var(--navy);
+      color:#fff;
     }
 
     .choice-copy strong {
-      display: block;
-      margin-bottom: 5px;
-      font-size: clamp(1.08rem, 2.4vw, 1.5rem);
-      line-height: 1.15;
+      display:block;
+      margin-bottom:6px;
+      font-size:22px;
+      font-weight:600;
+      line-height:1.12;
     }
 
     .choice-copy small {
-      color: var(--muted);
-      font-size: clamp(.88rem, 2vw, 1.05rem);
+      display:block;
+      color:var(--muted);
+      font-size:17px;
+      line-height:1.3;
     }
 
-    .choice-price {
-      min-width: 72px;
-      text-align: right;
-      font-family: Georgia, "Times New Roman", serif;
-      font-size: clamp(2rem, 5vw, 2.8rem);
-      line-height: 1;
+    .price {
+      text-align:right;
+      font-family:"Playfair Display", Georgia, serif;
+      font-size:42px;
+      font-weight:400;
+      line-height:1;
     }
 
-    .choice-price small {
-      display: block;
-      margin-top: 10px;
-      color: var(--rose);
-      font-family: Arial, sans-serif;
-      font-size: .78rem;
-      font-weight: 900;
-      letter-spacing: .04em;
-      text-transform: uppercase;
+    .price small {
+      display:block;
+      margin-top:9px;
+      color:var(--rose);
+      font-family:"Inter", Arial, sans-serif;
+      font-size:12px;
+      font-weight:700;
+      letter-spacing:.035em;
+      text-transform:uppercase;
+      white-space:nowrap;
     }
 
     .best-value {
-      position: absolute;
-      top: -16px;
-      right: 72px;
-      padding: 6px 13px;
-      background: var(--lime);
-      color: #19192d;
-      font-family: "Courier New", monospace;
-      font-size: .78rem;
-      font-weight: 900;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      transform: rotate(3deg);
-      box-shadow: 2px 2px 0 rgba(28,27,66,.10);
+      position:absolute;
+      top:-15px;
+      right:27px;
+      padding:6px 12px;
+      background:var(--lime);
+      color:#15152d;
+      font-family:"Courier New", monospace;
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      transform:rotate(3deg);
+      box-shadow:2px 2px 0 rgba(28,27,67,.08);
     }
 
-    .delivery-note {
-      margin: 38px 0 0;
-      color: #74717d;
-      font-size: clamp(.98rem, 2.3vw, 1.15rem);
-      line-height: 1.65;
+    .delivery {
+      margin:38px 0 0;
+      color:#77747f;
+      font-size:18px;
+      line-height:1.58;
     }
 
     .checkout-card {
-      position: relative;
-      margin-top: 58px;
-      padding: clamp(30px, 5vw, 48px);
-      border: 2px solid #e5a7c5;
-      border-radius: 24px;
-      background: rgba(255,254,250,.90);
+      position:relative;
+      margin-top:66px;
+      padding:40px 40px 38px;
+      border:2px solid #e3a0c2;
+      border-radius:24px;
+      background:rgba(255,254,250,.93);
     }
 
     .checkout-card::before {
-      content: "";
-      position: absolute;
-      top: -22px;
-      right: 10%;
-      width: 150px;
-      height: 44px;
-      background:
-        linear-gradient(90deg, rgba(216,229,122,.88), rgba(229,237,137,.72));
-      transform: rotate(4deg);
-      opacity: .86;
+      content:"";
+      position:absolute;
+      top:-24px;
+      right:8%;
+      width:154px;
+      height:45px;
+      background:linear-gradient(90deg, rgba(216,229,122,.88), rgba(230,238,138,.72));
+      transform:rotate(4deg);
+      opacity:.86;
     }
 
     .checkout-label {
-      margin: 0 0 20px;
-      color: #7b7680;
-      font-size: .78rem;
-      font-weight: 800;
-      letter-spacing: .28em;
-      text-transform: uppercase;
+      margin:0 0 24px;
+      color:#77737d;
+      font-size:12px;
+      font-weight:700;
+      letter-spacing:.28em;
+      text-transform:uppercase;
     }
 
-    .checkout-card > p {
-      max-width: 670px;
-      margin: 0 0 28px;
-      color: #64616b;
-      font-size: clamp(.98rem, 2.2vw, 1.12rem);
-      line-height: 1.65;
+    .checkout-copy {
+      margin:0 0 30px;
+      color:#5e5b66;
+      font-size:17px;
+      line-height:1.62;
     }
 
-    .checkout-summary {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 20px;
-      padding: 19px 0;
-      border-top: 2px dashed #efb5cf;
-      border-bottom: 2px dashed #efb5cf;
+    .summary {
+      display:flex;
+      align-items:baseline;
+      justify-content:space-between;
+      gap:20px;
+      padding:18px 0;
+      border-top:2px dashed #efb4cf;
+      border-bottom:2px dashed #efb4cf;
     }
 
-    .checkout-summary strong {
-      font-size: clamp(1rem, 2.5vw, 1.25rem);
+    .summary strong {
+      max-width:75%;
+      font-size:19px;
+      font-weight:500;
     }
 
-    .checkout-summary span {
-      font-family: Georgia, "Times New Roman", serif;
-      font-size: 1.55rem;
+    .summary span {
+      font-family:"Playfair Display", Georgia, serif;
+      font-size:31px;
     }
 
-    .checkout-button {
-      width: 100%;
-      min-height: 60px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 28px;
-      padding: 15px 22px;
-      border: 2px solid var(--ink);
-      border-radius: 16px;
-      background: var(--ink);
-      color: #fff;
-      font-weight: 900;
-      text-decoration: none;
-      box-shadow: 6px 6px 0 var(--pink);
-      transition: transform .16s ease, box-shadow .16s ease;
+    .pay-button {
+      width:100%;
+      min-height:60px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      margin-top:28px;
+      padding:15px 20px;
+      border:2px solid var(--navy);
+      border-radius:15px;
+      background:var(--navy);
+      color:#fff;
+      font-size:16px;
+      font-weight:700;
+      text-decoration:none;
+      box-shadow:6px 6px 0 var(--pink);
     }
 
-    .checkout-button:hover,
-    .checkout-button:focus-visible {
-      transform: translate(2px, 2px);
-      box-shadow: 4px 4px 0 var(--pink);
-      outline: none;
+    .trust {
+      margin:17px 0 0;
+      text-align:center;
+      color:#898590;
+      font-size:12px;
+      line-height:1.45;
     }
 
-    .tiny-trust {
-      margin: 18px 0 0 !important;
-      text-align: center;
-      font-size: .78rem !important;
-      color: #85818b !important;
+    @media (max-width:700px) {
+      .content { padding:116px 32px 68px 52px; }
     }
 
-    .back-note {
-      display: flex;
-      justify-content: center;
-      margin-top: 34px;
+    @media (max-width:520px) {
+      .page-shell::before { width:18px; background-size:18px 54px; background-position:-1px 0; }
+      .top-band { margin-left:18px; height:100px; }
+      .content { padding:115px 32px 62px 48px; }
+      .kicker { font-size:38px; }
+      h1 { font-size:50px; }
+      .choices { margin-top:56px; gap:19px; }
+      .choice { min-height:116px; grid-template-columns:45px minmax(0,1fr) 72px; padding:18px 22px; gap:14px; border-radius:20px; }
+      .radio { width:37px; height:37px; }
+      .choice-copy strong { font-size:20px; }
+      .choice-copy small { font-size:15px; }
+      .price { font-size:38px; }
+      .delivery { font-size:17px; }
+      .checkout-card { margin-top:62px; padding:38px 36px; }
     }
 
-    .back-note a {
-      color: var(--ink);
-      font-weight: 800;
-      text-decoration-thickness: 2px;
-      text-underline-offset: 4px;
-    }
-
-    @media (max-width: 700px) {
-      .shop-book { margin-bottom: 40px; }
-      .shop-book::before { width: 20px; background-size: 20px 38px; }
-      .shop-navy-band { min-height: 94px; padding: 20px 20px 18px 46px; }
-      .shop-navy-band strong { font-size: .68rem; }
-      .shop-navy-band a { font-size: .76rem; }
-      .shop-page { padding: 58px 18px 46px 42px; }
-      .product-picker { gap: 16px; margin-top: 42px; }
-      .product-choice { grid-template-columns: 42px minmax(0, 1fr) auto; min-height: 104px; padding: 16px 16px; gap: 12px; border-radius: 18px; }
-      .radio-dot { width: 34px; height: 34px; font-size: 1rem; }
-      .choice-price { min-width: 54px; }
-      .best-value { right: 18px; top: -14px; }
-      .checkout-card { margin-top: 48px; padding: 28px 20px; }
-      .checkout-card::before { width: 105px; height: 34px; }
-    }
-
-    @media (max-width: 430px) {
-      .shop-navy-band a { display: none; }
-      .product-choice { grid-template-columns: 36px minmax(0, 1fr) 54px; }
-      .choice-copy strong { font-size: 1rem; }
-      .choice-copy small { font-size: .77rem; }
-      .choice-price { font-size: 1.85rem; }
-      .choice-price small { font-size: .63rem; }
-      .checkout-summary { align-items: flex-start; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .product-choice,
-      .checkout-button { transition: none; }
+    @media (max-width:390px) {
+      .content { padding-left:42px; padding-right:22px; }
+      h1 { font-size:45px; }
+      .choice { grid-template-columns:40px minmax(0,1fr) 62px; padding:16px 18px; }
+      .choice-copy strong { font-size:18px; }
+      .choice-copy small { font-size:13px; }
+      .price { font-size:33px; }
+      .best-value { right:18px; }
+      .checkout-card { padding:34px 26px; }
     }
   </style>
 </head>
 <body>
-  <a class="skip-link" href="#main">Skip to the good stuff</a>
+  <main class="page-shell" id="main">
+    <div class="top-band" aria-hidden="true"></div>
 
-  <header class="site-header">
-    <div class="site-shell header-inner">
-      <a aria-label="The Sheema Edit home" class="brand" href="/">
-        <span aria-hidden="true" class="brand-mark"></span>
-        <span>The Sheema Edit</span>
-      </a>
-      <button aria-controls="site-navigation" aria-expanded="false" aria-label="Open navigation menu" class="menu-toggle" type="button"><span></span></button>
-      <nav aria-label="Main navigation" class="site-nav" data-open="false" id="site-navigation">
-        <a href="/">Home</a>
-        <a href="/#latest">The edits</a>
-        <a aria-current="page" href="/shop/">Shop</a>
-        <a href="/about.html">About</a>
-        <a class="nav-pill" href="https://www.instagram.com/_rasheemaa/" rel="noopener noreferrer" target="_blank">Say hey ↗</a>
-      </nav>
-    </div>
-  </header>
+    <section class="content" aria-labelledby="shop-title">
+      <p class="kicker">pick your edit</p>
+      <h1 id="shop-title">Choose what you need, right now</h1>
 
-  <main id="main">
-    <div class="shop-book">
-      <div class="shop-navy-band">
-        <strong>The Sheema Edit · Soft Reset Shop</strong>
-        <a href="/">Back to the diary ♡</a>
+      <div class="choices" role="group" aria-label="Choose a digital product">
+        <button class="choice" type="button" aria-pressed="true"
+          data-name="The Sheema Edit Reflection Journal"
+          data-price="$14"
+          data-url="https://payhip.com/b/V9zXw">
+          <span class="radio" aria-hidden="true">✓</span>
+          <span class="choice-copy">
+            <strong>Reflection Journal</strong>
+            <small>30 pages · instant PDF download</small>
+          </span>
+          <span class="price">$14</span>
+        </button>
+
+        <button class="choice" type="button" aria-pressed="false"
+          data-name="Gentle Weekly Planner"
+          data-price="$9"
+          data-url="https://payhip.com/b/xnDwY">
+          <span class="radio" aria-hidden="true">✓</span>
+          <span class="choice-copy">
+            <strong>Gentle Weekly Planner</strong>
+            <small>16 pages · instant PDF download</small>
+          </span>
+          <span class="price">$9</span>
+        </button>
+
+        <button class="choice" type="button" aria-pressed="false"
+          data-name="Reset Bundle"
+          data-price="$19"
+          data-url="https://payhip.com/b/JeC9S">
+          <span class="best-value">Best Value</span>
+          <span class="radio" aria-hidden="true">✓</span>
+          <span class="choice-copy">
+            <strong>Reset Bundle</strong>
+            <small>46 pages · instant PDF download</small>
+          </span>
+          <span class="price">$19<small>Save $4</small></span>
+        </button>
       </div>
 
-      <section class="shop-page" aria-labelledby="shop-title">
-        <p class="script-kicker">pick your edit</p>
-        <h1 class="shop-title" id="shop-title">Choose what you need, right now</h1>
+      <p class="delivery">Digital download only. No physical item will be shipped.<br>After secure checkout your files are emailed straight to you.</p>
 
-        <div class="product-picker" role="group" aria-label="Choose a digital product">
-          <button class="product-choice" type="button" aria-pressed="true" data-name="The Sheema Edit Reflection Journal" data-price="$14" data-link="https://payhip.com/b/V9zXw" data-product="reflection-journal">
-            <span class="radio-dot" aria-hidden="true">✓</span>
-            <span class="choice-copy">
-              <strong>Reflection Journal</strong>
-              <small>30 pages · instant PDF download</small>
-            </span>
-            <span class="choice-price">$14</span>
-          </button>
+      <section class="checkout-card" aria-labelledby="checkout-title">
+        <p class="checkout-label" id="checkout-title">Checkout</p>
+        <p class="checkout-copy">You'll be taken to a secure page to enter your name, email and payment. We never see your card details.</p>
 
-          <button class="product-choice" type="button" aria-pressed="false" data-name="Gentle Weekly Planner" data-price="$9" data-link="https://payhip.com/b/xnDwY" data-product="gentle-weekly-planner">
-            <span class="radio-dot" aria-hidden="true">✓</span>
-            <span class="choice-copy">
-              <strong>Gentle Weekly Planner</strong>
-              <small>16 pages · instant PDF download</small>
-            </span>
-            <span class="choice-price">$9</span>
-          </button>
-
-          <button class="product-choice" type="button" aria-pressed="false" data-name="Reset Bundle" data-price="$19" data-link="https://payhip.com/b/JeC9S" data-product="reset-bundle">
-            <span class="best-value">Best value</span>
-            <span class="radio-dot" aria-hidden="true">✓</span>
-            <span class="choice-copy">
-              <strong>Reset Bundle</strong>
-              <small>46 pages · both PDFs included</small>
-            </span>
-            <span class="choice-price">$19<small>Save $4</small></span>
-          </button>
+        <div class="summary">
+          <strong id="selected-name">The Sheema Edit Reflection Journal</strong>
+          <span id="selected-price">$14</span>
         </div>
 
-        <p class="delivery-note">Digital download only. No physical item will be shipped.<br />After secure checkout, your files are delivered through Payhip and sent to the email used at checkout.</p>
-
-        <section class="checkout-card" aria-labelledby="checkout-title">
-          <p class="checkout-label" id="checkout-title">Checkout</p>
-          <p>You’ll be taken to a secure page to enter your name, email, and payment details. The Sheema Edit never sees your card details.</p>
-
-          <div class="checkout-summary" aria-live="polite">
-            <strong id="selected-product-name">The Sheema Edit Reflection Journal</strong>
-            <span id="selected-product-price">$14</span>
-          </div>
-
-          <a class="checkout-button" id="checkout-link" href="https://payhip.com/b/V9zXw" data-product="reflection-journal">Continue to secure checkout ✦</a>
-          <p class="tiny-trust">Secure payment + automatic digital delivery handled by Payhip</p>
-        </section>
-
-        <div class="back-note"><a href="/">← Keep reading The Sheema Edit</a></div>
+        <a class="pay-button" id="checkout-button" href="https://payhip.com/b/V9zXw">Continue to secure checkout</a>
+        <p class="trust">Secure checkout and automatic digital delivery powered by Payhip.</p>
       </section>
-    </div>
+    </section>
   </main>
 
-  <footer class="site-footer">
-    <div class="site-shell">
-      <div class="footer-grid">
-        <div>
-          <h2>The Sheema Edit</h2>
-          <p>Soft thoughts, real life, and no filter. A personal blog by Sheema.</p>
-        </div>
-        <div class="footer-links">
-          <h3>Explore</h3>
-          <a href="/">Home</a>
-          <a href="/#latest">The edits</a>
-          <a href="/shop/">Shop</a>
-          <a href="/about.html">About</a>
-        </div>
-      </div>
-      <p class="footer-bottom">© <span data-current-year></span> The Sheema Edit. Made with feelings and WiFi.</p>
-    </div>
-  </footer>
-
-  <script src="/assets/js/main.js"></script>
   <script>
-    const choices = Array.from(document.querySelectorAll('.product-choice'));
-    const checkoutLink = document.getElementById('checkout-link');
-    const productName = document.getElementById('selected-product-name');
-    const productPrice = document.getElementById('selected-product-price');
+    const choices = Array.from(document.querySelectorAll('.choice'));
+    const selectedName = document.getElementById('selected-name');
+    const selectedPrice = document.getElementById('selected-price');
+    const checkoutButton = document.getElementById('checkout-button');
 
     choices.forEach((choice) => {
       choice.addEventListener('click', () => {
         choices.forEach((item) => item.setAttribute('aria-pressed', String(item === choice)));
-        productName.textContent = choice.dataset.name;
-        productPrice.textContent = choice.dataset.price;
-        checkoutLink.href = choice.dataset.link;
-        checkoutLink.dataset.product = choice.dataset.product;
+        selectedName.textContent = choice.dataset.name;
+        selectedPrice.textContent = choice.dataset.price;
+        checkoutButton.href = choice.dataset.url;
+
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ event: 'shop_product_select', product: choice.dataset.name });
       });
     });
 
-    checkoutLink.addEventListener('click', () => {
+    checkoutButton.addEventListener('click', () => {
       window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({ event: 'shop_checkout_click', product: checkoutLink.dataset.product });
+      window.dataLayer.push({ event: 'shop_checkout_click', product: selectedName.textContent });
     });
   </script>
 </body>
