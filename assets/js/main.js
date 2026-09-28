@@ -4,13 +4,14 @@ const hasInlineGoogleTag = Boolean(
   document.querySelector(`script[src*="googletagmanager.com/gtag/js?id=${googleAnalyticsId}"]`)
 );
 
+window.dataLayer = window.dataLayer || [];
+window.gtag = window.gtag || function gtag() {
+  window.dataLayer.push(arguments);
+};
+
 if (!hasInlineGoogleTag) {
-  window.dataLayer = window.dataLayer || [];
-  function gtag() {
-    window.dataLayer.push(arguments);
-  }
-  gtag("js", new Date());
-  gtag("config", googleAnalyticsId);
+  window.gtag("js", new Date());
+  window.gtag("config", googleAnalyticsId);
 
   const googleAnalyticsScript = document.createElement("script");
   googleAnalyticsScript.async = true;
@@ -82,6 +83,18 @@ document.querySelectorAll("[data-current-year]").forEach((element) => {
 const legacyShopUrl = "https://sheema-edit-space.base44.app";
 document.querySelectorAll(`a[href="${legacyShopUrl}"]`).forEach((link) => {
   link.setAttribute("href", "/shop/");
+});
+
+// Track clicks on the floating Support The Edit Stripe link on blog posts.
+document.querySelectorAll("[data-support-edit-link]").forEach((link) => {
+  link.addEventListener("click", () => {
+    window.gtag("event", "support_edit_click", {
+      support_destination: link.href,
+      support_source: "floating_blog_button",
+      page_path: window.location.pathname,
+      page_title: document.title,
+    });
+  });
 });
 
 // Shop The Edit welcome popup. Shows once per browser session across the main site.
@@ -271,8 +284,7 @@ document.querySelectorAll(`a[href="${legacyShopUrl}"]`).forEach((link) => {
   };
 
   const trackPopupEvent = (eventName) => {
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({ event: eventName, shop_destination: shopUrl });
+    window.gtag("event", eventName, { shop_destination: shopUrl });
   };
 
   const closePopup = (reason = "close_button") => {
