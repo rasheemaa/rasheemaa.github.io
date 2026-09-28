@@ -20,6 +20,10 @@ function gtag(){dataLayer.push(arguments)}
 gtag('js',new Date());
 gtag('config','G-C7XV3YJCZE');
 window.dataLayer.push({event:'shop_thank_you_view'});
+try{
+  localStorage.removeItem('sheemaEditCheckoutIntent');
+  localStorage.removeItem('sheemaEditRecoveryDismissed');
+}catch(e){}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
