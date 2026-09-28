@@ -1,4 +1,4 @@
-const CACHE_NAME = "sheema-edit-v9";
+const CACHE_NAME = "sheema-edit-v10";
 
 const APP_SHELL = [
   "/",
