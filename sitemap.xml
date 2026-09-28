@@ -6,7 +6,7 @@ layout: null
   <url><loc>{{ site.url }}/</loc></url>
   <url><loc>{{ site.url }}/about.html</loc></url>
   <url><loc>{{ site.url }}/shop/</loc></url>
-  <url><loc>{{ site.url }}/shop/reflection-journal.html</loc></url>
+  <url><loc>{{ site.url }}/shop/reflection-journal-product.html</loc></url>
   <url><loc>{{ site.url }}/shop/gentle-weekly-planner.html</loc></url>
   <url><loc>{{ site.url }}/shop/reset-bundle.html</loc></url>
   {% assign edits = site.edits | sort: "date" | reverse %}
