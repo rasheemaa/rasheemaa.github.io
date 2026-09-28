@@ -21,3 +21,7 @@ markdown: kramdown
 # Enable checkout after payment and file delivery have been verified.
 soft_reset_checkout_url: "https://buy.stripe.com/4gM8wQdpP1iVdfGdmggjC04"
 soft_reset_delivery_ready: false
+
+# Public Stripe pay-what-you-want link for the floating Support The Edit button.
+# Keep blank until the verified Stripe Payment Link is available.
+support_url: ""
