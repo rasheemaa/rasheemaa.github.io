@@ -1,4 +1,4 @@
-const CACHE_NAME = "sheema-edit-v11";
+const CACHE_NAME = "sheema-edit-v12";
 
 const APP_SHELL = [
   "/",
@@ -29,9 +29,19 @@ const APP_SHELL = [
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then((cache) => cache.addAll(APP_SHELL))
+    caches.open(CACHE_NAME)
+      .then((cache) =>
+        Promise.all(
+          APP_SHELL.map((url) =>
+            fetch(new Request(url, { cache: "reload" })).then((response) => {
+              if (!response.ok) {
+                throw new Error(`Failed to precache ${url}: ${response.status}`);
+              }
+              return cache.put(url, response);
+            })
+          )
+        )
+      )
       .then(() => self.skipWaiting())
   );
 });
@@ -61,7 +71,7 @@ self.addEventListener("fetch", (event) => {
 
   if (request.mode === "navigate") {
     event.respondWith(
-      fetch(request)
+      fetch(new Request(request, { cache: "no-store" }))
         .then(async (response) => {
           if (response.ok) {
             const cache = await caches.open(CACHE_NAME);
