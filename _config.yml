@@ -23,5 +23,4 @@ soft_reset_checkout_url: "https://buy.stripe.com/4gM8wQdpP1iVdfGdmggjC04"
 soft_reset_delivery_ready: false
 
 # Public Stripe pay-what-you-want link for the floating Support The Edit button.
-# Keep blank until the verified Stripe Payment Link is available.
-support_url: ""
+support_url: "https://buy.stripe.com/5kQbJ2adD1iV8Zq81WgjC08"
