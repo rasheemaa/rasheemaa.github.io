@@ -21,6 +21,78 @@
     <meta property="og:image" content="{{ site.url }}/assets/images/social-card.png">
     <meta name="twitter:card" content="summary_large_image">
     <link rel="stylesheet" href="/assets/css/styles.css">
+    <style>
+      .support-edit-float {
+        position: fixed;
+        right: 22px;
+        top: 50%;
+        z-index: 85;
+        display: inline-flex;
+        min-height: 48px;
+        padding: 12px 16px;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #21172c;
+        border-radius: 16px;
+        color: #21172c;
+        background: linear-gradient(145deg, #fff0f7 0%, #ffc7e2 52%, #d9c3ff 100%);
+        box-shadow: 5px 5px 0 #21172c;
+        font-size: .82rem;
+        font-weight: 900;
+        letter-spacing: .05em;
+        line-height: 1.2;
+        text-align: center;
+        text-decoration: none;
+        text-transform: uppercase;
+        transform: translateY(-50%) rotate(1.5deg);
+        transition: transform 150ms ease, box-shadow 150ms ease, opacity 150ms ease;
+      }
+
+      .support-edit-float::before {
+        content: "✦";
+        margin-right: 7px;
+        color: #e81778;
+      }
+
+      .support-edit-float:hover,
+      .support-edit-float:focus-visible {
+        box-shadow: 2px 2px 0 #21172c;
+        outline: none;
+        transform: translate(3px, calc(-50% + 3px)) rotate(1.5deg);
+      }
+
+      @media (max-width: 900px) {
+        .support-edit-float {
+          right: 14px;
+          top: auto;
+          bottom: 16px;
+          min-height: 38px;
+          padding: 8px 10px;
+          border-radius: 999px;
+          box-shadow: 3px 3px 0 #21172c;
+          font-size: .68rem;
+          letter-spacing: .03em;
+          opacity: .94;
+          transform: none;
+        }
+
+        .support-edit-float::before {
+          margin-right: 5px;
+        }
+
+        .support-edit-float:hover,
+        .support-edit-float:focus-visible {
+          box-shadow: 1px 1px 0 #21172c;
+          transform: translate(2px, 2px);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .support-edit-float {
+          transition: none;
+        }
+      }
+    </style>
     <script type="application/ld+json">
       {
         "@context":"https://schema.org",
@@ -44,6 +116,10 @@
         <nav class="site-nav" id="site-navigation" aria-label="Main navigation" data-open="false"><a href="/">Home</a><a href="/#latest">The edits</a><a href="https://sheema-edit-space.base44.app">Shop</a><a href="/about.html">About</a><a class="nav-pill" href="https://www.instagram.com/_rasheemaa/" target="_blank" rel="noopener noreferrer">Say hey ↗</a></nav>
       </div>
     </header>
+
+    {% if site.support_url and site.support_url != "" %}
+      <a class="support-edit-float" href="{{ site.support_url }}" target="_blank" rel="noopener noreferrer" data-support-edit-link aria-label="Support The Edit, opens secure Stripe checkout in a new tab">Support The Edit ♡</a>
+    {% endif %}
 
     {% assign cover_class = "cover-unmasking" %}
     {% assign cover_label = "Purple and pink Y2K butterfly collage" %}
