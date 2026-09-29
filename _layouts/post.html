@@ -5,12 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ page.title | escape }} | The Sheema Edit</title>
     <meta name="description" content="{{ page.description | escape }}">
+    <meta name="author" content="Rasheema Abdullah">
     <meta name="theme-color" content="#8d62d6">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Sheema Edit">
     <link rel="canonical" href="{{ site.url }}{{ page.url }}">
+    <link rel="author" href="/about.html">
     <link rel="icon" href="/assets/images/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
     <link rel="manifest" href="/site.webmanifest">
@@ -121,8 +123,18 @@
         "@type":"BlogPosting",
         "headline":{{ page.title | jsonify }},
         "datePublished":{{ page.date | date: "%Y-%m-%d" | jsonify }},
-        "author":{"@type":"Person","name":"Sheema"},
-        "publisher":{"@type":"Organization","name":"The Sheema Edit"},
+        "author":{
+          "@type":"Person",
+          "@id":"https://thesheemaedit.com/#rasheema-abdullah",
+          "name":"Rasheema Abdullah",
+          "alternateName":"Sheema",
+          "url":"https://thesheemaedit.com/about.html",
+          "sameAs":[
+            "https://www.instagram.com/_rasheemaa/",
+            "https://www.tiktok.com/@_rasheemaa"
+          ]
+        },
+        "publisher":{"@type":"Organization","name":"The Sheema Edit","url":"https://thesheemaedit.com/"},
         "mainEntityOfPage":{{ site.url | append: page.url | jsonify }},
         "image":"https://thesheemaedit.com/assets/images/social-card.png"
       }
@@ -135,7 +147,7 @@
       <div class="site-shell header-inner">
         <a class="brand" href="/" aria-label="The Sheema Edit home"><span class="brand-mark" aria-hidden="true"></span><span>The Sheema Edit</span></a>
         <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-navigation" aria-label="Open navigation menu"><span></span></button>
-        <nav class="site-nav" id="site-navigation" aria-label="Main navigation" data-open="false"><a href="/">Home</a><a href="/#latest">The edits</a><a href="/shop/">Shop</a><a href="/about.html">About</a><a class="nav-pill" href="https://www.instagram.com/_rasheemaa/" target="_blank" rel="noopener noreferrer">Say hey ↗</a></nav>
+        <nav class="site-nav" id="site-navigation" aria-label="Main navigation" data-open="false"><a href="/">Home</a><a href="/#latest">The edits</a><a href="/shop/">Shop</a><a href="/about.html">About</a><a class="nav-pill" href="https://www.instagram.com/_rasheemaa/" target="_blank" rel="me noopener noreferrer">Say hey ↗</a></nav>
       </div>
     </header>
 
@@ -190,7 +202,7 @@
       </section>
     </main>
 
-    <footer class="site-footer"><div class="site-shell"><div class="footer-grid"><div><h2>The Sheema Edit</h2><p>Soft thoughts, real life, and no filter. A personal blog by Sheema.</p></div><div class="footer-links"><h3>Explore</h3><a href="/">Home</a><a href="/#latest">The edits</a><a href="/shop/">Shop</a><a href="/about.html">About</a></div><div class="footer-links"><h3>Find me</h3><a href="https://www.instagram.com/_rasheemaa/" target="_blank" rel="noopener noreferrer">Instagram @_rasheemaa</a><a href="https://www.tiktok.com/@_rasheemaa" target="_blank" rel="noopener noreferrer">TikTok @_rasheemaa</a></div></div><div class="footer-bottom"><span>© <span data-current-year>2026</span> The Sheema Edit. All feelings reserved.</span><span>Personal stories only. Nothing here is medical advice.</span></div></div></footer>
+    <footer class="site-footer"><div class="site-shell"><div class="footer-grid"><div><h2>The Sheema Edit</h2><p>Soft thoughts, real life, and no filter. A personal blog created by Rasheema Abdullah, also known as Sheema.</p></div><div class="footer-links"><h3>Explore</h3><a href="/">Home</a><a href="/#latest">The edits</a><a href="/shop/">Shop</a><a href="/about.html">About</a></div><div class="footer-links"><h3>Find me</h3><a href="https://www.instagram.com/_rasheemaa/" target="_blank" rel="me noopener noreferrer">Instagram @_rasheemaa</a><a href="https://www.tiktok.com/@_rasheemaa" target="_blank" rel="me noopener noreferrer">TikTok @_rasheemaa</a></div></div><div class="footer-bottom"><span>© <span data-current-year>2026</span> The Sheema Edit. All feelings reserved.</span><span>Personal stories only. Nothing here is medical advice.</span></div></div></footer>
     <script src="/assets/js/main.js" defer></script>
   </body>
 </html>
