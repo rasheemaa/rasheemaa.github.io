@@ -1,0 +1,45 @@
+name: Submit updated pages to IndexNow
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/indexnow.yml
+
+permissions:
+  contents: read
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for GitHub Pages deployment
+        run: sleep 60
+
+      - name: Submit recently updated public URLs
+        shell: bash
+        run: |
+          set -euo pipefail
+          KEY="b7158b3e51c146fa8bb04efdce4dd21f"
+          URLS=(
+            "https://thesheemaedit.com/"
+            "https://thesheemaedit.com/about.html"
+            "https://thesheemaedit.com/shop/"
+            "https://thesheemaedit.com/posts/we-really-need-to-touch-some-grass.html"
+            "https://thesheemaedit.com/shop/reflection-journal-product.html"
+            "https://thesheemaedit.com/shop/gentle-weekly-planner.html"
+            "https://thesheemaedit.com/shop/reset-bundle.html"
+          )
+
+          for URL in "${URLS[@]}"; do
+            STATUS=$(curl --silent --show-error --output /tmp/indexnow-response --write-out "%{http_code}" \
+              --get "https://api.indexnow.org/indexnow" \
+              --data-urlencode "url=${URL}" \
+              --data-urlencode "key=${KEY}")
+            echo "${URL} -> HTTP ${STATUS}"
+            if [[ "${STATUS}" != "200" && "${STATUS}" != "202" ]]; then
+              cat /tmp/indexnow-response || true
+              exit 1
+            fi
+          done
