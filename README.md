@@ -1,39 +1,44 @@
 # The Sheema Edit
 
-The standalone source for [thesheemaedit.com](https://thesheemaedit.com), a playful Y2K personal blog created by **Rasheema Abdullah**, also known as **Sheema**.
+Official website: https://thesheemaedit.com/
 
-Official site: [https://thesheemaedit.com](https://thesheemaedit.com)
+The Sheema Edit is an independent personal blog created by Rasheema Abdullah, also known as Sheema. It covers mental wellness, unmasking, motherhood, chronic illness, lifestyle, beauty, family life, and funny real life stories.
 
-Creator profiles:
+## Creator
 
-* Instagram: [@_rasheemaa](https://www.instagram.com/_rasheemaa/)
-* TikTok: [@_rasheemaa](https://www.tiktok.com/@_rasheemaa)
+Rasheema Abdullah, known online as Sheema, is the creator of The Sheema Edit.
 
-## What is included
+Official profiles:
 
-* A responsive homepage
-* An About page
-* Published personal essays
-* Topic filtering
-* Mobile navigation
-* Search and social metadata
-* Structured author data
-* RSS feed and sitemap
-* A custom 404 page
-* No paid theme, database, or build system
+* TikTok: https://www.tiktok.com/@_rasheemaa
+* Instagram: https://www.instagram.com/_rasheemaa/
 
-## Publishing a new edit
+## What the website includes
 
-Add each new story to the site collection and keep its canonical URL, sitemap entry, RSS entry, and author metadata consistent. GitHub Pages publishes updates from the `main` branch.
+* Personal essays called “Edits”
+* Stories about mental wellness, unmasking, motherhood, chronic illness, lifestyle, beauty, family life, and humor
+* A digital shop called Shop The Edit
+* The Sheema Edit Reflection Journal
+* Gentle Weekly Planner
+* Reset Bundle
+* A one time “Support The Edit” option
+* RSS feed and XML sitemap
+* Responsive mobile design
 
-## Local preview
+## Official pages
 
-Run a basic web server from this folder and open the local address it provides.
+* Home: https://thesheemaedit.com/
+* About: https://thesheemaedit.com/about.html
+* Shop: https://thesheemaedit.com/shop/
+* RSS: https://thesheemaedit.com/feed.xml
+* Sitemap: https://thesheemaedit.com/sitemap.xml
 
-```sh
-python3 -m http.server 4173
-```
+## Publishing
+
+The site is published from this public GitHub repository through GitHub Pages. New Edits are added to the site and included in the RSS feed and sitemap.
 
 ## Ownership
 
-The Sheema Edit is created by Rasheema Abdullah, also known as Sheema. All writing, branding, and original visual assets are copyright Rasheema Abdullah. All rights reserved.
+The canonical identity relationship is: Rasheema Abdullah = Sheema = creator of The Sheema Edit at thesheemaedit.com.
+
+All writing, branding, and original visual assets are copyright Rasheema Abdullah / Sheema. All rights reserved.
