@@ -45,7 +45,9 @@ layout: null
         "description": "A personal blog about mental wellness, unmasking, motherhood, chronic illness, lifestyle, beauty, and funny real life stories.",
         "author": {
           "@type": "Person",
-          "name": "Sheema",
+          "@id": "https://thesheemaedit.com/#rasheema-abdullah",
+          "name": "Rasheema Abdullah",
+          "alternateName": "Sheema",
           "url": "https://thesheemaedit.com/about.html"
         }
       }
@@ -58,11 +60,16 @@ layout: null
 .soft-reset-copy{padding:clamp(20px,4vw,44px);color:#30262f}
 .soft-reset-copy h3{font-size:clamp(1.5rem,3vw,2.25rem);line-height:1.2;margin:0 0 16px}
 .soft-reset-copy p,.soft-reset-copy li{max-width:72ch}
-.soft-reset-copy ul{padding-left:1.3em;line-height:1.8}
-.soft-reset-details{font-size:.9rem}
-.soft-reset-status{display:inline-block;padding:14px 18px;border-radius:12px;background:#e5dcf0;line-height:1.6}
+.soft-reset-copy p{margin:0 0 18px}
+.soft-reset-copy .button{margin-top:4px}
+.soft-reset-card{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center}
+.soft-reset-preview{height:100%}
+.soft-reset-preview img{height:100%;object-fit:cover}
 .soft-reset-preview:focus-visible{outline:4px solid #705090;outline-offset:-4px}
 #shop{scroll-margin-top:100px}
+.diary-hero-inner,.diary-hero-art{min-height:480px}
+@media(max-width:720px){.diary-hero-inner{min-height:0}.diary-hero-art{min-height:240px}}
+@media(max-width:720px){.soft-reset-card{grid-template-columns:1fr}.soft-reset-preview{height:auto}.soft-reset-preview img{height:auto}.soft-reset-copy{padding:22px}}
 </style>
 </head>
 <body>
@@ -79,7 +86,7 @@ layout: null
 <a href="#latest">The edits</a>
 <a href="/shop/">Shop</a>
 <a href="/about.html">About</a>
-<a class="nav-pill" href="https://www.instagram.com/_rasheemaa/" rel="noopener noreferrer" target="_blank">Say hey ↗</a>
+<a class="nav-pill" href="https://www.tiktok.com/@_rasheemaa" rel="me noopener noreferrer" target="_blank">Say hey ↗</a>
 </nav>
 </div>
 </header>
@@ -90,85 +97,22 @@ layout: null
 </div>
 </div>
 <main id="main">
+{% assign edits = site.edits | sort: "date" | reverse %}
+{% assign newest_edit = edits.first %}
 <section aria-labelledby="hero-title" class="site-shell diary-hero">
   <div class="diary-window">
-    <div class="diary-window-bar"><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>the sheema edit / this week</span><span class="window-heart" aria-hidden="true">♡</span></div>
+    <div class="diary-window-bar"><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>the sheema edit / newest story</span><span class="window-heart" aria-hidden="true">♡</span></div>
     <div class="diary-hero-inner">
       <div class="diary-hero-copy">
-        <p class="eyebrow">✦ A note from Sheema · September 27, 2026</p>
-        <h1 class="hero-title" id="hero-title">We really need to<br/><span class="chrome">touch some grass.</span></h1>
-        <p class="diary-lede">Respectfully, it is the damn phones. 😭</p>
-        <p class="hero-text">I’ve been spending more time with family lately, and it reminded me that I can love my little bubble and still need real connection.</p>
-        <div class="button-row"><a class="button" href="#this-week">Come read with me <span aria-hidden="true">↓</span></a></div>
-        <p class="tiny-note">log off. go outside. come back when your social battery says absolutely not ♡</p>
+        <p class="eyebrow">✦ The newest edit · {{ newest_edit.date | date: "%B %-d, %Y" }}</p>
+        <h1 class="hero-title" id="hero-title">{{ newest_edit.title }}</h1>
+        <p class="hero-text">{{ newest_edit.description }}</p>
+        <div class="button-row"><a class="button" href="{{ newest_edit.url }}">Read the newest edit <span aria-hidden="true">→</span></a></div>
+        <p class="tiny-note">a little honesty, a little softness, and a whole lot of real life ♡</p>
       </div>
-      <div class="diary-hero-art" aria-hidden="true"><span class="orbit orbit-one">✦</span><span class="orbit orbit-two">✧</span><div class="diary-polaroid"><span class="polaroid-heart">♡</span><span>log off.<br/>touch grass.</span><small>09 / 27 / 26</small></div><span class="diary-sticker">social<br/>battery low</span></div>
+      <div class="diary-hero-art" aria-hidden="true"><span class="orbit orbit-one">✦</span><span class="orbit orbit-two">✧</span><div class="diary-polaroid"><span class="polaroid-heart">♡</span><span>the newest<br/>edit is here.</span><small>xo, Sheema</small></div><span class="diary-sticker">come<br/>read ♡</span></div>
     </div>
   </div>
-</section>
-<section aria-labelledby="letter-heading" class="diary-letter-band" id="this-week">
-  <div class="site-shell diary-letter-layout">
-    <article class="diary-letter">
-      <div class="letter-topline"><span>personal note 002</span><span>September 27, 2026</span></div>
-      <p class="section-kicker">This week’s note</p>
-      <h2 id="letter-heading">A lot of us need to touch some grass, respectfully.</h2>
-      <p>I don’t get out much. Like honestly, I really don’t. And I feel like we can all agree that technology has taken over completely because why are we always on these damn phones? 😭</p>
-      <p>Recently I’ve been spending more time with my family than I usually do and honestly, it was very much needed. I didn’t realize how much I needed to actually be around people.</p>
-      <p>I can love being alone and still need connection. I can enjoy being around my family and still get anxious after a while. Maybe I just need a little more balance. And maybe some grass. 🌱</p>
-      <a class="button secondary" href="/posts/we-really-need-to-touch-some-grass.html">Read the full edit <span aria-hidden="true">→</span></a>
-      <span class="reset-signoff">xoxo, Sheema</span>
-    </article>
-    <aside class="diary-side-notes" aria-label="A few things I am holding onto">
-      <div class="diary-note note-lilac"><span class="note-icon" aria-hidden="true">✧</span><p class="section-kicker">A little reminder</p><p>I can love being alone and still need connection. Both can be true.</p></div>
-      <div class="diary-note note-pink"><span class="note-icon" aria-hidden="true">♡</span><p class="section-kicker">From this week’s edit</p><p>“Damn, people still do this? 😂”</p></div>
-      <div class="diary-note note-blue"><span class="note-icon" aria-hidden="true">✦</span><p class="section-kicker">Before you go</p><p>Make an actual memory. Then go home and recharge.</p></div>
-    </aside>
-  </div>
-</section>
-
-<section aria-labelledby="collection-heading" class="site-shell section" id="shop">
-  <div class="section-heading">
-    <div><p class="section-kicker">A little shop tucked inside the diary</p>
-      <h2 class="section-title" id="collection-heading">Shop <span class="scribble">The Edit</span></h2>
-    </div>
-    <p>Gentle digital tools made for real life.</p>
-  </div>
-  <div class="soft-reset-card">
-    <a class="soft-reset-preview" href="/shop/" aria-label="Visit The Sheema Edit shop">
-      <img src="/assets/images/soft-reset-collection.png" width="1512" height="710" loading="lazy" decoding="async" alt="Scrapbook journal cover, a memory page with a photo space, and an undated monthly planner, with pink and lilac paper, tape, and doodles."/>
-    </a>
-    <div class="soft-reset-copy">
-      <p class="section-kicker">The Soft Reset Collection</p>
-      <h3>Your thoughts. Your plans. Your pace.</h3>
-      <p>A reflection journal and gentle planner for the beautiful, messy middle of life. Collect little memories, make room for your feelings, and plan around the energy you actually have.</p>
-      <ul>
-        <li>30 page reflection journal</li>
-        <li>16 page planner with monthly, weekly, and daily pages</li>
-        <li>Printable and fillable PDFs, plus simple getting started instructions</li>
-      </ul>
-      <p class="soft-reset-details">Digital products made to meet you where you are. Browse the full collection in The Sheema Edit shop.</p>
-      <a class="button" href="/shop/">Shop The Edit 💿</a>
-    </div>
-  </div>
-</section>
-
-<section aria-labelledby="featured-heading" class="site-shell section">
-<div class="section-heading">
-<div>
-<p class="section-kicker">The cover story</p>
-<h2 class="section-title" id="featured-heading">Featured <span class="scribble">edit</span></h2>
-</div>
-<p>For anyone who loves their little bubble but maybe needs to leave it sometimes.</p>
-</div>
-<article class="featured-card">
-<div aria-label="Pink and lilac Y2K collage with a note saying log off, touch grass" class="featured-art featured-art-diary" role="img"></div>
-<div class="featured-copy">
-<span class="category-tag">Lifestyle, beauty and funny stories</span>
-<h3>We Really Need to Touch Some Grass</h3>
-<p>I love my little bubble, but spending time with family reminded me that I still need real life connection too.</p>
-<div class="post-meta">September 27, 2026 · 4 min read</div><a class="button lime" href="/posts/we-really-need-to-touch-some-grass.html">Read the story <span aria-hidden="true">→</span></a>
-</div>
-</article>
 </section>
 <section aria-labelledby="latest-heading" class="site-shell section" id="latest">
 <div class="section-heading">
@@ -186,7 +130,6 @@ layout: null
 <button aria-pressed="false" class="filter-button" data-filter="lifestyle" type="button">Lifestyle and laughs</button>
 </div>
 <div class="post-grid">
-{% assign edits = site.edits | sort: "date" | reverse %}
 {% for edit in edits %}
 {% assign category_key = "mind" %}
 {% assign art_class = "art-unmasking" %}
@@ -216,6 +159,22 @@ layout: null
 {% endfor %}
 </div>
 </section>
+<section aria-labelledby="collection-heading" class="site-shell section" id="shop">
+  <div class="section-heading">
+    <div><p class="section-kicker">The Soft Reset Collection</p><h2 class="section-title" id="collection-heading">Shop <span class="scribble">The Edit</span></h2></div>
+    <p>Gentle digital tools made for real life.</p>
+  </div>
+  <div class="soft-reset-card">
+    <a class="soft-reset-preview" href="/shop/" aria-label="Visit The Sheema Edit shop">
+      <img src="/assets/images/soft-reset-collection.png" width="1512" height="710" loading="lazy" decoding="async" alt="Scrapbook journal, memory page, and undated planner in pink and lilac."/>
+    </a>
+    <div class="soft-reset-copy">
+      <h3>Reflect. Plan. Reset.</h3>
+      <p>A reflection journal, a gentle planner, or both together. Printable and fillable PDFs you can use at your own pace.</p>
+      <a class="button" href="/shop/">Explore the shop 💿</a>
+    </div>
+  </div>
+</section>
 <section aria-labelledby="about-heading" class="site-shell section about-slice">
 <div aria-hidden="true" class="about-sticker">S</div>
 <div class="about-copy">
@@ -231,8 +190,7 @@ layout: null
 <p>More real life, little laughs, and creator chaos live over on social.</p>
 </div>
 <div class="button-row">
-<a class="button" href="https://www.instagram.com/_rasheemaa/" rel="noopener noreferrer" target="_blank">Instagram ↗</a>
-<a class="button secondary" href="https://www.tiktok.com/@_rasheemaa" rel="noopener noreferrer" target="_blank">TikTok ↗</a>
+<a class="button" href="https://www.tiktok.com/@_rasheemaa" rel="me noopener noreferrer" target="_blank">Say hey on TikTok ↗</a>
 </div>
 </section>
 </main>
@@ -241,7 +199,7 @@ layout: null
 <div class="footer-grid">
 <div>
 <h2>The Sheema Edit</h2>
-<p>Soft thoughts, real life, and no filter. A personal blog by Sheema.</p>
+<p>Soft thoughts, real life, and no filter. A personal blog created by Rasheema Abdullah, also known as Sheema.</p>
 </div>
 <div class="footer-links">
 <h3>Explore</h3>
