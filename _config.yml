@@ -1,8 +1,15 @@
 title: "The Sheema Edit"
-description: "A personal blog about mental wellness, unmasking, motherhood, chronic illness, lifestyle, beauty, and funny real life stories."
+description: "The Sheema Edit is a personal blog by Rasheema Abdullah, also known as Sheema, about mental wellness, unmasking, motherhood, chronic illness, lifestyle, beauty, and funny real life stories."
 url: "https://thesheemaedit.com"
 baseurl: ""
 timezone: "America/New_York"
+
+author:
+  name: "Rasheema Abdullah"
+  alternate_name: "Sheema"
+  url: "https://thesheemaedit.com/about.html"
+  instagram: "https://www.instagram.com/_rasheemaa/"
+  tiktok: "https://www.tiktok.com/@_rasheemaa"
 
 collections:
   edits:
