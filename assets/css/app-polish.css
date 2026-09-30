@@ -1,0 +1,30 @@
+/* The Sheema Edit: consumer app polish layer */
+:root{--app-tap:48px;--app-ease:cubic-bezier(.2,.8,.2,1)}
+html{-webkit-text-size-adjust:100%;text-rendering:optimizeLegibility}
+body{-webkit-font-smoothing:antialiased}
+:where(a,button,input,select,textarea):focus-visible{outline:3px solid var(--purple);outline-offset:3px}
+.button,.filter-button,.menu-toggle,.nav-pill{touch-action:manipulation}
+.button:active,.nav-pill:active,.menu-toggle:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.post-card,.product-card,.value-card,.soft-reset-card{transition:transform .2s var(--app-ease),box-shadow .2s var(--app-ease)}
+@media(hover:hover){.post-card:hover,.product-card:hover,.value-card:hover{transform:translateY(-3px)}}
+@media(prefers-reduced-motion:no-preference){@keyframes app-enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}main{animation:app-enter .28s var(--app-ease) both}}
+@media(max-width:720px){
+ body{padding-bottom:env(safe-area-inset-bottom)}
+ .site-header{padding-top:env(safe-area-inset-top)}
+ .header-inner{min-height:62px}
+ .brand{font-size:.9rem;letter-spacing:.025em}.brand-mark{width:38px;height:38px}
+ .site-nav{max-height:calc(100dvh - 90px);overflow:auto;-webkit-overflow-scrolling:touch}
+ .site-nav a{display:flex;min-height:48px;align-items:center;justify-content:center;border-radius:12px}
+ .site-nav .nav-pill{background:var(--lime)}
+ .section{margin-block:52px}.section-heading{gap:10px;margin-bottom:22px}.section-heading>p{margin:0}
+ .page-hero{margin-top:18px;padding-block:34px}.page-title{font-size:clamp(2.8rem,14vw,4.6rem)}.page-lede{font-size:1.03rem;line-height:1.65}
+ .post-card-copy{padding:21px}.post-card h3{line-height:1.08}.post-meta{gap:8px}
+ .article-header{padding-top:34px}.post-title{font-size:clamp(2.7rem,13vw,4.6rem)}
+ .article-cover{min-height:270px;border-radius:20px}.article-layout{gap:26px}.article-body{font-size:1.08rem;line-height:1.78}.article-body p{margin-block:0 1.35em}.article-aside{position:static;width:100%;max-width:none;transform:none}
+ .article-end{margin-top:46px;padding:24px 18px}.article-end .button-row{display:grid;grid-template-columns:1fr}.article-end .button{width:100%}
+ .about-slice{padding:24px}.about-copy h2{font-size:clamp(2rem,10vw,3.2rem)}
+ .values-grid{gap:16px}.value-card{padding:24px;transform:none!important}
+ .social-strip{padding:24px}.social-strip .button-row,.social-strip .button{width:100%}
+ .footer-links a{display:flex;min-height:44px;align-items:center}
+}
+@media(max-width:420px){.site-shell{width:min(calc(100% - 20px),var(--max))}.section{margin-block:44px}.eyebrow{font-size:.68rem}.button{min-height:50px;width:100%}.button-row{width:100%}}
