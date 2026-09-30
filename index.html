@@ -2,31 +2,23 @@
 layout: null
 ---
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-C7XV3YJCZE"></script>
-<script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-C7XV3YJCZE');
-    </script>
 <meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>{{ site.title }}</title>
-<meta content="{{ site.description }}" name="description"/>
+<meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <meta content="#ff4fa3" name="theme-color"/>
 <meta content="yes" name="mobile-web-app-capable"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
-<meta content="default" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
 <meta content="Sheema Edit" name="apple-mobile-web-app-title"/>
+<title>{{ site.title }}</title>
+<meta content="{{ site.description }}" name="description"/>
 <link href="https://thesheemaedit.com/" rel="canonical"/>
 <link href="/assets/images/favicon.svg" rel="icon" type="image/svg+xml"/>
 <link href="/assets/images/apple-touch-icon.png" rel="apple-touch-icon"/>
 <link href="/site.webmanifest" rel="manifest"/>
 <link href="/feed.xml" rel="alternate" title="The Sheema Edit" type="application/rss+xml"/>
+<link rel="preconnect" href="https://www.googletagmanager.com" crossorigin/>
 <meta content="website" property="og:type"/>
 <meta content="{{ site.title }}" property="og:title"/>
 <meta content="{{ site.description }}" property="og:description"/>
@@ -36,190 +28,32 @@ layout: null
 <meta content="630" property="og:image:height"/>
 <meta content="summary_large_image" name="twitter:card"/>
 <link href="/assets/css/styles.css" rel="stylesheet"/>
-<script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "Blog",
-        "name": "The Sheema Edit",
-        "url": "https://thesheemaedit.com/",
-        "description": "A personal blog about mental wellness, unmasking, motherhood, chronic illness, lifestyle, beauty, and funny real life stories.",
-        "author": {
-          "@type": "Person",
-          "@id": "https://thesheemaedit.com/#rasheema-abdullah",
-          "name": "Rasheema Abdullah",
-          "alternateName": "Sheema",
-          "url": "https://thesheemaedit.com/about.html"
-        }
-      }
-    </script>
-
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-C7XV3YJCZE"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-C7XV3YJCZE');</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Blog","name":"The Sheema Edit","url":"https://thesheemaedit.com/","description":"A personal blog about mental wellness, unmasking, motherhood, chronic illness, lifestyle, beauty, and funny real life stories.","author":{"@type":"Person","@id":"https://thesheemaedit.com/#rasheema-abdullah","name":"Rasheema Abdullah","alternateName":"Sheema","url":"https://thesheemaedit.com/about.html"}}</script>
 <style>
-.soft-reset-card{border:2px solid #36233f;border-radius:24px;background:#fffaf5;overflow:hidden;box-shadow:7px 7px 0 #e5dcf0}
-.soft-reset-preview{display:block;background:#e7d8df}
-.soft-reset-preview img{display:block;width:100%;height:auto}
-.soft-reset-copy{padding:clamp(20px,4vw,44px);color:#30262f}
-.soft-reset-copy h3{font-size:clamp(1.5rem,3vw,2.25rem);line-height:1.2;margin:0 0 16px}
-.soft-reset-copy p,.soft-reset-copy li{max-width:72ch}
-.soft-reset-copy p{margin:0 0 18px}
-.soft-reset-copy .button{margin-top:4px}
-.soft-reset-card{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center}
-.soft-reset-preview{height:100%}
-.soft-reset-preview img{height:100%;object-fit:cover}
-.soft-reset-preview:focus-visible{outline:4px solid #705090;outline-offset:-4px}
-#shop{scroll-margin-top:100px}
-.diary-hero-inner,.diary-hero-art{min-height:480px}
-@media(max-width:720px){.diary-hero-inner{min-height:0}.diary-hero-art{min-height:240px}}
-@media(max-width:720px){.soft-reset-card{grid-template-columns:1fr}.soft-reset-preview{height:auto}.soft-reset-preview img{height:auto}.soft-reset-copy{padding:22px}}
+.soft-reset-card{border:2px solid #36233f;border-radius:24px;background:#fffaf5;overflow:hidden;box-shadow:7px 7px 0 #e5dcf0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center}.soft-reset-preview{display:block;background:#e7d8df;height:100%}.soft-reset-preview img{display:block;width:100%;height:100%;object-fit:cover}.soft-reset-copy{padding:clamp(20px,4vw,44px);color:#30262f}.soft-reset-copy h3{font-size:clamp(1.5rem,3vw,2.25rem);line-height:1.2;margin:0 0 16px}.soft-reset-copy p{max-width:72ch;margin:0 0 18px}.soft-reset-copy .button{margin-top:4px}.soft-reset-preview:focus-visible{outline:4px solid #705090;outline-offset:-4px}#shop{scroll-margin-top:100px}.diary-hero-inner,.diary-hero-art{min-height:480px}
+/* Consumer-app polish: consistent touch feedback, safer mobile spacing, and less layout work offscreen. */
+:root{--app-ease:cubic-bezier(.2,.8,.2,1)}body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased}.site-header{padding-top:env(safe-area-inset-top);will-change:transform}.button,.filter-button,.menu-toggle,.nav-pill,.post-card,.soft-reset-card{transition:transform .18s var(--app-ease),box-shadow .18s var(--app-ease),background-color .18s ease}.button:active,.filter-button:active,.menu-toggle:active,.nav-pill:active{transform:translate(2px,2px) scale(.98)}.post-card{content-visibility:auto;contain-intrinsic-size:420px}.post-card:hover{transform:translateY(-3px)}.post-card h3 a{display:block}.post-card h3 a:focus-visible,.text-link:focus-visible,.brand:focus-visible{outline:3px solid var(--pink);outline-offset:4px;border-radius:6px}.soft-reset-card{content-visibility:auto;contain-intrinsic-size:560px}.about-slice,.social-strip,.site-footer{content-visibility:auto;contain-intrinsic-size:420px}.diary-hero{isolation:isolate}.diary-window{overflow:hidden}.filter-bar{scrollbar-width:none}.filter-bar::-webkit-scrollbar{display:none}
+@media(max-width:720px){.diary-hero-inner{min-height:0}.diary-hero-art{min-height:220px}.soft-reset-card{grid-template-columns:1fr}.soft-reset-preview{height:auto}.soft-reset-preview img{height:auto}.soft-reset-copy{padding:22px}.site-shell{width:min(calc(100% - 28px),var(--max))}.site-header{background:rgba(255,249,239,.94);-webkit-backdrop-filter:blur(18px) saturate(150%);backdrop-filter:blur(18px) saturate(150%)}.header-inner{min-height:62px}.brand-mark{width:38px;height:38px}.marquee-track span{padding-block:6px}.diary-hero{margin-top:14px}.diary-window{border-radius:22px}.diary-hero-copy{padding:28px 22px 26px}.diary-hero-copy .hero-title{font-size:clamp(2.65rem,13vw,4.35rem);line-height:.94}.diary-hero-copy .hero-text{font-size:1rem;line-height:1.55}.button{min-height:50px}.filter-bar{display:flex;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding:3px 3px 10px;margin-inline:-3px;flex-wrap:nowrap}.filter-button{flex:0 0 auto;min-height:44px;scroll-snap-align:start}.post-grid{gap:18px}.post-card{border-radius:20px}.section{margin-block:52px}.section-heading{gap:8px;margin-bottom:22px}.section-title{font-size:clamp(2.25rem,11vw,3.4rem)}.soft-reset-card{border-radius:20px}.social-strip .button{width:100%}.site-nav{max-height:calc(100dvh - 86px);overflow:auto;-webkit-overflow-scrolling:touch}.site-nav a{min-height:44px;display:flex;align-items:center;justify-content:center}.site-footer{padding-bottom:max(28px,env(safe-area-inset-bottom))}}
+@media(prefers-reduced-motion:reduce){.post-card{content-visibility:visible}.button,.filter-button,.menu-toggle,.nav-pill,.post-card,.soft-reset-card{transition:none}}
 </style>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to the good stuff</a>
-<header class="site-header">
-<div class="site-shell header-inner">
-<a aria-label="The Sheema Edit home" class="brand" href="/">
-<span aria-hidden="true" class="brand-mark"></span>
-<span>The Sheema Edit</span>
-</a>
-<button aria-controls="site-navigation" aria-expanded="false" aria-label="Open navigation menu" class="menu-toggle" type="button"><span></span></button>
-<nav aria-label="Main navigation" class="site-nav" data-open="false" id="site-navigation">
-<a aria-current="page" href="/">Home</a>
-<a href="#latest">The edits</a>
-<a href="/shop/">Shop</a>
-<a href="/about.html">About</a>
-<a class="nav-pill" href="https://www.tiktok.com/@_rasheemaa" rel="me noopener noreferrer" target="_blank">Say hey ↗</a>
-</nav>
-</div>
-</header>
-<div aria-hidden="true" class="marquee">
-<div class="marquee-track">
-<span>Touch grass ✦ See your people ✦ Recharge when you need ✦ The Sheema Edit ✦</span>
-<span>Touch grass ✦ See your people ✦ Recharge when you need ✦ The Sheema Edit ✦</span>
-</div>
-</div>
+<header class="site-header"><div class="site-shell header-inner"><a aria-label="The Sheema Edit home" class="brand" href="/"><span aria-hidden="true" class="brand-mark"></span><span>The Sheema Edit</span></a><button aria-controls="site-navigation" aria-expanded="false" aria-label="Open navigation menu" class="menu-toggle" type="button"><span></span></button><nav aria-label="Main navigation" class="site-nav" data-open="false" id="site-navigation"><a aria-current="page" href="/">Home</a><a href="#latest">The edits</a><a href="/shop/">Shop</a><a href="/about.html">About</a><a class="nav-pill" href="https://www.tiktok.com/@_rasheemaa" rel="me noopener noreferrer" target="_blank">Say hey ↗</a></nav></div></header>
+<div aria-hidden="true" class="marquee"><div class="marquee-track"><span>Touch grass ✦ See your people ✦ Recharge when you need ✦ The Sheema Edit ✦</span><span>Touch grass ✦ See your people ✦ Recharge when you need ✦ The Sheema Edit ✦</span></div></div>
 <main id="main">
-{% assign edits = site.edits | sort: "date" | reverse %}
-{% assign newest_edit = edits.first %}
-<section aria-labelledby="hero-title" class="site-shell diary-hero">
-  <div class="diary-window">
-    <div class="diary-window-bar"><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>the sheema edit / newest story</span><span class="window-heart" aria-hidden="true">♡</span></div>
-    <div class="diary-hero-inner">
-      <div class="diary-hero-copy">
-        <p class="eyebrow">✦ The newest edit · {{ newest_edit.date | date: "%B %-d, %Y" }}</p>
-        <h1 class="hero-title" id="hero-title">{{ newest_edit.title }}</h1>
-        <p class="hero-text">{{ newest_edit.description }}</p>
-        <div class="button-row"><a class="button" href="{{ newest_edit.url }}">Read the newest edit <span aria-hidden="true">→</span></a></div>
-        <p class="tiny-note">a little honesty, a little softness, and a whole lot of real life ♡</p>
-      </div>
-      <div class="diary-hero-art" aria-hidden="true"><span class="orbit orbit-one">✦</span><span class="orbit orbit-two">✧</span><div class="diary-polaroid"><span class="polaroid-heart">♡</span><span>the newest<br/>edit is here.</span><small>xo, Sheema</small></div><span class="diary-sticker">come<br/>read ♡</span></div>
-    </div>
-  </div>
-</section>
-<section aria-labelledby="latest-heading" class="site-shell section" id="latest">
-<div class="section-heading">
-<div>
-<p class="section-kicker">Fresh from the group chat</p>
-<h2 class="section-title" id="latest-heading">The latest <span class="scribble">edits</span></h2>
-</div>
-<p>Pick whatever feels like your current tab.</p>
-</div>
-<div aria-label="Filter stories by topic" class="filter-bar">
-<button aria-pressed="true" class="filter-button" data-filter="all" type="button">Everything</button>
-<button aria-pressed="false" class="filter-button" data-filter="mind" type="button">Mind and unmasking</button>
-<button aria-pressed="false" class="filter-button" data-filter="motherhood" type="button">Motherhood</button>
-<button aria-pressed="false" class="filter-button" data-filter="chronic" type="button">Chronic illness</button>
-<button aria-pressed="false" class="filter-button" data-filter="lifestyle" type="button">Lifestyle and laughs</button>
-</div>
-<div class="post-grid">
-{% for edit in edits %}
-{% assign category_key = "mind" %}
-{% assign art_class = "art-unmasking" %}
-{% assign art_label = "Butterfly on a purple and pink background" %}
-{% if edit.category contains "Chronic" %}
-  {% assign category_key = "chronic" %}
-  {% assign art_class = "art-chronic" %}
-  {% assign art_label = "Moon on a blue and lavender background" %}
-{% elsif edit.category contains "Motherhood" %}
-  {% assign category_key = "motherhood" %}
-  {% assign art_class = "art-motherhood" %}
-  {% assign art_label = "Teddy bear on a pink and golden background" %}
-{% elsif edit.category contains "Lifestyle" %}
-  {% assign category_key = "lifestyle" %}
-  {% assign art_class = "art-lifestyle" %}
-  {% assign art_label = "Lipstick on a pink and lime background" %}
-{% endif %}
-<article class="post-card" data-category="{{ category_key }}">
-<div aria-label="{{ art_label }}" class="post-art {{ art_class }}" role="img"></div>
-<div class="post-card-copy">
-<span class="category-tag">{{ edit.category }}</span>
-<h3><a href="{{ edit.url }}">{{ edit.title }}</a></h3>
-<p>{{ edit.description }}</p>
-<div class="post-meta"><span>{{ edit.date | date: "%B %-d, %Y" }}</span>{% if edit.read_time and edit.read_time != "" %}<span>{{ edit.read_time }}</span>{% endif %}</div>
-</div>
-</article>
-{% endfor %}
-</div>
-</section>
-<section aria-labelledby="collection-heading" class="site-shell section" id="shop">
-  <div class="section-heading">
-    <div><p class="section-kicker">The Soft Reset Collection</p><h2 class="section-title" id="collection-heading">Shop <span class="scribble">The Edit</span></h2></div>
-    <p>Gentle digital tools made for real life.</p>
-  </div>
-  <div class="soft-reset-card">
-    <a class="soft-reset-preview" href="/shop/" aria-label="Visit The Sheema Edit shop">
-      <img src="/assets/images/soft-reset-collection.png" width="1512" height="710" loading="lazy" decoding="async" alt="Scrapbook journal, memory page, and undated planner in pink and lilac."/>
-    </a>
-    <div class="soft-reset-copy">
-      <h3>Reflect. Plan. Reset.</h3>
-      <p>A reflection journal, a gentle planner, or both together. Printable and fillable PDFs you can use at your own pace.</p>
-      <a class="button" href="/shop/">Explore the shop 💿</a>
-    </div>
-  </div>
-</section>
-<section aria-labelledby="about-heading" class="site-shell section about-slice">
-<div aria-hidden="true" class="about-sticker">S</div>
-<div class="about-copy">
-<p class="section-kicker">The girl behind the edit</p>
-<h2 id="about-heading">Hi, I’m Sheema ♡</h2>
-<p>I’m a mom and creator turning the beautiful, exhausting, hilarious middle of life into something we can actually talk about. This is where softness meets honesty and nobody has to perform being okay.</p>
-<a class="text-link" href="/about.html">More about me and this little corner →</a>
-</div>
-</section>
-<section aria-labelledby="social-heading" class="site-shell section social-strip">
-<div>
-<h2 id="social-heading">Come join the group chat energy</h2>
-<p>More real life, little laughs, and creator chaos live over on social.</p>
-</div>
-<div class="button-row">
-<a class="button" href="https://www.tiktok.com/@_rasheemaa" rel="me noopener noreferrer" target="_blank">Say hey on TikTok ↗</a>
-</div>
-</section>
+{% assign edits = site.edits | sort: "date" | reverse %}{% assign newest_edit = edits.first %}
+<section aria-labelledby="hero-title" class="site-shell diary-hero"><div class="diary-window"><div class="diary-window-bar"><span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>the sheema edit / newest story</span><span class="window-heart" aria-hidden="true">♡</span></div><div class="diary-hero-inner"><div class="diary-hero-copy"><p class="eyebrow">✦ The newest edit · {{ newest_edit.date | date: "%B %-d, %Y" }}</p><h1 class="hero-title" id="hero-title">{{ newest_edit.title }}</h1><p class="hero-text">{{ newest_edit.description }}</p><div class="button-row"><a class="button" href="{{ newest_edit.url }}">Read the newest edit <span aria-hidden="true">→</span></a></div><p class="tiny-note">a little honesty, a little softness, and a whole lot of real life ♡</p></div><div class="diary-hero-art" aria-hidden="true"><span class="orbit orbit-one">✦</span><span class="orbit orbit-two">✧</span><div class="diary-polaroid"><span class="polaroid-heart">♡</span><span>the newest<br/>edit is here.</span><small>xo, Sheema</small></div><span class="diary-sticker">come<br/>read ♡</span></div></div></div></section>
+<section aria-labelledby="latest-heading" class="site-shell section" id="latest"><div class="section-heading"><div><p class="section-kicker">Fresh from the group chat</p><h2 class="section-title" id="latest-heading">The latest <span class="scribble">edits</span></h2></div><p>Pick whatever feels like your current tab.</p></div><div aria-label="Filter stories by topic" class="filter-bar"><button aria-pressed="true" class="filter-button" data-filter="all" type="button">Everything</button><button aria-pressed="false" class="filter-button" data-filter="mind" type="button">Mind and unmasking</button><button aria-pressed="false" class="filter-button" data-filter="motherhood" type="button">Motherhood</button><button aria-pressed="false" class="filter-button" data-filter="chronic" type="button">Chronic illness</button><button aria-pressed="false" class="filter-button" data-filter="lifestyle" type="button">Lifestyle and laughs</button></div><div class="post-grid">
+{% for edit in edits %}{% assign category_key = "mind" %}{% assign art_class = "art-unmasking" %}{% assign art_label = "Butterfly on a purple and pink background" %}{% if edit.category contains "Chronic" %}{% assign category_key = "chronic" %}{% assign art_class = "art-chronic" %}{% assign art_label = "Moon on a blue and lavender background" %}{% elsif edit.category contains "Motherhood" %}{% assign category_key = "motherhood" %}{% assign art_class = "art-motherhood" %}{% assign art_label = "Teddy bear on a pink and golden background" %}{% elsif edit.category contains "Lifestyle" %}{% assign category_key = "lifestyle" %}{% assign art_class = "art-lifestyle" %}{% assign art_label = "Lipstick on a pink and lime background" %}{% endif %}<article class="post-card" data-category="{{ category_key }}"><div aria-label="{{ art_label }}" class="post-art {{ art_class }}" role="img"></div><div class="post-card-copy"><span class="category-tag">{{ edit.category }}</span><h3><a href="{{ edit.url }}">{{ edit.title }}</a></h3><p>{{ edit.description }}</p><div class="post-meta"><span>{{ edit.date | date: "%B %-d, %Y" }}</span>{% if edit.read_time and edit.read_time != "" %}<span>{{ edit.read_time }}</span>{% endif %}</div></div></article>{% endfor %}
+</div></section>
+<section aria-labelledby="collection-heading" class="site-shell section" id="shop"><div class="section-heading"><div><p class="section-kicker">The Soft Reset Collection</p><h2 class="section-title" id="collection-heading">Shop <span class="scribble">The Edit</span></h2></div><p>Gentle digital tools made for real life.</p></div><div class="soft-reset-card"><a class="soft-reset-preview" href="/shop/" aria-label="Visit The Sheema Edit shop"><img src="/assets/images/soft-reset-collection.png" width="1512" height="710" loading="lazy" decoding="async" alt="Scrapbook journal, memory page, and undated planner in pink and lilac."/></a><div class="soft-reset-copy"><h3>Reflect. Plan. Reset.</h3><p>A reflection journal, a gentle planner, or both together. Printable and fillable PDFs you can use at your own pace.</p><a class="button" href="/shop/">Explore the shop 💿</a></div></div></section>
+<section aria-labelledby="about-heading" class="site-shell section about-slice"><div aria-hidden="true" class="about-sticker">S</div><div class="about-copy"><p class="section-kicker">The girl behind the edit</p><h2 id="about-heading">Hi, I’m Sheema ♡</h2><p>I’m a mom and creator turning the beautiful, exhausting, hilarious middle of life into something we can actually talk about. This is where softness meets honesty and nobody has to perform being okay.</p><a class="text-link" href="/about.html">More about me and this little corner →</a></div></section>
+<section aria-labelledby="social-heading" class="site-shell section social-strip"><div><h2 id="social-heading">Come join the group chat energy</h2><p>More real life, little laughs, and creator chaos live over on social.</p></div><div class="button-row"><a class="button" href="https://www.tiktok.com/@_rasheemaa" rel="me noopener noreferrer" target="_blank">Say hey on TikTok ↗</a></div></section>
 </main>
-<footer class="site-footer">
-<div class="site-shell">
-<div class="footer-grid">
-<div>
-<h2>The Sheema Edit</h2>
-<p>Soft thoughts, real life, and no filter. A personal blog created by Rasheema Abdullah, also known as Sheema.</p>
-</div>
-<div class="footer-links">
-<h3>Explore</h3>
-<a href="/">Home</a>
-<a href="#latest">The edits</a>
-<a href="/shop/">Shop</a>
-<a href="/about.html">About</a>
-</div>
-<div class="footer-links">
-<h3>Find me</h3>
-<a href="https://www.instagram.com/_rasheemaa/" rel="noopener noreferrer" target="_blank">Instagram @_rasheemaa</a>
-<a href="https://www.tiktok.com/@_rasheemaa" rel="noopener noreferrer" target="_blank">TikTok @_rasheemaa</a>
-</div>
-</div>
-<div class="footer-bottom">
-<span>© <span data-current-year="">2026</span> The Sheema Edit. All feelings reserved.</span>
-<span>Personal stories only. Nothing here is medical advice.</span>
-</div>
-</div>
-</footer>
-<script defer="" src="/assets/js/main.js"></script>
+<footer class="site-footer"><div class="site-shell"><div class="footer-grid"><div><h2>The Sheema Edit</h2><p>Soft thoughts, real life, and no filter. A personal blog created by Rasheema Abdullah, also known as Sheema.</p></div><div class="footer-links"><h3>Explore</h3><a href="/">Home</a><a href="#latest">The edits</a><a href="/shop/">Shop</a><a href="/about.html">About</a></div><div class="footer-links"><h3>Find me</h3><a href="https://www.instagram.com/_rasheemaa/" rel="noopener noreferrer" target="_blank">Instagram @_rasheemaa</a><a href="https://www.tiktok.com/@_rasheemaa" rel="noopener noreferrer" target="_blank">TikTok @_rasheemaa</a></div></div><div class="footer-bottom"><span>© <span data-current-year="">2026</span> The Sheema Edit. All feelings reserved.</span><span>Personal stories only. Nothing here is medical advice.</span></div></div></footer>
+<script defer src="/assets/js/main.js"></script>
 </body>
 </html>
