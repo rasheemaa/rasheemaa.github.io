@@ -1,4 +1,4 @@
-const CACHE_NAME = "sheema-edit-v21";
+const CACHE_NAME = "sheema-edit-v22";
 
 const APP_SHELL = [
   "/",
@@ -10,6 +10,7 @@ const APP_SHELL = [
   "/shop/gentle-weekly-planner.html",
   "/shop/reset-bundle.html",
   "/offline.html",
+  "/site.webmanifest",
   "/posts/we-really-need-to-touch-some-grass.html",
   "/posts/better-late-than-never.html",
   "/posts/forgive-them-anyway.html",
