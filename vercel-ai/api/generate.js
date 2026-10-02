@@ -1,6 +1,6 @@
 import { generateText } from 'ai';
 
-const MODEL = 'openai/gpt-5.6-luna';
+const MODEL = 'openai/gpt-5.6-sol';
 const ALLOWED_ORIGINS = new Set([
   'https://thesheemaedit.com',
   'https://www.thesheemaedit.com',
