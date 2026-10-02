@@ -1,5 +1,7 @@
 (() => {
+  const AI_ENDPOINT = String(window.WDIS_AI_ENDPOINT || '').trim();
   const TRIAL_MS = 3 * 24 * 60 * 60 * 1000;
+  const REQUEST_TIMEOUT_MS = 16000;
   const keys = {
     trialStart: 'wdis_trial_started_at_v2',
     founder: 'wdis_founder_v1',
@@ -9,7 +11,8 @@
   const state = {
     mode: 'write',
     last: '',
-    variation: 0,
+    pending: false,
+    lastAction: null,
     installPrompt: null
   };
 
@@ -26,25 +29,49 @@
   const trialDetail = $('#trial-detail');
   const paywall = $('#paywall');
   const installButton = $('.install-button');
+  const generateButton = $('#generate');
+  const errorBox = $('#ai-error');
+  const errorMessage = $('#ai-error-message');
+  const retryButton = $('#ai-retry');
 
-  const isFounder = () => localStorage.getItem(keys.founder) === '1';
+  const safeGet = (key) => {
+    try { return localStorage.getItem(key); } catch (_) { return null; }
+  };
+  const safeSet = (key, value) => {
+    try { localStorage.setItem(key, value); } catch (_) {}
+  };
+  const safeRemove = (key) => {
+    try { localStorage.removeItem(key); } catch (_) {}
+  };
+
+  const isFounder = () => safeGet(keys.founder) === '1';
   const trialStart = () => {
-    const value = Number(localStorage.getItem(keys.trialStart) || '0');
+    const value = Number(safeGet(keys.trialStart) || '0');
     return Number.isFinite(value) && value > 0 ? value : 0;
   };
   const trialStarted = () => trialStart() > 0;
-  const trialRemainingMs = () => Math.max(0, TRIAL_MS - (Date.now() - trialStart()));
+  const trialRemainingMs = () => trialStarted() ? Math.max(0, TRIAL_MS - (Date.now() - trialStart())) : TRIAL_MS;
   const trialActive = () => isFounder() || !trialStarted() || trialRemainingMs() > 0;
 
   function track(event, params = {}) {
-    if (typeof window.gtag === 'function') {
-      window.gtag('event', event, { page_path: location.pathname, page_title: document.title, ...params });
-    }
+    if (typeof window.gtag !== 'function') return;
+    window.gtag('event', event, {
+      page_path: location.pathname,
+      page_title: document.title,
+      ...params
+    });
+  }
+
+  function latencyBucket(ms) {
+    if (ms < 2000) return 'under_2s';
+    if (ms < 5000) return '2_to_5s';
+    if (ms < 10000) return '5_to_10s';
+    return 'over_10s';
   }
 
   function startTrialIfNeeded() {
     if (isFounder() || trialStarted()) return;
-    localStorage.setItem(keys.trialStart, String(Date.now()));
+    safeSet(keys.trialStart, String(Date.now()));
     track('wdis_trial_started', { trial_days: 3 });
   }
 
@@ -59,7 +86,7 @@
 
     if (!trialStarted()) {
       trialStatus.textContent = '3-day free trial';
-      trialDetail.textContent = ' · starts with your first message · no card required';
+      trialDetail.textContent = ' · starts with your first AI message · no card required';
       return;
     }
 
@@ -72,207 +99,19 @@
 
     const hours = Math.max(1, Math.ceil(remaining / (60 * 60 * 1000)));
     if (hours > 24) {
-      const days = Math.ceil(hours / 24);
-      trialStatus.textContent = `${days} days left`;
+      trialStatus.textContent = `${Math.ceil(hours / 24)} days left`;
     } else {
       trialStatus.textContent = `${hours} ${hours === 1 ? 'hour' : 'hours'} left`;
     }
     trialDetail.textContent = ' · your free trial is active';
   }
 
-  function clean(text) {
-    return String(text || '')
-      .replace(/\s+/g, ' ')
-      .replace(/\s+([,.!?])/g, '$1')
-      .trim();
-  }
-
-  function sentenceCase(text) {
-    const t = clean(text);
-    if (!t) return '';
-    const first = t.charAt(0).toUpperCase() + t.slice(1);
-    return /[.!?]$/.test(first) ? first : `${first}.`;
-  }
-
-  function greeting(name, tone) {
-    if (!name) return '';
-    if (tone === 'professional') return `Hi ${name},`;
-    if (tone === 'casual') return `Hey ${name},`;
-    return `Hi ${name},`;
-  }
-
-  function signoff(tone) {
-    if (tone === 'professional') return 'Thank you for understanding.';
-    if (tone === 'warm') return 'I appreciate you understanding.';
-    if (tone === 'firm') return 'Thanks for respecting that.';
-    return '';
-  }
-
-  function soften(text) {
-    let out = clean(text);
-    const swaps = [
-      [/\bI need you to\b/gi, 'I’d really appreciate it if you could'],
-      [/\byou need to\b/gi, 'could you please'],
-      [/\bI won’t\b/gi, 'I’m not able to'],
-      [/\bI can’t\b/gi, 'I’m not able to'],
-      [/\bThis is unacceptable\b/gi, 'This has been frustrating'],
-      [/\bNo\b/g, 'I’m going to pass']
-    ];
-    swaps.forEach(([a,b]) => { out = out.replace(a,b); });
-    if (!/appreciate|thank|understand/i.test(out)) out += ' I appreciate your understanding.';
-    return sentenceCase(out);
-  }
-
-  function firmer(text) {
-    let out = clean(text)
-      .replace(/\bjust\b/gi, '')
-      .replace(/\bmaybe\b/gi, '')
-      .replace(/\bI think\b/gi, '')
-      .replace(/\bif that’s okay\b/gi, '')
-      .replace(/\bif possible\b/gi, '');
-    out = out.replace(/\s{2,}/g, ' ').trim();
-    if (!/\bI need\b|\bI will\b|\bI’m not able\b|\bI won’t\b/i.test(out)) {
-      out = `I want to be clear: ${out.charAt(0).toLowerCase()}${out.slice(1)}`;
-    }
-    return sentenceCase(out);
-  }
-
-  function professionalize(text) {
-    let out = clean(text);
-    const swaps = [
-      [/\bhey\b/gi, 'Hello'],
-      [/\byeah\b/gi, 'yes'],
-      [/\bnope\b/gi, 'no'],
-      [/\bwanna\b/gi, 'want to'],
-      [/\bgonna\b/gi, 'going to'],
-      [/\bcan’t\b/gi, 'am unable to'],
-      [/\basap\b/gi, 'as soon as possible'],
-      [/\bthanks\b/gi, 'thank you']
-    ];
-    swaps.forEach(([a,b]) => { out = out.replace(a,b); });
-    return sentenceCase(out);
-  }
-
-  function shorten(text) {
-    const sentences = clean(text).match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [];
-    if (sentences.length <= 2) return clean(text);
-    return sentences.slice(0, 2).join(' ').trim();
-  }
-
-  function formatMessage(parts) {
-    return parts.filter(Boolean).join('\n\n');
-  }
-
-  function writeMessage(context, tone, kind, name, variant) {
-    const g = greeting(name, tone);
-    const detail = sentenceCase(context);
-    const end = signoff(tone);
-    const variants = {
-      general: [
-        [g, detail, end],
-        [g, `I wanted to reach out about this: ${detail.charAt(0).toLowerCase()}${detail.slice(1)}`, end]
-      ],
-      work: [
-        [g, `I wanted to let you know that ${detail.charAt(0).toLowerCase()}${detail.slice(1)}`, tone === 'professional' ? 'Please let me know if there is anything you need from me in the meantime.' : end],
-        [g, `I’m reaching out to give you a heads up: ${detail.charAt(0).toLowerCase()}${detail.slice(1)}`, 'Thank you for understanding.']
-      ],
-      boundary: [
-        [g, `I want to be clear about something. ${detail}`, tone === 'firm' ? 'I need this boundary to be respected going forward.' : 'I care about keeping things respectful, and this is what I need moving forward.'],
-        [g, `${detail} I’m not comfortable continuing with this as it is, so I’m setting a boundary here.`, end]
-      ],
-      apology: [
-        [g, `I want to apologize. ${detail}`, 'I understand the impact matters more than my intention, and I’ll do better going forward.'],
-        [g, `I owe you an apology. ${detail}`, 'I’m sorry, and I appreciate you hearing me out.']
-      ],
-      cancel: [
-        [g, `I need to cancel or reschedule. ${detail}`, 'I’m sorry for the inconvenience, and I appreciate your flexibility.'],
-        [g, `Something changed on my end, so I won’t be able to make the original plan. ${detail}`, 'Can we find another time that works?']
-      ],
-      decline: [
-        [g, `Thank you for thinking of me. ${detail}`, tone === 'firm' ? 'I’m going to pass, but I appreciate the invitation.' : 'I’m not able to say yes this time, but I appreciate you asking.'],
-        [g, `${detail} I’m going to have to say no this time.`, 'Thank you for understanding.']
-      ],
-      followup: [
-        [g, `I’m following up about this: ${detail.charAt(0).toLowerCase()}${detail.slice(1)}`, 'When you have a moment, could you let me know where things stand? Thank you.'],
-        [g, `Just checking back in regarding this: ${detail.charAt(0).toLowerCase()}${detail.slice(1)}`, 'I’d appreciate an update when you’re able.']
-      ],
-      refund: [
-        [g, `I’m reaching out because ${detail.charAt(0).toLowerCase()}${detail.slice(1)}`, 'I’d like this resolved with a refund or appropriate replacement. Please let me know the next step.'],
-        [g, `${detail} I’d like to request a refund and confirmation once it has been processed.`, 'Thank you.']
-      ],
-      relationship: [
-        [g, `I want to talk about something honestly. ${detail}`, tone === 'firm' ? 'I need us to take this seriously and address it directly.' : 'I’m bringing it up because I care about being clear with each other.'],
-        [g, `There’s something I’ve been trying to put into words. ${detail}`, 'I’d rather talk about it openly than let it sit between us.']
-      ]
-    };
-    const set = variants[kind] || variants.general;
-    return formatMessage(set[variant % set.length]);
-  }
-
-  function replyMessage(incoming, tone, kind, name, variant) {
-    const g = greeting(name, tone);
-    const lower = incoming.toLowerCase();
-    let body;
-
-    if (/sorry|apolog/i.test(lower)) {
-      body = tone === 'firm'
-        ? 'I hear your apology. I need some time and I also need the situation not to repeat itself.'
-        : 'Thank you for apologizing. I appreciate you acknowledging it, and I’d like us to move forward with more care.';
-    } else if (/can you|could you|would you|need you|please/i.test(lower)) {
-      body = tone === 'firm'
-        ? 'I understand what you’re asking. I’m not able to commit to that, so I need to say no.'
-        : 'I understand what you’re asking. Let me be clear about what I can realistically do from my side.';
-    } else if (/refund|order|charge|replace|delivery|package/i.test(lower) || kind === 'refund') {
-      body = 'Thanks for the update. I’m looking for a clear resolution here, preferably a refund or replacement, along with confirmation of the next step.';
-    } else if (/love|relationship|space|together|feel/i.test(lower) || kind === 'relationship') {
-      body = tone === 'firm'
-        ? 'I hear what you’re saying. I need us to be direct about what this means and what happens next.'
-        : 'I hear you. I want to respond honestly instead of reacting too quickly, because I care about handling this conversation well.';
-    } else {
-      body = tone === 'professional'
-        ? 'Thank you for reaching out. I’ve read your message and wanted to respond clearly.'
-        : tone === 'casual'
-          ? 'I hear you. I wanted to think about it before replying.'
-          : 'I hear what you’re saying, and I wanted to respond thoughtfully.';
-    }
-
-    const tails = {
-      warm: 'I’m open to talking about it as long as we can keep the conversation respectful.',
-      direct: 'Here’s where I stand, and I want to be clear about that.',
-      professional: 'Please let me know if any clarification is needed.',
-      casual: 'That’s where I’m at with it right now.',
-      firm: 'I’m not going to argue about the boundary I’m setting.',
-      concise: ''
-    };
-
-    const alt = variant % 2 === 1 ? 'I wanted to make sure I answered clearly.' : '';
-    return formatMessage([g, body, alt, tails[tone]]);
-  }
-
-  function fixMessage(draft, tone, variant) {
-    let out = sentenceCase(draft);
-    if (tone === 'warm') out = soften(out);
-    if (tone === 'firm') out = firmer(out);
-    if (tone === 'professional') out = professionalize(out);
-    if (tone === 'concise') out = shorten(out);
-    if (tone === 'casual') out = out.replace(/Hello/gi, 'Hey').replace(/Thank you/gi, 'Thanks');
-    if (variant % 2 === 1 && out.length > 80) out = shorten(out);
-    return out;
-  }
-
   function currentTone() {
     return document.querySelector('input[name="tone"]:checked')?.value || 'warm';
   }
 
-  function generate() {
-    const text = clean(prompt.value);
-    const tone = currentTone();
-    const kind = situation.value;
-    const name = clean(personName.value);
-    if (!text) return '';
-    if (state.mode === 'reply') return replyMessage(text, tone, kind, name, state.variation);
-    if (state.mode === 'fix') return fixMessage(text, tone, state.variation);
-    return writeMessage(text, tone, kind, name, state.variation);
+  function clean(value) {
+    return String(value || '').replace(/\s+/g, ' ').trim();
   }
 
   function showPaywall() {
@@ -287,27 +126,65 @@
     document.body.style.overflow = '';
   }
 
-  function saveHistory(text) {
+  function canUseTool() {
+    if (trialActive()) return true;
+    updateTrial();
+    showPaywall();
+    return false;
+  }
+
+  function showError(message) {
+    if (!errorBox || !errorMessage) return;
+    errorMessage.textContent = message;
+    errorBox.hidden = false;
+    errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function clearError() {
+    if (errorBox) errorBox.hidden = true;
+    if (errorMessage) errorMessage.textContent = '';
+  }
+
+  function setLoading(active, label = 'Finding the words…') {
+    state.pending = active;
+    generateButton.disabled = active;
+    generateButton.dataset.loading = active ? 'true' : 'false';
+    generateButton.textContent = active ? label : 'Give me the words';
+    $$('.refine-row button').forEach((button) => { button.disabled = active; });
+    $$('.mode').forEach((button) => { button.disabled = active; });
+  }
+
+  function saveHistory(message) {
     let history = [];
-    try { history = JSON.parse(localStorage.getItem(keys.history) || '[]'); } catch (_) {}
-    history.unshift({ text, at: Date.now() });
+    try { history = JSON.parse(safeGet(keys.history) || '[]'); } catch (_) {}
+    history.unshift({ text: message, at: Date.now() });
     history = history.slice(0, 12);
-    localStorage.setItem(keys.history, JSON.stringify(history));
+    safeSet(keys.history, JSON.stringify(history));
     renderHistory();
+  }
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>'"]/g, (char) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[char]));
   }
 
   function renderHistory() {
     const wrap = $('#history');
+    if (!wrap) return;
     let history = [];
-    try { history = JSON.parse(localStorage.getItem(keys.history) || '[]'); } catch (_) {}
+    try { history = JSON.parse(safeGet(keys.history) || '[]'); } catch (_) {}
+
     if (!history.length) {
       wrap.innerHTML = '<p class="empty">Nothing saved yet.</p>';
       return;
     }
+
     wrap.innerHTML = history.map((item, index) => {
       const preview = item.text.length > 125 ? `${item.text.slice(0, 125)}…` : item.text;
       return `<div class="history-item"><button type="button" data-history-index="${index}"><span>${escapeHtml(preview)}</span><br><small>${new Date(item.at).toLocaleString()}</small></button></div>`;
     }).join('');
+
     $$('[data-history-index]').forEach((button) => button.addEventListener('click', () => {
       const item = history[Number(button.dataset.historyIndex)];
       if (!item) return;
@@ -318,32 +195,121 @@
     }));
   }
 
-  function escapeHtml(value) {
-    return String(value).replace(/[&<>'"]/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+  function requestPayload(refine = '') {
+    return {
+      mode: state.mode,
+      tone: currentTone(),
+      situation: situation.value,
+      personName: clean(personName.value),
+      text: prompt.value.trim(),
+      refine,
+      currentMessage: refine ? state.last : ''
+    };
   }
 
-  function canUseTool() {
-    if (isFounder()) return true;
-    if (!trialStarted()) return true;
-    if (trialActive()) return true;
-    updateTrial();
-    showPaywall();
-    return false;
+  async function callAI(payload, allowRetry = true) {
+    if (!AI_ENDPOINT) {
+      const error = new Error('The AI connection is still being finished. Please try again in a moment.');
+      error.code = 'endpoint_missing';
+      throw error;
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+    try {
+      const response = await fetch(AI_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+        mode: 'cors',
+        credentials: 'omit',
+        cache: 'no-store'
+      });
+
+      let data = {};
+      try { data = await response.json(); } catch (_) {}
+
+      if (!response.ok) {
+        if (allowRetry && response.status >= 500) {
+          await new Promise((resolve) => setTimeout(resolve, 650));
+          return callAI(payload, false);
+        }
+        const error = new Error(data.error || 'That did not go through. Please try again.');
+        error.code = `http_${response.status}`;
+        throw error;
+      }
+
+      const message = String(data.message || '').trim();
+      if (!message) {
+        const error = new Error('The AI came back empty. Please try again.');
+        error.code = 'empty_response';
+        throw error;
+      }
+      return message;
+    } catch (error) {
+      if (error?.name === 'AbortError') {
+        const timeoutError = new Error('The AI took too long to answer. Tap try again.');
+        timeoutError.code = 'timeout';
+        throw timeoutError;
+      }
+      if (allowRetry && (error?.name === 'TypeError' || error?.code === 'network')) {
+        await new Promise((resolve) => setTimeout(resolve, 650));
+        return callAI(payload, false);
+      }
+      throw error;
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
-  function deliverMessage() {
-    if (!canUseTool()) return;
-    startTrialIfNeeded();
-    state.variation += 1;
-    const text = generate();
-    if (!text) return;
-    state.last = text;
-    result.textContent = text;
-    resultPanel.hidden = false;
-    updateTrial();
-    saveHistory(text);
-    track('wdis_generate', { mode: state.mode, situation: situation.value, tone: currentTone(), trial_active: !isFounder() });
-    resultPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  async function runAI(refine = '') {
+    if (state.pending || !canUseTool()) return;
+
+    const originalText = prompt.value.trim();
+    if (!originalText) {
+      showError(state.mode === 'reply' ? 'Paste the message you need to reply to first.' : 'Tell me what you want to say first.');
+      prompt.focus();
+      return;
+    }
+    if (refine && !state.last) return;
+
+    clearError();
+    state.lastAction = { refine };
+    setLoading(true, refine ? 'Reworking it…' : 'Finding the words…');
+    const started = performance.now();
+
+    try {
+      const message = await callAI(requestPayload(refine));
+      state.last = message;
+      result.textContent = message;
+      resultPanel.hidden = false;
+      startTrialIfNeeded();
+      updateTrial();
+      saveHistory(message);
+
+      const metadata = {
+        mode: state.mode,
+        situation: situation.value,
+        tone: currentTone(),
+        latency_bucket: latencyBucket(performance.now() - started)
+      };
+      if (refine) {
+        track('wdis_refine', { ...metadata, action: refine });
+      } else {
+        track('wdis_generate', metadata);
+      }
+      resultPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } catch (error) {
+      showError(error?.message || 'The AI could not answer right now. Please try again.');
+      track('wdis_ai_error', {
+        stage: refine ? 'refine' : 'generate',
+        error_type: String(error?.code || error?.name || 'unknown').slice(0, 40)
+      });
+    } finally {
+      setLoading(false);
+    }
   }
 
   $$('.mode').forEach((button) => {
@@ -354,9 +320,10 @@
         item.classList.toggle('active', active);
         item.setAttribute('aria-selected', String(active));
       });
+
       if (state.mode === 'reply') {
-        promptLabel.childNodes[0].nodeValue = 'What did they send you? ';
-        prompt.placeholder = 'Paste the message you need to reply to…';
+        promptLabel.childNodes[0].nodeValue = 'What did they send you, and what do you want your reply to communicate? ';
+        prompt.placeholder = 'Paste their message, then add what you want your response to say or accomplish…';
       } else if (state.mode === 'fix') {
         promptLabel.childNodes[0].nodeValue = 'Paste your draft ';
         prompt.placeholder = 'Paste what you wrote and choose how you want it to sound…';
@@ -364,13 +331,14 @@
         promptLabel.childNodes[0].nodeValue = 'What are you trying to say? ';
         prompt.placeholder = 'Tell me what happened, what you need to say, and what you want to happen next…';
       }
+      clearError();
       track('wdis_mode_select', { mode: state.mode });
     });
   });
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
-    deliverMessage();
+    runAI('');
   });
 
   $('#copy').addEventListener('click', async () => {
@@ -387,24 +355,17 @@
   });
 
   $$('[data-refine]').forEach((button) => button.addEventListener('click', () => {
-    if (!state.last || !canUseTool()) return;
-    const action = button.dataset.refine;
-    if (action === 'shorter') state.last = shorten(state.last);
-    if (action === 'softer') state.last = soften(state.last);
-    if (action === 'firmer') state.last = firmer(state.last);
-    if (action === 'professional') state.last = professionalize(state.last);
-    if (action === 'another') {
-      state.variation += 1;
-      state.last = generate();
-    }
-    result.textContent = state.last;
-    saveHistory(state.last);
-    updateTrial();
-    track('wdis_refine', { action });
+    if (!state.last) return;
+    runAI(button.dataset.refine || '');
   }));
 
+  retryButton?.addEventListener('click', () => {
+    clearError();
+    runAI(state.lastAction?.refine || '');
+  });
+
   $$('.founder-unlock').forEach((button) => button.addEventListener('click', () => {
-    localStorage.setItem(keys.founder, '1');
+    safeSet(keys.founder, '1');
     updateTrial();
     hidePaywall();
     button.textContent = 'Founding access unlocked on this device';
@@ -420,7 +381,7 @@
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !paywall.hidden) hidePaywall(); });
 
   $('#clear-history').addEventListener('click', () => {
-    localStorage.removeItem(keys.history);
+    safeRemove(keys.history);
     renderHistory();
   });
 
