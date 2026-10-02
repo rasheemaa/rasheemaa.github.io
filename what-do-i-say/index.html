@@ -13,14 +13,14 @@ permalink: /what-do-i-say/
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="What Do I Say?">
 <title>What Do I Say? | The Sheema Edit</title>
-<meta name="description" content="For when you know exactly what you mean but have absolutely no idea how to word it. Write, reply to, and clean up everyday messages in seconds.">
+<meta name="description" content="For when you know exactly what you mean but have absolutely no idea how to word it. Start a 3-day free trial and write, reply to, and clean up everyday messages in seconds.">
 <link rel="canonical" href="https://thesheemaedit.com/what-do-i-say/">
 <link rel="manifest" href="/what-do-i-say/manifest.webmanifest">
 <link rel="icon" href="/assets/images/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
 <meta property="og:type" content="website">
 <meta property="og:title" content="What Do I Say? | The Sheema Edit">
-<meta property="og:description" content="You know what you mean. Let this help you say it.">
+<meta property="og:description" content="You know what you mean. Let this help you say it. Start with a 3-day free trial.">
 <meta property="og:url" content="https://thesheemaedit.com/what-do-i-say/">
 <meta property="og:image" content="https://thesheemaedit.com/assets/images/social-card.png">
 <meta name="twitter:card" content="summary_large_image">
@@ -39,10 +39,10 @@ permalink: /what-do-i-say/
 </header>
 <main id="app" class="shell">
   <section class="hero">
-    <p class="kicker">A tiny tool for awkward messages</p>
+    <p class="kicker">The platform is live · 3 days free</p>
     <h1>You know what you mean.<br><span>You just need the words.</span></h1>
     <p class="lede">Write the text. Reply to the message. Clean up the draft. Pick the tone and get something you can actually send.</p>
-    <div class="trial-pill" aria-live="polite"><strong id="trial-count">3</strong> free messages left on this device</div>
+    <div class="trial-pill" aria-live="polite"><strong id="trial-status">3-day free trial</strong><span id="trial-detail"> · starts with your first message · no card required</span></div>
   </section>
 
   <section class="workspace" aria-label="Message generator">
@@ -89,7 +89,7 @@ permalink: /what-do-i-say/
       </fieldset>
 
       <button class="primary" id="generate" type="submit">Give me the words</button>
-      <p class="privacy-note">Your text stays in this browser in this launch version. Don’t paste passwords, card numbers, or anything you wouldn’t want saved on your device.</p>
+      <p class="privacy-note">Your 3-day trial begins the first time you generate a message. Your text stays in this browser in this launch version. Don’t paste passwords, card numbers, or anything you wouldn’t want saved on your device.</p>
     </form>
 
     <section id="result-panel" class="result-panel" hidden aria-live="polite">
@@ -110,13 +110,13 @@ permalink: /what-do-i-say/
 
   <section class="founder-card" id="founder">
     <div>
-      <p class="kicker">Founding Member launch</p>
-      <h2>$19.99 once. Core access for life.</h2>
-      <p>The first 100 Founding Members lock in access before the regular plan becomes $9.99/month. This early launch uses The Sheema Edit’s existing secure Stripe checkout while the dedicated member system is being connected.</p>
+      <p class="kicker">Launch plan</p>
+      <h2>Try it free for 3 days. Then choose Founding Member access.</h2>
+      <p><strong>Free trial:</strong> 3 full days, no card required. <strong>Founding Member:</strong> $19.99 once for the first 100 members, with core access for life. After the founding launch, the regular plan is intended to be $9.99/month.</p>
     </div>
     <div class="founder-actions">
-      <a class="founder-button" href="https://buy.stripe.com/5kQbJ2adD1iV8Zq81WgjC08" target="_blank" rel="noopener noreferrer" data-founder-checkout>Open secure checkout</a>
-      <p>At checkout, enter <strong>$19.99</strong>. Then return here and use the early access unlock below.</p>
+      <a class="founder-button" href="https://buy.stripe.com/5kQbJ2adD1iV8Zq81WgjC08" target="_blank" rel="noopener noreferrer" data-founder-checkout>Become a Founding Member · $19.99</a>
+      <p>This beta uses The Sheema Edit’s existing secure Stripe checkout. Enter <strong>$19.99</strong>, then return here and unlock founding access on this device.</p>
       <button class="ghost founder-unlock" type="button">I completed checkout</button>
     </div>
   </section>
@@ -139,10 +139,10 @@ permalink: /what-do-i-say/
 <div class="paywall" id="paywall" hidden>
   <section class="paywall-card" role="dialog" aria-modal="true" aria-labelledby="paywall-title">
     <button class="paywall-close" type="button" aria-label="Close">×</button>
-    <p class="kicker">Your free messages are used</p>
+    <p class="kicker">Your 3-day trial has ended</p>
     <h2 id="paywall-title">Keep the words coming.</h2>
-    <p>Founding Member access is <strong>$19.99 once</strong> for the first 100 people. The regular plan is planned at $9.99/month after the founding launch.</p>
-    <a class="founder-button" href="https://buy.stripe.com/5kQbJ2adD1iV8Zq81WgjC08" target="_blank" rel="noopener noreferrer" data-founder-checkout>Open secure checkout</a>
+    <p>Founding Member access is <strong>$19.99 once</strong> for the first 100 people. The regular plan is intended to be $9.99/month after the founding launch.</p>
+    <a class="founder-button" href="https://buy.stripe.com/5kQbJ2adD1iV8Zq81WgjC08" target="_blank" rel="noopener noreferrer" data-founder-checkout>Become a Founding Member · $19.99</a>
     <p class="paywall-note">During this beta checkout, enter $19.99 on The Sheema Edit’s Stripe page, return here, then tap below.</p>
     <button class="ghost founder-unlock" type="button">I completed checkout</button>
   </section>
