@@ -1,7 +1,7 @@
 (() => {
-  const FREE_LIMIT = 3;
+  const TRIAL_MS = 3 * 24 * 60 * 60 * 1000;
   const keys = {
-    uses: 'wdis_free_uses_v1',
+    trialStart: 'wdis_trial_started_at_v2',
     founder: 'wdis_founder_v1',
     history: 'wdis_history_v1'
   };
@@ -22,17 +22,19 @@
   const personName = $('#person-name');
   const resultPanel = $('#result-panel');
   const result = $('#result');
-  const trialCount = $('#trial-count');
+  const trialStatus = $('#trial-status');
+  const trialDetail = $('#trial-detail');
   const paywall = $('#paywall');
   const installButton = $('.install-button');
 
-  const readInt = (key) => {
-    const value = Number(localStorage.getItem(key) || '0');
-    return Number.isFinite(value) ? value : 0;
-  };
   const isFounder = () => localStorage.getItem(keys.founder) === '1';
-  const uses = () => readInt(keys.uses);
-  const remaining = () => isFounder() ? '∞' : Math.max(0, FREE_LIMIT - uses());
+  const trialStart = () => {
+    const value = Number(localStorage.getItem(keys.trialStart) || '0');
+    return Number.isFinite(value) && value > 0 ? value : 0;
+  };
+  const trialStarted = () => trialStart() > 0;
+  const trialRemainingMs = () => Math.max(0, TRIAL_MS - (Date.now() - trialStart()));
+  const trialActive = () => isFounder() || !trialStarted() || trialRemainingMs() > 0;
 
   function track(event, params = {}) {
     if (typeof window.gtag === 'function') {
@@ -40,11 +42,42 @@
     }
   }
 
+  function startTrialIfNeeded() {
+    if (isFounder() || trialStarted()) return;
+    localStorage.setItem(keys.trialStart, String(Date.now()));
+    track('wdis_trial_started', { trial_days: 3 });
+  }
+
   function updateTrial() {
-    trialCount.textContent = remaining();
-    trialCount.parentElement.lastChild.textContent = isFounder()
-      ? ' messages available on this device'
-      : ' free messages left on this device';
+    if (!trialStatus || !trialDetail) return;
+
+    if (isFounder()) {
+      trialStatus.textContent = 'Founding Member';
+      trialDetail.textContent = ' · core access unlocked on this device';
+      return;
+    }
+
+    if (!trialStarted()) {
+      trialStatus.textContent = '3-day free trial';
+      trialDetail.textContent = ' · starts with your first message · no card required';
+      return;
+    }
+
+    const remaining = trialRemainingMs();
+    if (remaining <= 0) {
+      trialStatus.textContent = 'Trial ended';
+      trialDetail.textContent = ' · Founding Member access is $19.99 once during launch';
+      return;
+    }
+
+    const hours = Math.max(1, Math.ceil(remaining / (60 * 60 * 1000)));
+    if (hours > 24) {
+      const days = Math.ceil(hours / 24);
+      trialStatus.textContent = `${days} days left`;
+    } else {
+      trialStatus.textContent = `${hours} ${hours === 1 ? 'hour' : 'hours'} left`;
+    }
+    trialDetail.textContent = ' · your free trial is active';
   }
 
   function clean(text) {
@@ -246,7 +279,7 @@
     paywall.hidden = false;
     document.body.style.overflow = 'hidden';
     $('.paywall-close')?.focus();
-    track('wdis_paywall_view');
+    track('wdis_paywall_view', { reason: 'trial_expired' });
   }
 
   function hidePaywall() {
@@ -289,21 +322,27 @@
     return String(value).replace(/[&<>'"]/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
   }
 
+  function canUseTool() {
+    if (isFounder()) return true;
+    if (!trialStarted()) return true;
+    if (trialActive()) return true;
+    updateTrial();
+    showPaywall();
+    return false;
+  }
+
   function deliverMessage() {
-    if (!isFounder() && uses() >= FREE_LIMIT) {
-      showPaywall();
-      return;
-    }
+    if (!canUseTool()) return;
+    startTrialIfNeeded();
     state.variation += 1;
     const text = generate();
     if (!text) return;
     state.last = text;
     result.textContent = text;
     resultPanel.hidden = false;
-    if (!isFounder()) localStorage.setItem(keys.uses, String(uses() + 1));
     updateTrial();
     saveHistory(text);
-    track('wdis_generate', { mode: state.mode, situation: situation.value, tone: currentTone() });
+    track('wdis_generate', { mode: state.mode, situation: situation.value, tone: currentTone(), trial_active: !isFounder() });
     resultPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
@@ -348,21 +387,19 @@
   });
 
   $$('[data-refine]').forEach((button) => button.addEventListener('click', () => {
-    if (!state.last) return;
+    if (!state.last || !canUseTool()) return;
     const action = button.dataset.refine;
     if (action === 'shorter') state.last = shorten(state.last);
     if (action === 'softer') state.last = soften(state.last);
     if (action === 'firmer') state.last = firmer(state.last);
     if (action === 'professional') state.last = professionalize(state.last);
     if (action === 'another') {
-      if (!isFounder() && uses() >= FREE_LIMIT) return showPaywall();
       state.variation += 1;
       state.last = generate();
-      if (!isFounder()) localStorage.setItem(keys.uses, String(uses() + 1));
-      updateTrial();
     }
     result.textContent = state.last;
     saveHistory(state.last);
+    updateTrial();
     track('wdis_refine', { action });
   }));
 
@@ -375,7 +412,7 @@
   }));
 
   $$('[data-founder-checkout]').forEach((link) => link.addEventListener('click', () => {
-    track('wdis_founder_checkout_click', { offer: '19.99_lifetime_beta' });
+    track('wdis_founder_checkout_click', { offer: '19.99_lifetime_beta', trial_days: 3 });
   }));
 
   $('.paywall-close')?.addEventListener('click', hidePaywall);
@@ -410,4 +447,5 @@
 
   updateTrial();
   renderHistory();
+  window.setInterval(updateTrial, 60 * 1000);
 })();
