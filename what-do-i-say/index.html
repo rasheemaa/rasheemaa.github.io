@@ -1,0 +1,154 @@
+---
+layout: null
+permalink: /what-do-i-say/
+---
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#21172c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="What Do I Say?">
+<title>What Do I Say? | The Sheema Edit</title>
+<meta name="description" content="For when you know exactly what you mean but have absolutely no idea how to word it. Write, reply to, and clean up everyday messages in seconds.">
+<link rel="canonical" href="https://thesheemaedit.com/what-do-i-say/">
+<link rel="manifest" href="/what-do-i-say/manifest.webmanifest">
+<link rel="icon" href="/assets/images/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="What Do I Say? | The Sheema Edit">
+<meta property="og:description" content="You know what you mean. Let this help you say it.">
+<meta property="og:url" content="https://thesheemaedit.com/what-do-i-say/">
+<meta property="og:image" content="https://thesheemaedit.com/assets/images/social-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-C7XV3YJCZE"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-C7XV3YJCZE');</script>
+<link rel="stylesheet" href="/what-do-i-say/styles.css">
+</head>
+<body>
+<a class="skip" href="#app">Skip to the tool</a>
+<header class="topbar">
+  <a class="wordmark" href="/what-do-i-say/">WHAT DO I SAY?</a>
+  <div class="top-actions">
+    <span class="byline">by The Sheema Edit</span>
+    <button class="ghost install-button" type="button" hidden>Add to phone</button>
+  </div>
+</header>
+<main id="app" class="shell">
+  <section class="hero">
+    <p class="kicker">A tiny tool for awkward messages</p>
+    <h1>You know what you mean.<br><span>You just need the words.</span></h1>
+    <p class="lede">Write the text. Reply to the message. Clean up the draft. Pick the tone and get something you can actually send.</p>
+    <div class="trial-pill" aria-live="polite"><strong id="trial-count">3</strong> free messages left on this device</div>
+  </section>
+
+  <section class="workspace" aria-label="Message generator">
+    <div class="mode-tabs" role="tablist" aria-label="Choose what you need help with">
+      <button class="mode active" type="button" data-mode="write" aria-selected="true">Write it for me</button>
+      <button class="mode" type="button" data-mode="reply" aria-selected="false">Reply for me</button>
+      <button class="mode" type="button" data-mode="fix" aria-selected="false">Fix what I wrote</button>
+    </div>
+
+    <form id="message-form" class="composer">
+      <div class="field-row two">
+        <label>Situation
+          <select id="situation">
+            <option value="general">Everyday message</option>
+            <option value="work">Work</option>
+            <option value="boundary">Set a boundary</option>
+            <option value="apology">Apologize</option>
+            <option value="cancel">Cancel or reschedule</option>
+            <option value="decline">Say no</option>
+            <option value="followup">Follow up</option>
+            <option value="refund">Ask for a refund or fix</option>
+            <option value="relationship">Relationship conversation</option>
+          </select>
+        </label>
+        <label>Name <span class="optional">optional</span>
+          <input id="person-name" type="text" maxlength="60" placeholder="Jordan">
+        </label>
+      </div>
+
+      <label id="prompt-label" class="main-label">What are you trying to say?
+        <textarea id="prompt" rows="7" maxlength="2400" required placeholder="I need to tell my manager I can't come in tomorrow because something personal came up, but I don't want to overshare."></textarea>
+      </label>
+
+      <fieldset class="tone-picker">
+        <legend>How should it sound?</legend>
+        <div class="tone-grid">
+          <label><input type="radio" name="tone" value="warm" checked><span>Warm</span></label>
+          <label><input type="radio" name="tone" value="direct"><span>Direct</span></label>
+          <label><input type="radio" name="tone" value="professional"><span>Professional</span></label>
+          <label><input type="radio" name="tone" value="casual"><span>Casual</span></label>
+          <label><input type="radio" name="tone" value="firm"><span>Firm</span></label>
+          <label><input type="radio" name="tone" value="concise"><span>Short</span></label>
+        </div>
+      </fieldset>
+
+      <button class="primary" id="generate" type="submit">Give me the words</button>
+      <p class="privacy-note">Your text stays in this browser in this launch version. Don’t paste passwords, card numbers, or anything you wouldn’t want saved on your device.</p>
+    </form>
+
+    <section id="result-panel" class="result-panel" hidden aria-live="polite">
+      <div class="result-heading">
+        <div><p class="mini">Ready to copy</p><h2>Your message</h2></div>
+        <button id="copy" class="copy-button" type="button">Copy</button>
+      </div>
+      <div id="result" class="result" tabindex="0"></div>
+      <div class="refine-row" aria-label="Refine the message">
+        <button type="button" data-refine="shorter">Make it shorter</button>
+        <button type="button" data-refine="softer">Make it softer</button>
+        <button type="button" data-refine="firmer">Make it firmer</button>
+        <button type="button" data-refine="professional">Make it professional</button>
+        <button type="button" data-refine="another">Try another version</button>
+      </div>
+    </section>
+  </section>
+
+  <section class="founder-card" id="founder">
+    <div>
+      <p class="kicker">Founding Member launch</p>
+      <h2>$19.99 once. Core access for life.</h2>
+      <p>The first 100 Founding Members lock in access before the regular plan becomes $9.99/month. This early launch uses The Sheema Edit’s existing secure Stripe checkout while the dedicated member system is being connected.</p>
+    </div>
+    <div class="founder-actions">
+      <a class="founder-button" href="https://buy.stripe.com/5kQbJ2adD1iV8Zq81WgjC08" target="_blank" rel="noopener noreferrer" data-founder-checkout>Open secure checkout</a>
+      <p>At checkout, enter <strong>$19.99</strong>. Then return here and use the early access unlock below.</p>
+      <button class="ghost founder-unlock" type="button">I completed checkout</button>
+    </div>
+  </section>
+
+  <section class="history-card">
+    <div class="history-title"><h2>Recent messages</h2><button id="clear-history" class="text-button" type="button">Clear</button></div>
+    <div id="history" class="history-list"><p class="empty">Nothing saved yet.</p></div>
+  </section>
+
+  <section class="how-it-works">
+    <h2>Built for the messages people overthink.</h2>
+    <div class="examples">
+      <article><strong>Work</strong><p>Call out, ask for time off, follow up, quit, ask about pay.</p></article>
+      <article><strong>People</strong><p>Set a boundary, apologize, ask for space, cancel plans, say no.</p></article>
+      <article><strong>Customer service</strong><p>Ask for a refund, report a problem, request a replacement, escalate.</p></article>
+    </div>
+  </section>
+</main>
+
+<div class="paywall" id="paywall" hidden>
+  <section class="paywall-card" role="dialog" aria-modal="true" aria-labelledby="paywall-title">
+    <button class="paywall-close" type="button" aria-label="Close">×</button>
+    <p class="kicker">Your free messages are used</p>
+    <h2 id="paywall-title">Keep the words coming.</h2>
+    <p>Founding Member access is <strong>$19.99 once</strong> for the first 100 people. The regular plan is planned at $9.99/month after the founding launch.</p>
+    <a class="founder-button" href="https://buy.stripe.com/5kQbJ2adD1iV8Zq81WgjC08" target="_blank" rel="noopener noreferrer" data-founder-checkout>Open secure checkout</a>
+    <p class="paywall-note">During this beta checkout, enter $19.99 on The Sheema Edit’s Stripe page, return here, then tap below.</p>
+    <button class="ghost founder-unlock" type="button">I completed checkout</button>
+  </section>
+</div>
+
+<footer><a href="/">The Sheema Edit</a><span>·</span><a href="/shop/">Shop</a><span>·</span><a href="https://www.tiktok.com/@_rasheemaa" target="_blank" rel="noopener noreferrer">TikTok</a></footer>
+<script src="/what-do-i-say/app.js" defer></script>
+</body>
+</html>
