@@ -1,0 +1,18 @@
+{
+  "id": "/what-do-i-say/",
+  "name": "What Do I Say?",
+  "short_name": "What Do I Say?",
+  "description": "Write, reply to, and clean up everyday messages when you know what you mean but need help wording it.",
+  "lang": "en-US",
+  "start_url": "/what-do-i-say/",
+  "scope": "/what-do-i-say/",
+  "display": "standalone",
+  "background_color": "#fff9ef",
+  "theme_color": "#21172c",
+  "categories": ["productivity", "utilities", "lifestyle"],
+  "icons": [
+    {"src":"/assets/images/app-icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
+    {"src":"/assets/images/app-icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"},
+    {"src":"/assets/images/app-icon-maskable-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}
+  ]
+}
