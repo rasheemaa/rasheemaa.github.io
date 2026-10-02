@@ -1,4 +1,4 @@
-const CACHE='wdis-v1';
+const CACHE='wdis-v2';
 const SHELL=['/what-do-i-say/','/what-do-i-say/index.html','/what-do-i-say/styles.css','/what-do-i-say/app.js','/what-do-i-say/manifest.webmanifest','/assets/images/app-icon-192.png','/assets/images/app-icon-512.png'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE&&key.startsWith('wdis-')).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
