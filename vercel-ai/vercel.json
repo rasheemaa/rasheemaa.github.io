@@ -3,6 +3,12 @@
   "functions": {
     "api/generate.js": {
       "maxDuration": 20
+    },
+    "api/checkout.js": {
+      "maxDuration": 10
+    },
+    "api/verify-payment.js": {
+      "maxDuration": 10
     }
   }
 }

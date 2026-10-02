@@ -1,10 +1,13 @@
 (() => {
-  const AI_ENDPOINT = String(window.WDIS_AI_ENDPOINT || '').trim();
+  const API_BASE = String(window.WDIS_API_BASE || '').trim().replace(/\/$/, '');
+  const AI_ENDPOINT = String(window.WDIS_AI_ENDPOINT || (API_BASE ? `${API_BASE}/api/generate` : '')).trim();
+  const CHECKOUT_ENDPOINT = API_BASE ? `${API_BASE}/api/checkout` : '';
+  const VERIFY_PAYMENT_ENDPOINT = API_BASE ? `${API_BASE}/api/verify-payment` : '';
   const TRIAL_MS = 3 * 24 * 60 * 60 * 1000;
   const REQUEST_TIMEOUT_MS = 16000;
   const keys = {
     trialStart: 'wdis_trial_started_at_v2',
-    founder: 'wdis_founder_v1',
+    founderSession: 'wdis_founder_session_v1',
     history: 'wdis_history_v1'
   };
 
@@ -13,7 +16,9 @@
     last: '',
     pending: false,
     lastAction: null,
-    installPrompt: null
+    installPrompt: null,
+    founderVerified: false,
+    accessReady: Promise.resolve()
   };
 
   const $ = (selector) => document.querySelector(selector);
@@ -44,7 +49,7 @@
     try { localStorage.removeItem(key); } catch (_) {}
   };
 
-  const isFounder = () => safeGet(keys.founder) === '1';
+  const isFounder = () => state.founderVerified;
   const trialStart = () => {
     const value = Number(safeGet(keys.trialStart) || '0');
     return Number.isFinite(value) && value > 0 ? value : 0;
@@ -75,12 +80,16 @@
     track('wdis_trial_started', { trial_days: 3 });
   }
 
+  function setFounderStatus(message) {
+    $$('[data-founder-status]').forEach((item) => { item.textContent = message; });
+  }
+
   function updateTrial() {
     if (!trialStatus || !trialDetail) return;
 
     if (isFounder()) {
       trialStatus.textContent = 'Founding Member';
-      trialDetail.textContent = ' · core access unlocked on this device';
+      trialDetail.textContent = ' · payment verified by Stripe · core access unlocked';
       return;
     }
 
@@ -154,6 +163,19 @@
     $$('.mode').forEach((button) => { button.disabled = active; });
   }
 
+  function setCheckoutLoading(active) {
+    $$('[data-founder-checkout]').forEach((link) => {
+      link.setAttribute('aria-disabled', String(active));
+      link.dataset.loading = active ? 'true' : 'false';
+      if (active) {
+        if (!link.dataset.originalText) link.dataset.originalText = link.textContent;
+        link.textContent = 'Opening secure checkout…';
+      } else if (link.dataset.originalText) {
+        link.textContent = link.dataset.originalText;
+      }
+    });
+  }
+
   function saveHistory(message) {
     let history = [];
     try { history = JSON.parse(safeGet(keys.history) || '[]'); } catch (_) {}
@@ -207,6 +229,25 @@
     };
   }
 
+  async function callJSON(url, options = {}, timeoutMs = REQUEST_TIMEOUT_MS) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+        mode: 'cors',
+        credentials: 'omit',
+        cache: 'no-store'
+      });
+      let data = {};
+      try { data = await response.json(); } catch (_) {}
+      return { response, data };
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   async function callAI(payload, allowRetry = true) {
     if (!AI_ENDPOINT) {
       const error = new Error('The AI connection is still being finished. Please try again in a moment.');
@@ -214,22 +255,12 @@
       throw error;
     }
 
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-
     try {
-      const response = await fetch(AI_ENDPOINT, {
+      const { response, data } = await callJSON(AI_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-        mode: 'cors',
-        credentials: 'omit',
-        cache: 'no-store'
+        body: JSON.stringify(payload)
       });
-
-      let data = {};
-      try { data = await response.json(); } catch (_) {}
 
       if (!response.ok) {
         if (allowRetry && response.status >= 500) {
@@ -259,13 +290,85 @@
         return callAI(payload, false);
       }
       throw error;
-    } finally {
-      clearTimeout(timer);
+    }
+  }
+
+  async function verifyFounderSession(sessionId, { persist = true, quiet = false } = {}) {
+    const cleanSessionId = String(sessionId || '').trim();
+    if (!VERIFY_PAYMENT_ENDPOINT || !cleanSessionId) return false;
+
+    if (!quiet) setFounderStatus('Verifying your Stripe payment…');
+
+    try {
+      const { response, data } = await callJSON(VERIFY_PAYMENT_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: cleanSessionId })
+      });
+
+      if (!response.ok) {
+        if (!quiet) setFounderStatus(data.error || 'We could not verify that payment yet. Please try again.');
+        return false;
+      }
+
+      if (data.paid !== true) {
+        if (!quiet) setFounderStatus('Stripe has not marked this checkout as paid. Founding access stays locked.');
+        return false;
+      }
+
+      state.founderVerified = true;
+      if (persist) safeSet(keys.founderSession, cleanSessionId);
+      updateTrial();
+      hidePaywall();
+      setFounderStatus('Payment verified by Stripe. Founding Member access is unlocked. 💗');
+      return true;
+    } catch (error) {
+      if (!quiet) {
+        setFounderStatus(error?.name === 'AbortError'
+          ? 'Payment verification took too long. Refresh this page to try again.'
+          : 'We could not verify your payment right now. Refresh this page to try again.');
+      }
+      return false;
+    }
+  }
+
+  async function beginCheckout(event) {
+    event.preventDefault();
+    if (!CHECKOUT_ENDPOINT) {
+      showError('Secure checkout is temporarily unavailable. Please try again in a moment.');
+      return;
+    }
+    if ($('[data-founder-checkout][data-loading="true"]')) return;
+
+    clearError();
+    setCheckoutLoading(true);
+    setFounderStatus('Opening Stripe’s secure checkout…');
+    track('wdis_founder_checkout_click', { offer: '19.99_lifetime_beta', trial_days: 3 });
+
+    try {
+      const { response, data } = await callJSON(CHECKOUT_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{}'
+      });
+
+      if (!response.ok || !data.url) {
+        throw new Error(data.error || 'Secure checkout could not start. Please try again.');
+      }
+
+      window.location.assign(data.url);
+    } catch (error) {
+      setCheckoutLoading(false);
+      setFounderStatus('Checkout did not open. No payment was taken.');
+      showError(error?.message || 'Secure checkout could not start. Please try again.');
+      track('wdis_checkout_error', { stage: 'create_session' });
     }
   }
 
   async function runAI(refine = '') {
-    if (state.pending || !canUseTool()) return;
+    if (state.pending) return;
+    await state.accessReady;
+    if (!canUseTool()) return;
 
     const originalText = prompt.value.trim();
     if (!originalText) {
@@ -364,17 +467,7 @@
     runAI(state.lastAction?.refine || '');
   });
 
-  $$('.founder-unlock').forEach((button) => button.addEventListener('click', () => {
-    safeSet(keys.founder, '1');
-    updateTrial();
-    hidePaywall();
-    button.textContent = 'Founding access unlocked on this device';
-    track('wdis_founder_unlock');
-  }));
-
-  $$('[data-founder-checkout]').forEach((link) => link.addEventListener('click', () => {
-    track('wdis_founder_checkout_click', { offer: '19.99_lifetime_beta', trial_days: 3 });
-  }));
+  $$('[data-founder-checkout]').forEach((link) => link.addEventListener('click', beginCheckout));
 
   $('.paywall-close')?.addEventListener('click', hidePaywall);
   paywall?.addEventListener('click', (event) => { if (event.target === paywall) hidePaywall(); });
@@ -400,6 +493,36 @@
     track('wdis_install_prompt');
   });
 
+  async function initializeAccess() {
+    const params = new URLSearchParams(window.location.search);
+    const checkout = params.get('checkout');
+    const returnedSession = params.get('session_id');
+    const savedSession = safeGet(keys.founderSession);
+
+    if (checkout === 'cancelled') {
+      setFounderStatus('Checkout canceled. No payment was made.');
+      track('wdis_checkout_cancelled', { offer: '19.99_lifetime_beta' });
+      history.replaceState({}, '', `${location.pathname}${location.hash || ''}`);
+    }
+
+    if (checkout === 'success' && returnedSession) {
+      const verified = await verifyFounderSession(returnedSession, { persist: true, quiet: false });
+      track(verified ? 'wdis_payment_verified' : 'wdis_payment_verification_failed', {
+        offer: '19.99_lifetime_beta'
+      });
+      history.replaceState({}, '', `${location.pathname}${location.hash || ''}`);
+      return;
+    }
+
+    if (savedSession) {
+      const verified = await verifyFounderSession(savedSession, { persist: false, quiet: true });
+      if (!verified) {
+        safeRemove(keys.founderSession);
+        state.founderVerified = false;
+      }
+    }
+  }
+
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/what-do-i-say/service-worker.js', { scope: '/what-do-i-say/' }).catch(() => {});
@@ -408,5 +531,6 @@
 
   updateTrial();
   renderHistory();
+  state.accessReady = initializeAccess().finally(updateTrial);
   window.setInterval(updateTrial, 60 * 1000);
 })();
