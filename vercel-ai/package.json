@@ -1,0 +1,12 @@
+{
+  "name": "what-do-i-say-ai",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "ai": "^7.0.0"
+  }
+}
