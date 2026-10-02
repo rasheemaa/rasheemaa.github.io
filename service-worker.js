@@ -1,4 +1,4 @@
-const CACHE_NAME = "sheema-edit-v23";
+const CACHE_NAME = "sheema-edit-v24";
 const CORE_SHELL = [
   "/",
   "/index.html",
@@ -9,6 +9,7 @@ const CORE_SHELL = [
   "/assets/css/styles.css",
   "/assets/css/app-polish.css",
   "/assets/js/main.js",
+  "/assets/js/wdis-launch-popup.js",
   "/assets/images/favicon.svg",
   "/assets/images/app-icon-192.png",
   "/assets/images/app-icon-512.png",
@@ -42,7 +43,6 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (request.method !== "GET" || url.origin !== self.location.origin) return;
 
-  // HTML navigations stay network-first so published edits appear immediately.
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(new Request(request, { cache: "no-store" }))
@@ -58,7 +58,6 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Versioned/local static assets render from cache immediately, then refresh quietly.
   if (["style", "script", "image", "font"].includes(request.destination) || url.pathname === "/site.webmanifest") {
     event.respondWith((async () => {
       const cache = await caches.open(CACHE_NAME);
@@ -76,7 +75,6 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Everything else prefers fresh data but remains available when offline.
   event.respondWith(
     fetch(request)
       .then(async (response) => {
