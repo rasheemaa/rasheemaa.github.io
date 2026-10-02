@@ -73,7 +73,7 @@ permalink: /what-do-i-say/
       </div>
 
       <label id="prompt-label" class="main-label">What are you trying to say?
-        <textarea id="prompt" rows="7" maxlength="2400" required placeholder="I need to tell my manager I can't come in tomorrow because something personal came up, but I don't want to overshare."></textarea>
+        <textarea id="prompt" rows="7" maxlength="3500" required placeholder="I need to tell my manager I can't come in tomorrow because something personal came up, but I don't want to overshare."></textarea>
       </label>
 
       <fieldset class="tone-picker">
@@ -89,8 +89,16 @@ permalink: /what-do-i-say/
       </fieldset>
 
       <button class="primary" id="generate" type="submit">Give me the words</button>
-      <p class="privacy-note">Your 3-day trial begins with your first AI generation. Your prompt is sent to the AI service to create your response. Don’t enter passwords, payment details, or other sensitive information. AI access is provided through Puter, which may ask you to sign in and applies its own free allowance and usage terms.</p>
+      <p class="privacy-note">Your 3-day trial begins after your first successful AI response. Your message is sent securely to the AI service to generate your result, but the message itself is not sent to Google Analytics. Don’t enter passwords, card numbers, or other highly sensitive information.</p>
     </form>
+
+    <div id="ai-error" class="ai-error" hidden role="alert" aria-live="assertive">
+      <div>
+        <strong>That didn’t go through.</strong>
+        <p id="ai-error-message">The AI could not answer right now.</p>
+      </div>
+      <button id="ai-retry" type="button">Try again</button>
+    </div>
 
     <section id="result-panel" class="result-panel" hidden aria-live="polite">
       <div class="result-heading">
@@ -149,7 +157,7 @@ permalink: /what-do-i-say/
 </div>
 
 <footer><a href="/">The Sheema Edit</a><span>·</span><a href="/shop/">Shop</a><span>·</span><a href="https://www.tiktok.com/@_rasheemaa" target="_blank" rel="noopener noreferrer">TikTok</a></footer>
-<script src="https://js.puter.com/v2/"></script>
+<script src="/what-do-i-say/config.js"></script>
 <script src="/what-do-i-say/app.js" defer></script>
 </body>
 </html>
