@@ -5,7 +5,7 @@ layout: null
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>{{ site.url }}/</loc>
-    <lastmod>2026-09-28</lastmod>
+    <lastmod>2026-10-02</lastmod>
   </url>
   <url>
     <loc>{{ site.url }}/about.html</loc>
@@ -13,7 +13,11 @@ layout: null
   </url>
   <url>
     <loc>{{ site.url }}/shop/</loc>
-    <lastmod>2026-09-28</lastmod>
+    <lastmod>2026-10-02</lastmod>
+  </url>
+  <url>
+    <loc>{{ site.url }}/what-do-i-say/</loc>
+    <lastmod>2026-10-02</lastmod>
   </url>
   <url>
     <loc>{{ site.url }}/shop/reflection-journal-product.html</loc>
