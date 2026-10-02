@@ -1,6 +1,7 @@
 import { generateText } from 'ai';
 
 const MODEL = 'openai/gpt-5.6-sol';
+const BUILD = 'diag-2026-10-02-1';
 const ALLOWED_ORIGINS = new Set([
   'https://thesheemaedit.com',
   'https://www.thesheemaedit.com',
@@ -100,6 +101,33 @@ function buildPrompt({ mode, tone, situation, personName, userText, refine, curr
   return lines.filter(Boolean).join('\n\n');
 }
 
+function safeDiagnostic(error) {
+  const status = Number(error?.statusCode || error?.status || error?.cause?.statusCode || error?.cause?.status || 0) || null;
+  const message = text(
+    error?.message ||
+    error?.cause?.message ||
+    error?.responseBody ||
+    error?.cause?.responseBody ||
+    'unknown error',
+    500
+  );
+  return {
+    name: text(error?.name || error?.constructor?.name || 'Error', 80),
+    status,
+    message
+  };
+}
+
+async function runModel({ system, prompt, maxOutputTokens = 320 }) {
+  return generateText({
+    model: MODEL,
+    system,
+    prompt,
+    maxOutputTokens,
+    abortSignal: AbortSignal.timeout(15000)
+  });
+}
+
 export default async function handler(req, res) {
   applyCors(req, res);
 
@@ -108,7 +136,33 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'GET') {
-    return res.status(200).json({ ok: true, service: 'what-do-i-say-ai', model: MODEL });
+    if (String(req.query?.selftest || '') === '1') {
+      try {
+        const started = Date.now();
+        const result = await runModel({
+          system: 'Return only the requested sentence.',
+          prompt: 'Reply with exactly: What Do I Say AI is working.',
+          maxOutputTokens: 40
+        });
+        return res.status(200).json({
+          ok: true,
+          selftest: true,
+          model: MODEL,
+          build: BUILD,
+          message: text(result.text, 200),
+          latency_ms: Date.now() - started
+        });
+      } catch (error) {
+        return res.status(502).json({
+          ok: false,
+          selftest: true,
+          model: MODEL,
+          build: BUILD,
+          diagnostic: safeDiagnostic(error)
+        });
+      }
+    }
+    return res.status(200).json({ ok: true, service: 'what-do-i-say-ai', model: MODEL, build: BUILD });
   }
 
   const origin = req.headers.origin || '';
@@ -120,7 +174,13 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed.' });
   }
 
-  const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+  let body = {};
+  try {
+    body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+  } catch (_) {
+    return res.status(400).json({ error: 'Invalid request.' });
+  }
+
   const mode = MODES.has(body.mode) ? body.mode : 'write';
   const tone = TONES.has(body.tone) ? body.tone : 'warm';
   const situation = SITUATIONS.has(body.situation) ? body.situation : 'general';
@@ -149,12 +209,10 @@ export default async function handler(req, res) {
 
   try {
     const started = Date.now();
-    const result = await generateText({
-      model: MODEL,
+    const result = await runModel({
       system,
       prompt: buildPrompt({ mode, tone, situation, personName, userText, refine, currentMessage }),
-      maxOutputTokens: 320,
-      abortSignal: AbortSignal.timeout(15000)
+      maxOutputTokens: 320
     });
 
     const output = text(result.text, 5000);
@@ -167,6 +225,7 @@ export default async function handler(req, res) {
     });
   } catch (error) {
     const timedOut = error?.name === 'TimeoutError' || error?.name === 'AbortError';
+    console.error('what-do-i-say-ai generation failure', safeDiagnostic(error));
     return res.status(timedOut ? 504 : 502).json({
       error: timedOut
         ? 'The AI took too long to answer. Please try again.'
