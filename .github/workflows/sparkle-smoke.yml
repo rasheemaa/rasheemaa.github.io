@@ -1,0 +1,32 @@
+name: Sparkle live smoke test
+
+on:
+  push:
+    paths:
+      - '.github/workflows/sparkle-smoke.yml'
+      - '.github/scripts/sparkle-smoke.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sparkle-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Test live Sparkle end to end
+        run: node .github/scripts/sparkle-smoke.mjs
