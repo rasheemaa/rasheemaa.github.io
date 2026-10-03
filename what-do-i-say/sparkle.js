@@ -183,6 +183,27 @@
     return refinementPolarityMismatch(output, payload) ? '' : output;
   }
 
+  function schedulingRefusalFallback(payload) {
+    if (payload?.mode !== 'write' || payload?.refine) return '';
+    const source = String(payload.text || '').trim();
+    const timePattern = '(\\d{1,2}(?::\\d{2})?\\s*(?:AM|PM|a\\.m\\.|p\\.m\\.))';
+    const dayPattern = '(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)';
+    const refusal = source.match(new RegExp(`\\bI\\s+(?:cannot|can['’]t|will not|won['’]t|am unable to)\\s+(?:make|attend|join)\\s+(?:the\\s+)?${timePattern}(?:\\s+meeting)?(?:\\s+(?:on\\s+)?)?${dayPattern}?`, 'i'));
+    if (!refusal) return '';
+
+    const refusedTime = refusal[1].replace(/\s+/g, ' ').trim();
+    const day = refusal[2] || '';
+    const alternate = source.match(new RegExp(`\\b${timePattern}\\s+works?\\s+instead\\b`, 'i'))
+      || source.match(new RegExp(`\\b(?:if|whether)\\s+${timePattern}\\s+works?\\b`, 'i'));
+    const alternateTime = alternate?.[1]?.replace(/\s+/g, ' ').trim() || '';
+    const mentionsMeeting = /\bmeeting\b/i.test(source);
+    const name = String(payload.personName || '').trim();
+
+    let message = `${name ? `Hi ${name}, ` : ''}I can't make the ${refusedTime}${mentionsMeeting ? ' meeting' : ''}${day ? ` ${day}` : ''}.`;
+    if (alternateTime) message += ` Would ${alternateTime} work instead?`;
+    return message.replace(/\s{2,}/g, ' ').trim();
+  }
+
   function stop(message = 'Sparkle stopped. Your draft is still here.', code = 'sparkle_cancelled') {
     worker?.terminate();
     worker = null;
@@ -251,16 +272,29 @@
       if (data.type === 'error') {
         clearTimeout(item.timer);
         pending.delete(data.id);
-        if (data.code === 'sparkle_quality' && item.payload?.refine === 'another') {
-          const fallback = alternateWordingFallback(item.payload.currentMessage, item.payload);
-          if (fallback) {
+        if (data.code === 'sparkle_quality') {
+          if (item.payload?.refine === 'another') {
+            const fallback = alternateWordingFallback(item.payload.currentMessage, item.payload);
+            if (fallback) {
+              item.onStatus?.({
+                type: 'status',
+                phase: 'complete',
+                message: 'Sparkle finished on this device.',
+                profile: 'Sparkle'
+              });
+              item.resolve(fallback);
+              return;
+            }
+          }
+          const refusalFallback = schedulingRefusalFallback(item.payload);
+          if (refusalFallback) {
             item.onStatus?.({
               type: 'status',
               phase: 'complete',
-              message: 'Sparkle finished on this device.',
+              message: 'Sparkle preserved your scheduling details on this device.',
               profile: 'Sparkle'
             });
-            item.resolve(fallback);
+            item.resolve(refusalFallback);
             return;
           }
         }

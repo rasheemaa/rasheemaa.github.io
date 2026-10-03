@@ -97,7 +97,7 @@ try {
   await page.waitForFunction(() => Boolean(window.Sparkle?.generate), null, { timeout: 30_000 });
 
   const sparkleSrc = await page.locator('script[src*="sparkle.js"]').getAttribute('src');
-  assert(sparkleSrc?.includes('sparkle.js?v=13'), `Unexpected Sparkle runtime asset: ${sparkleSrc}`);
+  assert(sparkleSrc?.includes('sparkle.js?v=14'), `Unexpected Sparkle runtime asset: ${sparkleSrc}`);
 
   const good = await generate('I need Friday off for a personal matter. Ask Priya to confirm she received the message.');
   assert(/Friday/i.test(good), 'Setup generation lost Friday');
