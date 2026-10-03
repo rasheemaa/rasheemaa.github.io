@@ -227,11 +227,25 @@ function anchors(text) {
   return [...new Set(String(text).match(/\$?\d+(?:[.,:/-]\d+)*(?:\s*(?:AM|PM|a\.m\.|p\.m\.|%))?|\b(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|January|February|March|April|May|June|July|August|September|October|November|December)\b/gi) || [])];
 }
 
+function escapeRegex(value) {
+  return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function outputProblem(text, payload) {
   if (payload.refine && text.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '') === String(payload.currentMessage || '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '')) return 'Use different wording to make the requested change. Do not copy the original.';
   if (payload.refine === 'shorter' && String(payload.currentMessage || '').length > 80 && text.length > payload.currentMessage.length * 0.85) return 'Make the message at least 15 percent shorter without losing facts. Combine sentences and remove filler.';
   if (!text || /<\/?think>|<\|/i.test(text)) return 'The message was empty or contained model markup.';
   if (!payload.refine && payload.mode !== 'fix' && /^(?:tell|ask|write|reply should|my reply should)\b/i.test(text)) return 'Speak directly to the recipient. Do not repeat my instructions.';
+
+  const recipient = compact(payload.personName, 60);
+  if (!payload.refine && payload.mode === 'write' && recipient) {
+    const indirectRecipient = new RegExp(`\\b(?:ask|tell|contact|have)\\s+${escapeRegex(recipient)}\\b`, 'i');
+    if (indirectRecipient.test(text)) return `Write directly to ${recipient}. Do not say “ask ${recipient}” or “tell ${recipient}”. Address ${recipient} as “you”.`;
+  }
+  if (!payload.refine && payload.mode === 'reply' && /\b(?:them|him|her)\b/i.test(text) && !/\byou\b/i.test(text)) {
+    return 'Address the sender directly as “you” instead of talking about them in third person.';
+  }
+
   const reference = payload.refine ? payload.currentMessage : payload.mode === 'reply' ? replyIntent(payload.text) : payload.text;
   const negative = /\b(?:cannot|can't|won't|don't|dont|not|no|unable|unavailable|decline)\b/i;
   if ((payload.refine || payload.mode === 'fix' || payload.mode === 'reply') && negative.test(reference) && !negative.test(text)) return 'Preserve my refusal or negative statement explicitly.';
