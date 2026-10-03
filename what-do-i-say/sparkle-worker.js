@@ -196,22 +196,9 @@ function buildPrompt(payload) {
 }
 
 function buildMessages(payload) {
-  const refinementExamples = {
-    shorter: ['I wanted to let you know that I cannot join the call tomorrow. Would it be possible to move it to next week?', "I can't join tomorrow's call. Can we move it to next week?"],
-    softer: ['I cannot help tomorrow. Ask someone else.', "I'm sorry, but I won't be able to help tomorrow. Could you please ask someone else?"],
-    firmer: ["Hi, I can't make it today. Could we do another day?", "I can't make it today. Let's reschedule for another day."],
-    professional: ["hey Lee i cant make the call tomorrow. can we do next week?", "Hello Lee, I am unable to attend tomorrow's call. Would you be available next week?"],
-    another: ["Hi Lee, I cannot join tomorrow's call. Could we move it to next week?", "Lee, would next week work for our call? I am unavailable tomorrow."]
-  };
-
   if (payload.refine) {
-    const example = refinementExamples[payload.refine];
     return [
-      { role: 'system', content: 'You are Sparkle, a focused communication editor. Understand the intended meaning first, preserve every concrete fact and decision, then make only the requested edit. Silently verify that the result is natural and sendable. Return only the edited message.' },
-      ...(example ? [
-        { role: 'user', content: `Rewrite this message. Action: ${payload.refine}. Message: ${example[0]}` },
-        { role: 'assistant', content: example[1] }
-      ] : []),
+      { role: 'system', content: 'You are Sparkle, a focused communication editor. Understand the intended meaning first, preserve every concrete fact and decision, then make only the requested edit. Do not borrow facts or wording from unrelated examples. Silently verify that the result is natural and sendable. Return only the edited message.' },
       { role: 'user', content: buildPrompt(payload) }
     ];
   }
