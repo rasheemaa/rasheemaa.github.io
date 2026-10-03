@@ -78,6 +78,13 @@
     return output.replace(/\s{2,}/g, ' ').trim();
   }
 
+  function repairCourtesy(message) {
+    return String(message || '')
+      .replace(/\b(?:You're|You are) welcome for your understanding\b/gi, 'Thank you for your understanding')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+  }
+
   function detailAnchors(text) {
     return [...new Set(String(text || '').match(/\$?\d+(?:[.,:/-]\d+)*(?:\s*(?:AM|PM|a\.m\.|p\.m\.|%))?|\b(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|January|February|March|April|May|June|July|August|September|October|November|December)\b/gi) || [])];
   }
@@ -194,6 +201,7 @@
         pending.delete(data.id);
         let message = repairReplyPerspective(data.message, item.payload);
         message = repairRefinementPolarity(message, item.payload);
+        message = repairCourtesy(message);
         if (!message) {
           item.reject(new Error('Sparkle returned an empty message. Please try again.'));
           return;
