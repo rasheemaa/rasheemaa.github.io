@@ -125,6 +125,10 @@ function compact(value, max = 3000) {
   return String(value || '').replace(/\u0000/g, '').trim().slice(0, max);
 }
 
+function escapeRegex(value) {
+  return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function toneText(tone) {
   return ({
     warm: 'warm, natural, and sincere',
@@ -145,6 +149,13 @@ function replyIntent(text) {
   if (!last) return source;
   const intent = source.slice(last.index + last[0].length).trim();
   return intent.length >= 4 ? intent : source;
+}
+
+function recipientPerspectiveHint(source, recipient) {
+  if (!recipient) return '';
+  const escaped = escapeRegex(recipient);
+  if (!new RegExp(`\\b(?:ask|tell)\\s+${escaped}\\b`, 'i').test(source)) return '';
+  return `Perspective check: “ask ${recipient}…” or “tell ${recipient}…” in my notes is an instruction for this outgoing message, not wording to copy. Carry out that request directly to ${recipient} using “you/your”.`;
 }
 
 function buildPrompt(payload) {
@@ -170,12 +181,13 @@ function buildPrompt(payload) {
     ? 'Correct my draft spelling and grammar. Preserve my point of view and requests. Do not answer the draft.'
     : payload.mode === 'reply'
       ? 'Write my reply using my stated intent. Address the sender directly as “you” when my intent refers to that person as them, him, or her. Do not speak for the other person or repeat their question unless necessary.'
-      : 'Turn my notes into a message I can send directly to the recipient. When my notes refer to that recipient by name or as she, he, they, her, him, or them, address the recipient directly by name or as “you” instead.');
+      : 'Turn my notes into a message I can send directly to the recipient. Treat note-taking directions such as “ask the recipient…” or “tell the recipient…” as instructions to perform, never as wording to repeat.');
   const replyIntentText = payload.mode === 'reply' ? replyIntent(source) : '';
   return [
     task,
     instruction ? '' : `Style: ${toneText(payload.tone)}.`,
     name ? `Recipient: ${name}. Address ${name} directly.` : '',
+    payload.mode === 'write' ? recipientPerspectiveHint(source, name) : '',
     'Preserve the user’s facts, important people and relationships, names, dates, times including AM/PM, amounts, requests, and refusals. Do not invent promises, reasons, people, dates, or events.',
     payload.mode === 'reply' && replyIntentText !== source ? `Conversation and incoming message:\n${source}\n\nMy reply intent:\n${replyIntentText}` : '',
     instruction ? `My message to edit:\n${current}` : payload.mode === 'reply' && replyIntentText !== source ? '' : `My ${payload.mode === 'fix' ? 'draft' : 'notes'}:\n${source}`,
@@ -195,7 +207,7 @@ function buildMessages(payload) {
   if (payload.refine) {
     const example = refinementExamples[payload.refine];
     return [
-      { role: 'system', content: 'You are a copy editor. Follow the requested editing task. Preserve the user’s facts and intent. Return only the edited message.' },
+      { role: 'system', content: 'You are Sparkle, a focused communication editor. Understand the intended meaning first, preserve every concrete fact and decision, then make only the requested edit. Silently verify that the result is natural and sendable. Return only the edited message.' },
       ...(example ? [
         { role: 'user', content: `Rewrite this message. Action: ${payload.refine}. Message: ${example[0]}` },
         { role: 'assistant', content: example[1] }
@@ -206,7 +218,7 @@ function buildMessages(payload) {
 
   if (payload.mode === 'fix') {
     return [
-      { role: 'system', content: 'You are a copy editor. Correct the user’s draft without changing their facts, point of view, requests, or decision. Return only the edited message.' },
+      { role: 'system', content: 'You are Sparkle, a focused communication editor. Correct the user’s draft without changing their facts, point of view, requests, or decision. Silently verify the result is natural and sendable. Return only the edited message.' },
       { role: 'user', content: 'Edit my draft: hi Sam i paid $20 for order 42. it arrived broken. i want a refund not a replacement.' },
       { role: 'assistant', content: 'Hi Sam, I paid $20 for order 42. It arrived broken. I want a refund, not a replacement.' },
       { role: 'user', content: buildPrompt(payload) }
@@ -214,8 +226,8 @@ function buildMessages(payload) {
   }
 
   const system = payload.mode === 'reply'
-    ? 'Write a direct reply as the user to the sender. Use first person for the user and address the sender directly as “you” when appropriate. Preserve only the user’s facts and intent. Output only the sendable reply.'
-    : 'Write a direct message as the user to the recipient. Convert third-person references to that recipient into direct address. Preserve only the user’s facts, intent, important people, dates, and requests. Output only the sendable message.';
+    ? 'You are Sparkle. Understand what the user actually wants to communicate, preserve their facts and stance, then write a direct reply as the user to the sender. Use first person for the user and address the sender as “you” when appropriate. Silently verify the reply is natural, complete, and ready to send. Output only the sendable reply.'
+    : 'You are Sparkle. Understand what the user actually wants to communicate, preserve their facts and stance, then write the outgoing message as the user to the recipient. Note-taking directions such as “ask Priya” or “tell Jordan” are instructions to perform, not phrases to copy. Address the recipient directly as “you/your” where appropriate. Silently verify the message is natural, complete, and ready to send. Output only the sendable message.';
 
   return [
     { role: 'system', content: system },
@@ -260,6 +272,17 @@ function cleanOutput(value) {
   return output.slice(0, 5000);
 }
 
+function directAddressGuard(text, payload) {
+  if (payload?.refine || payload?.mode !== 'write') return text;
+  const recipient = compact(payload.personName, 60);
+  if (!recipient) return text;
+  const escaped = escapeRegex(recipient);
+  const copiedConfirmation = new RegExp(`\\bAsk\\s+${escaped}\\s+to\\s+confirm\\s+(?:she|he|they)\\s+received\\s+(?:the|this)\\s+message\\.?`, 'ig');
+  if (!copiedConfirmation.test(text)) return text;
+  copiedConfirmation.lastIndex = 0;
+  return text.replace(copiedConfirmation, 'Please confirm you received this message.').replace(/\s{2,}/g, ' ').trim();
+}
+
 function classifyFailure(error) {
   if (error?.code === 'sparkle_quality') return { code: error.code, message: error.message };
   const text = `${error?.name || ''} ${error?.message || ''}`.toLowerCase();
@@ -297,7 +320,7 @@ async function generate(id, payload, preferLite) {
       repetition_penalty: 1.0,
       return_full_text: false
     });
-    text = cleanOutput(output?.[0]?.generated_text || '');
+    text = directAddressGuard(cleanOutput(output?.[0]?.generated_text || ''), payload || {});
     const problem = outputProblem(text, payload || {});
     if (!problem) break;
     if (attempt === 1) {
