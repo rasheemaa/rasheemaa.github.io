@@ -1,4 +1,4 @@
-const CACHE = 'wdis-v9';
+const CACHE = 'wdis-v10';
 const SHELL = [
   '/what-do-i-say/',
   '/what-do-i-say/index.html',
