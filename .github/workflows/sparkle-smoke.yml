@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/sparkle-smoke.yml'
       - '.github/scripts/sparkle-smoke.mjs'
+      - '.github/scripts/sparkle-targeted-retry.mjs'
       - 'what-do-i-say/index.html'
       - 'what-do-i-say/config.js'
       - 'what-do-i-say/app.js'
@@ -29,10 +30,21 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-1.55.0
+
       - name: Install Playwright
         run: |
           npm install --no-save playwright@1.55.0
           npx playwright install --with-deps chromium
 
+      - name: Test targeted Sparkle retry refusal live
+        if: contains(github.event.head_commit.message, '[sparkle-targeted]')
+        run: node .github/scripts/sparkle-targeted-retry.mjs
+
       - name: Test tuned Sparkle live end to end
+        if: ${{ !contains(github.event.head_commit.message, '[sparkle-targeted]') }}
         run: node .github/scripts/sparkle-smoke.mjs
