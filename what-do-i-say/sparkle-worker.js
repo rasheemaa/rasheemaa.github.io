@@ -141,13 +141,15 @@ function buildPrompt(payload) {
   const current = compact(payload.currentMessage, 5000);
   const name = compact(payload.personName, 60);
   const refine = String(payload.refine || '');
+  const shorterWords = Math.max(8, Math.floor(current.split(/\s+/).length * 0.7));
   const instruction = ({
-    shorter: 'Rewrite this message in fewer words. Remove filler and combine sentences. Keep the facts and request.',
-    softer: 'Rewrite with gentler, more considerate wording. Keep the decision and boundaries unchanged.',
-    firmer: 'Rewrite with clear, confident wording and a direct request. Do not weaken the decision.',
-    professional: 'Make this message professional and natural.',
-    another: 'Rephrase this message with different wording and the same meaning.'
+    shorter: `Rewrite in at most ${shorterWords} words. Remove filler and combine sentences.`,
+    softer: 'Rewrite in a gentle, considerate tone. Make requests polite while keeping the same decision.',
+    firmer: 'Rewrite confidently. Replace tentative questions with polite, direct requests. Keep the same decision.',
+    professional: 'Rewrite professionally. Use a professional greeting and no contractions.',
+    another: 'Rewrite with different sentence structure and wording. Keep the same meaning.'
   })[refine];
+  if (instruction && current) return `${instruction} Keep all names, dates, times, amounts, and facts. Return only the rewritten message.\n\n${current}`;
   const task = instruction || (payload.mode === 'fix'
     ? 'Correct my draft spelling and grammar. Preserve my point of view and requests. Do not answer the draft.'
     : payload.mode === 'reply'
@@ -183,7 +185,7 @@ function buildMessages(payload) {
       : ["Write a message from my notes: Tell Alex I cannot come to lunch tomorrow. Ask if we can meet next week instead.",
          "Hi Alex, I can't come to lunch tomorrow. Could we meet next week instead?"];
   return [
-    { role: 'system', content: 'You edit and write messages on behalf of the user. Speak as the user directly to the recipient. Keep their facts and intent. Output just the message.' },
+    { role: 'system', content: payload.refine ? 'You are a copy editor. Follow the requested editing task. Return only the edited message.' : 'You edit and write messages on behalf of the user. Speak as the user directly to the recipient. Keep their facts and intent. Output just the message.' },
     { role: 'user', content: example[0] },
     { role: 'assistant', content: example[1] },
     { role: 'user', content: buildPrompt(payload) }
@@ -195,7 +197,7 @@ function anchors(text) {
 }
 
 function outputProblem(text, payload) {
-  if (payload.refine && text.toLowerCase().replace(/[^a-z0-9]/g, '') === String(payload.currentMessage || '').toLowerCase().replace(/[^a-z0-9]/g, '')) return 'Use different wording to make the requested change. Do not copy the original.';
+  if (payload.refine && text.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '') === String(payload.currentMessage || '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '')) return 'Use different wording to make the requested change. Do not copy the original.';
   if (payload.refine === 'shorter' && String(payload.currentMessage || '').length > 80 && text.length > payload.currentMessage.length * 0.85) return 'Make the message at least 15 percent shorter without losing facts. Combine sentences and remove filler.';
   if (!text || /<\/?think>|<\|/i.test(text)) return 'The message was empty or contained model markup.';
   if (!/[.!?…]["”')]*$/.test(text)) return 'Finish the last sentence.';
