@@ -1,10 +1,8 @@
-import { pipeline, env, LogLevel } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1';
+import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1';
 
 env.allowLocalModels = false;
 env.allowRemoteModels = true;
 env.useBrowserCache = true;
-env.useWasmCache = true;
-if (LogLevel) env.logLevel = LogLevel.ERROR;
 
 const PRIMARY = {
   model: 'onnx-community/SmolLM2-360M-Instruct-ONNX',
