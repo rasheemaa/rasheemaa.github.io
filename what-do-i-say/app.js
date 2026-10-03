@@ -219,8 +219,8 @@
     generateButton.disabled = active;
     generateButton.dataset.loading = active ? 'true' : 'false';
     generateButton.textContent = active ? label : 'Give me the words';
-    $('.refine-row button').forEach((button) => { button.disabled = active; });
-    $('.mode').forEach((button) => { button.disabled = active; });
+    document.querySelectorAll('.refine-row button').forEach((button) => { button.disabled = active; });
+    document.querySelectorAll('.mode').forEach((button) => { button.disabled = active; });
     setOutputActivity(active, active ? label : '');
     if (active) {
       requestAnimationFrame(() => resultPanel?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
