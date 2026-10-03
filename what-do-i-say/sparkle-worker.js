@@ -153,8 +153,8 @@ function buildUserPrompt(payload) {
   const tone = toneMap[payload.tone] || toneMap.warm;
   const situation = situationMap[payload.situation] || situationMap.general;
   const personName = compact(payload.personName, 60);
-  const source = compact(payload.text, 3000);
-  const currentMessage = compact(payload.currentMessage, 3000);
+  const source = compact(payload.text, 3500);
+  const currentMessage = compact(payload.currentMessage, 5000);
   const refinement = refineMap[payload.refine] || '';
 
   const parts = [

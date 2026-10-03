@@ -33,6 +33,7 @@
   const paywall = $('#paywall');
   const installButton = $('.install-button');
   const generateButton = $('#generate');
+  const cancelButton = $('#sparkle-cancel');
   const errorBox = $('#ai-error');
   const errorMessage = $('#ai-error-message');
   const retryButton = $('#ai-retry');
@@ -91,7 +92,7 @@
 
     if (detail.type === 'progress' && Number.isFinite(detail.progress)) {
       const percent = Math.round(detail.progress);
-      sparkleStatusText.textContent = `Downloading Sparkle to this device… ${percent}%`;
+      sparkleStatusText.textContent = `Downloading a Sparkle setup file… ${percent}%. Several files may be needed.`;
       return;
     }
 
@@ -178,6 +179,8 @@
 
   function setLoading(active, label = 'Sparkle is finding the words…') {
     state.pending = active;
+    if (cancelButton) cancelButton.hidden = !active;
+    form.setAttribute('aria-busy', String(active));
     generateButton.disabled = active;
     generateButton.dataset.loading = active ? 'true' : 'false';
     generateButton.textContent = active ? label : 'Give me the words';
@@ -308,6 +311,7 @@
   async function runAI(refine = '') {
     if (state.pending) return;
     await state.accessReady;
+    if (state.pending) return;
     if (!canUseTool()) return;
 
     const originalText = prompt.value.trim();
@@ -347,6 +351,10 @@
       }
       resultPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } catch (error) {
+      if (error?.code === 'sparkle_cancelled') {
+        setSparkleStatus({ phase: 'idle', message: 'Stopped. Your draft is still here whenever you are ready.' });
+        return;
+      }
       sparkleStatus.dataset.state = 'error';
       sparkleStatusText.textContent = 'Sparkle could not run on this device right now.';
       showError(error?.message || 'Sparkle could not answer right now. Please try again.');
@@ -411,6 +419,8 @@
     clearError();
     runAI(state.lastAction?.refine || '');
   });
+
+  cancelButton?.addEventListener('click', () => window.Sparkle?.cancel());
 
   $('.paywall-close')?.addEventListener('click', hidePaywall);
   paywall?.addEventListener('click', (event) => { if (event.target === paywall) hidePaywall(); });

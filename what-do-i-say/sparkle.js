@@ -2,6 +2,8 @@
   let worker = null;
   let nextId = 1;
   const pending = new Map();
+  const SETUP_TIMEOUT_MS = 10 * 60 * 1000;
+  const GENERATION_TIMEOUT_MS = 2 * 60 * 1000;
 
   function connectionPrefersLite() {
     const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
@@ -10,14 +12,29 @@
     return /(^|-)2g|3g/.test(String(connection.effectiveType || '').toLowerCase());
   }
 
-  function rejectAll(message = 'Sparkle stopped unexpectedly. Please try again.') {
-    pending.forEach(({ reject }) => reject(new Error(message)));
+  function stop(message = 'Sparkle stopped. Your draft is still here.', code = 'sparkle_cancelled') {
+    worker?.terminate();
+    worker = null;
+    pending.forEach(({ reject, timer }) => {
+      clearTimeout(timer);
+      const error = new Error(message);
+      error.code = code;
+      reject(error);
+    });
     pending.clear();
+  }
+
+  function armTimeout(item, ms) {
+    clearTimeout(item.timer);
+    item.timer = setTimeout(() => stop(
+      'Sparkle took too long on this device. Your draft is saved in the form. Please try again.',
+      'sparkle_timeout'
+    ), ms);
   }
 
   function ensureWorker() {
     if (worker) return worker;
-    worker = new Worker('/what-do-i-say/sparkle-worker.js?v=1', { type: 'module' });
+    worker = new Worker('/what-do-i-say/sparkle-worker.js?v=2', { type: 'module' });
 
     worker.addEventListener('message', (event) => {
       const data = event.data || {};
@@ -25,12 +42,18 @@
       if (!item) return;
 
       if (data.type === 'status' || data.type === 'progress') {
+        if (data.phase === 'generating') armTimeout(item, GENERATION_TIMEOUT_MS);
         item.onStatus?.(data);
         return;
       }
 
       if (data.type === 'result') {
+        clearTimeout(item.timer);
         pending.delete(data.id);
+        if (!String(data.message || '').trim()) {
+          item.reject(new Error('Sparkle returned an empty message. Please try again.'));
+          return;
+        }
         item.onStatus?.({
           type: 'status',
           phase: 'complete',
@@ -43,6 +66,7 @@
       }
 
       if (data.type === 'error') {
+        clearTimeout(item.timer);
         pending.delete(data.id);
         const error = new Error(data.message || 'Sparkle could not generate a message right now.');
         error.code = data.code || 'sparkle_error';
@@ -51,38 +75,43 @@
     });
 
     worker.addEventListener('error', () => {
-      rejectAll('Sparkle could not load on this browser. Please try again or use another device.');
-      worker?.terminate();
-      worker = null;
+      stop('Sparkle could not load on this browser. Please try again or use another device.', 'sparkle_load_error');
     });
+    worker.addEventListener('messageerror', () => stop('Sparkle could not read the response. Please try again.', 'sparkle_message_error'));
 
     return worker;
   }
 
   function generate(payload, { onStatus } = {}) {
+    if (pending.size) return Promise.reject(new Error('Sparkle is already working on a message.'));
     const id = `sparkle-${Date.now()}-${nextId++}`;
     const activeWorker = ensureWorker();
 
     return new Promise((resolve, reject) => {
-      pending.set(id, { resolve, reject, onStatus });
+      const item = { resolve, reject, onStatus, timer: null };
+      pending.set(id, item);
+      armTimeout(item, SETUP_TIMEOUT_MS);
       onStatus?.({
         type: 'status',
         phase: 'starting',
         message: 'Starting Sparkle on this device…',
         profile: 'Sparkle'
       });
-      activeWorker.postMessage({
+      try { activeWorker.postMessage({
         type: 'generate',
         id,
         payload,
         preferLite: connectionPrefersLite()
-      });
+      }); } catch (_) {
+        stop('Sparkle could not start this request. Please try again.', 'sparkle_request_error');
+      }
     });
   }
 
   window.Sparkle = Object.freeze({
     name: 'Sparkle',
     mode: 'on-device',
-    generate
+    generate,
+    cancel: () => stop()
   });
 })();
