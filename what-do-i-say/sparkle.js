@@ -159,6 +159,30 @@
     return false;
   }
 
+  function alternateWordingFallback(message, payload) {
+    const original = repairCourtesy(String(message || '').trim());
+    if (!original) return '';
+
+    let output = original
+      .replace(/^Hello\s+([^,\n]{1,60}),\s*/i, 'Hi $1, ')
+      .replace(/\bcannot\b/gi, "can't")
+      .replace(/\bwill not\b/gi, "won't")
+      .replace(/\bdo not\b/gi, "don't")
+      .replace(/\bThank you for your understanding\b/gi, 'Thanks for understanding')
+      .replace(/\bI am sorry\b/gi, 'Sorry')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+
+    if (output === original) {
+      output = output.replace(/^Hi\s+([^,\n]{1,60}),\s*/i, '$1, ');
+    }
+    if (output === original) return '';
+
+    output = repairRefinementPolarity(output, payload);
+    output = repairCourtesy(output);
+    return refinementPolarityMismatch(output, payload) ? '' : output;
+  }
+
   function stop(message = 'Sparkle stopped. Your draft is still here.', code = 'sparkle_cancelled') {
     worker?.terminate();
     worker = null;
@@ -227,6 +251,19 @@
       if (data.type === 'error') {
         clearTimeout(item.timer);
         pending.delete(data.id);
+        if (data.code === 'sparkle_quality' && item.payload?.refine === 'another') {
+          const fallback = alternateWordingFallback(item.payload.currentMessage, item.payload);
+          if (fallback) {
+            item.onStatus?.({
+              type: 'status',
+              phase: 'complete',
+              message: 'Sparkle finished on this device.',
+              profile: 'Sparkle'
+            });
+            item.resolve(fallback);
+            return;
+          }
+        }
         const error = new Error(data.message || 'Sparkle could not generate a message right now.');
         error.code = data.code || 'sparkle_error';
         item.reject(error);
