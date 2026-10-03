@@ -60,7 +60,7 @@
 
   function ensureWorker() {
     if (worker) return worker;
-    worker = new Worker('/what-do-i-say/sparkle-worker.js?v=12', { type: 'module' });
+    worker = new Worker('/what-do-i-say/sparkle-worker.js?v=13', { type: 'module' });
 
     worker.addEventListener('message', (event) => {
       const data = event.data || {};
