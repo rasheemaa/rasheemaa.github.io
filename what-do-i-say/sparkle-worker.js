@@ -48,7 +48,13 @@ async function createGenerator(id, preferLite = false) {
   progressRequestId = id;
 
   generatorPromise = (async () => {
-    const canTryWebGPU = !preferLite && Boolean(self.navigator?.gpu);
+    let canTryWebGPU = false;
+    if (!preferLite && self.navigator?.gpu) {
+      try {
+        const adapter = await self.navigator.gpu.requestAdapter();
+        canTryWebGPU = Boolean(adapter?.features.has('shader-f16'));
+      } catch (_) {}
+    }
 
     if (canTryWebGPU) {
       activeProfile = PRIMARY;
@@ -136,14 +142,14 @@ function buildPrompt(payload) {
   const name = compact(payload.personName, 60);
   const refine = String(payload.refine || '');
   const instruction = ({
-    shorter: 'Shorten this message without losing any details or requests.',
-    softer: 'Make this message gentler. Keep the same decision and boundaries.',
-    firmer: 'Make this message firm and respectful. Keep the same decision.',
+    shorter: 'Rewrite this message in fewer words. Remove filler and combine sentences. Keep the facts and request.',
+    softer: 'Rewrite with gentler, more considerate wording. Keep the decision and boundaries unchanged.',
+    firmer: 'Rewrite with clear, confident wording and a direct request. Do not weaken the decision.',
     professional: 'Make this message professional and natural.',
     another: 'Rephrase this message with different wording and the same meaning.'
   })[refine];
   const task = instruction || (payload.mode === 'fix'
-    ? 'Edit my draft. I am the writer, NOT its recipient. Keep my perspective.'
+    ? 'Correct my draft spelling and grammar. Preserve my point of view and requests. Do not answer the draft.'
     : payload.mode === 'reply'
       ? 'Write my reply, using my stated intent. Do not speak for the other person.'
       : 'Turn my notes into a message I can send directly to the person.');
@@ -152,16 +158,25 @@ function buildPrompt(payload) {
     instruction ? '' : `Style: ${toneText(payload.tone)}.`,
     name ? `Recipient: ${name}.` : '',
     'Preserve names, dates, times including AM/PM, amounts, and refusals. Do not add promises or reasons.',
-    instruction ? `My original context: ${source}` : '',
     instruction ? `My message to edit:\n${current}` : `My ${payload.mode === 'fix' ? 'draft' : 'notes'}:\n${source}`,
     'Output only my complete message, with no explanation or instructions.'
   ].filter(Boolean).join('\n\n');
 }
 
 function buildMessages(payload) {
-  const example = payload.mode === 'fix'
+  const refinementExamples = {
+    shorter: ['I wanted to let you know that I cannot join the call tomorrow. Would it be possible to move it to next week?', "I can't join tomorrow's call. Can we move it to next week?"],
+    softer: ['I cannot help tomorrow. Ask someone else.', "I'm sorry, but I won't be able to help tomorrow. Could you please ask someone else?"],
+    firmer: ["I'm sorry, but I don't think I can help tomorrow. Maybe you could ask someone else?", "I cannot help tomorrow. Please ask someone else."],
+    professional: ["hey Lee i cant make the call tomorrow. can we do next week?", "Hello Lee, I am unable to attend tomorrow's call. Would you be available next week?"],
+    another: ["Hi Lee, I cannot join tomorrow's call. Could we move it to next week?", "Lee, would next week work for our call? I am unavailable tomorrow."]
+  };
+  const refinementExample = refinementExamples[payload.refine];
+  const example = refinementExample
+    ? [`Rewrite this message. Action: ${payload.refine}. Message: ${refinementExample[0]}`, refinementExample[1]]
+    : payload.mode === 'fix'
     ? ["Edit my draft: hi Sam i paid $20 for order 42. it arrived broken. i want a refund not a replacement.",
-       "Hi Sam, I paid $20 for order 42, but it arrived broken. I'd like a refund, not a replacement."]
+       "Hi Sam, I paid $20 for order 42. It arrived broken. I want a refund, not a replacement."]
     : payload.mode === 'reply'
       ? ["Write my reply. Lee asked if I can help Tuesday. I cannot help Tuesday, but I can help Thursday at 10 AM.",
          "I can't help on Tuesday, but I can help on Thursday at 10 AM."]
@@ -180,6 +195,8 @@ function anchors(text) {
 }
 
 function outputProblem(text, payload) {
+  if (payload.refine && text.toLowerCase().replace(/[^a-z0-9]/g, '') === String(payload.currentMessage || '').toLowerCase().replace(/[^a-z0-9]/g, '')) return 'Use different wording to make the requested change. Do not copy the original.';
+  if (payload.refine === 'shorter' && String(payload.currentMessage || '').length > 80 && text.length > payload.currentMessage.length * 0.85) return 'Make the message at least 15 percent shorter without losing facts. Combine sentences and remove filler.';
   if (!text || /<\/?think>|<\|/i.test(text)) return 'The message was empty or contained model markup.';
   if (!/[.!?…]["”')]*$/.test(text)) return 'Finish the last sentence.';
   if (!payload.refine && payload.mode !== 'fix' && /^(?:tell|ask|write|reply should|my reply should)\b/i.test(text)) return 'Speak directly to the recipient. Do not repeat my instructions.';
@@ -270,4 +287,3 @@ self.addEventListener('message', (event) => {
     post(data.id, 'error', failure);
   });
 });
-
