@@ -240,17 +240,19 @@ async function generate(id, payload, preferLite) {
     backend: activeProfile?.device || ''
   });
 
-  const system = [
-    'You are Sparkle, a writing assistant for everyday communication.',
-    'Write the exact message the user can send.',
-    'Return only that message, with no analysis, labels, or preamble.',
-    'Preserve the user’s facts and intent, and never invent details.',
-    'Keep it concise, natural, and appropriate for the requested tone.',
-    'Avoid unsafe, deceptive, or coercive content.'
-  ].join(' ');
-
   const messages = [
-    { role: 'system', content: system },
+    {
+      role: 'system',
+      content: 'You are Sparkle, a writing assistant. Write the exact message the user can send. Return only the message itself. Keep the user’s facts and intent. Sound natural and concise.'
+    },
+    {
+      role: 'user',
+      content: 'Write a warm ready-to-send message. I need to tell my friend I cannot make dinner tonight and want to reschedule.'
+    },
+    {
+      role: 'assistant',
+      content: 'Hey, I’m sorry, but I can’t make dinner tonight. Could we reschedule for another day?'
+    },
     { role: 'user', content: buildUserPrompt(payload || {}) }
   ];
 
@@ -258,14 +260,12 @@ async function generate(id, payload, preferLite) {
   const shorter = payload?.refine === 'shorter';
   const options = {
     max_new_tokens: shorter ? 80 : 140,
-    do_sample: another,
-    repetition_penalty: 1.08
+    do_sample: true,
+    repetition_penalty: 1.08,
+    temperature: another ? 0.82 : 0.7,
+    top_p: 0.8,
+    top_k: 20
   };
-  if (another) {
-    options.temperature = 0.72;
-    options.top_p = 0.9;
-    options.top_k = 20;
-  }
 
   const output = await generator(messages, options);
 
