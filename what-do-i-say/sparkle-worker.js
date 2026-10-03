@@ -72,7 +72,7 @@ async function createGenerator(id, preferLite = false) {
           backend: PRIMARY.device
         });
         return generator;
-      } catch (error) {
+      } catch (_) {
         post(id, 'status', {
           phase: 'fallback',
           message: 'This device needs the compatibility engine. Switching Sparkle to a broader browser mode…',
@@ -119,74 +119,99 @@ function compact(value, max = 3000) {
   return String(value || '').replace(/\u0000/g, '').trim().slice(0, max);
 }
 
-function buildUserPrompt(payload) {
-  const toneMap = {
+function toneText(tone) {
+  return ({
     warm: 'warm, natural, and sincere',
     direct: 'direct and clear',
-    professional: 'professional but human',
+    professional: 'professional and human',
     casual: 'casual and natural',
     firm: 'firm, clear, and respectful',
     concise: 'short and direct'
-  };
-  const situationMap = {
-    general: 'an everyday message',
-    work: 'a work message',
-    boundary: 'a boundary-setting message',
-    apology: 'an apology',
-    cancel: 'a cancellation or reschedule message',
-    decline: 'a polite refusal',
-    followup: 'a follow-up message',
-    refund: 'a customer-service request',
-    relationship: 'a relationship conversation'
-  };
-  const refineMap = {
-    shorter: 'Make this message noticeably shorter while preserving its meaning.',
-    softer: 'Make this message gentler and more considerate while preserving its meaning.',
-    firmer: 'Make this message firmer and clearer without sounding hostile.',
-    professional: 'Make this message polished and professional while still sounding human.',
-    another: 'Write a genuinely different natural version that keeps the same facts and intent.'
-  };
+  })[tone] || 'warm, natural, and sincere';
+}
 
+function buildPrompt(payload) {
   const mode = String(payload.mode || 'write');
-  const tone = toneMap[payload.tone] || toneMap.warm;
-  const situation = situationMap[payload.situation] || situationMap.general;
-  const personName = compact(payload.personName, 60);
+  const tone = toneText(payload.tone);
   const source = compact(payload.text, 3500);
-  const currentMessage = compact(payload.currentMessage, 5000);
-  const refinement = refineMap[payload.refine] || '';
+  const current = compact(payload.currentMessage, 5000);
+  const name = compact(payload.personName, 60);
+  const refine = String(payload.refine || '');
 
-  if (refinement && currentMessage) {
+  if (refine && current) {
+    const instruction = ({
+      shorter: 'Make it noticeably shorter. Keep every fact and the same request.',
+      softer: 'Make it gentler and more considerate. Keep every fact and the same request.',
+      firmer: 'Make it firmer and clearer without hostility. Keep every fact and the same request.',
+      professional: 'Make it polished and professional but still human. Keep every fact and the same request.',
+      another: 'Write a genuinely different natural version. Keep every fact and the same request.'
+    })[refine] || 'Rewrite it naturally without changing any facts.';
+
     return [
-      refinement,
-      `Desired tone: ${tone}.`,
-      'Message to rewrite:',
-      currentMessage,
-      'Return only the rewritten message.'
-    ].join('\n\n');
+      'Rewrite the ORIGINAL message below.',
+      `Instruction: ${instruction}`,
+      `Tone: ${tone}.`,
+      'Do not explain. Do not add a subject line. Output only the rewritten message.',
+      '',
+      'ORIGINAL:',
+      current,
+      '',
+      'REWRITE:'
+    ].join('\n');
   }
 
-  let instruction = 'Write one ready-to-send message from the details below.';
   if (mode === 'reply') {
-    instruction = 'Write my ready-to-send reply. The details below include what the other person said and what I want my reply to communicate.';
-  } else if (mode === 'fix') {
-    instruction = 'Rewrite my draft into one ready-to-send message. Preserve the facts and intended meaning.';
+    return [
+      'Write MY reply to the situation below.',
+      'The situation includes what the other person said and what I want to communicate back.',
+      'Speak in first person as me. Do not answer as an AI assistant.',
+      'Keep every fact exactly. Do not invent, remove, or change the meaning.',
+      `Tone: ${tone}.`,
+      name ? `Their name is ${name}. Use it only if natural.` : '',
+      'Do not explain. Do not add a subject line. Output only my reply.',
+      '',
+      'SITUATION:',
+      source,
+      '',
+      'MY REPLY:'
+    ].filter(Boolean).join('\n');
+  }
+
+  if (mode === 'fix') {
+    return [
+      'Polish the DRAFT below into a ready-to-send message.',
+      'Keep every fact, date, request, and meaning exactly the same.',
+      `Tone: ${tone}.`,
+      name ? `Their name is ${name}. Use it only if natural.` : '',
+      'Do not explain. Do not add a subject line. Output only the polished message.',
+      '',
+      'DRAFT:',
+      source,
+      '',
+      'MESSAGE:'
+    ].filter(Boolean).join('\n');
   }
 
   return [
-    instruction,
-    `Desired tone: ${tone}.`,
-    `Situation: ${situation}.`,
-    personName ? `Person's name: ${personName}. Use it only if it sounds natural.` : '',
-    'User details:',
+    'Write a ready-to-send message using ONLY the facts below.',
+    'Keep every fact, date, and request exactly as given.',
+    'Do not turn the request into a different event or task.',
+    `Tone: ${tone}.`,
+    name ? `Their name is ${name}. Use it only if natural.` : '',
+    'Do not explain. Do not add a subject line. Output only the message.',
+    '',
+    'FACTS:',
     source,
-    'Return only the final message. Do not explain your work or invent facts.'
-  ].filter(Boolean).join('\n\n');
+    '',
+    'MESSAGE:'
+  ].filter(Boolean).join('\n');
 }
 
 function cleanOutput(value) {
   let output = String(value || '').trim();
   output = output.replace(/^```(?:text)?\s*/i, '').replace(/\s*```$/i, '').trim();
-  output = output.replace(/^(?:assistant|sparkle|final message|message|rewritten message|revised message|reply|response)\s*:\s*/i, '').trim();
+  output = output.replace(/^(?:assistant|sparkle|final message|message|rewritten message|revised message|reply|response|rewrite)\s*:\s*/i, '').trim();
+  output = output.replace(/^subject\s*:[^\n]*\n+/i, '').trim();
   output = output.replace(/^(?:here(?:'s| is)(?: a| the)?(?: rewritten| revised| polished| shorter| softer| firmer| professional| different| natural)?(?: version| message| reply)?[^:]{0,50}:\s*)/i, '').trim();
   if ((output.startsWith('“') && output.endsWith('”')) || (output.startsWith('"') && output.endsWith('"'))) {
     output = output.slice(1, -1).trim();
@@ -203,28 +228,24 @@ function classifyFailure(error) {
       message: 'Sparkle could not finish offline on this device. Connect to the internet once so any missing setup files can download, then try again.'
     };
   }
-
   if (/quota|storage|disk|space|cache/.test(text)) {
     return {
       code: 'sparkle_storage',
       message: 'Sparkle needs a little more browser storage for its on-device model. Free up some device space or browser storage, then try again.'
     };
   }
-
   if (/memory|allocation|out of memory|oom/.test(text)) {
     return {
       code: 'sparkle_memory',
-      message: 'This device ran low on memory while starting Sparkle. Close a few apps or browser tabs, then try again. Sparkle will use its compatibility engine when possible.'
+      message: 'This device ran low on memory while starting Sparkle. Close a few apps or browser tabs, then try again.'
     };
   }
-
   if (/network|fetch|download|load|connection/.test(text)) {
     return {
       code: 'sparkle_download',
       message: 'Sparkle could not download one of its setup files. Check your connection and try again. After setup, the model is cached on this device.'
     };
   }
-
   return {
     code: 'sparkle_compatibility',
     message: 'Sparkle could not start on this browser. Try updating Safari or Chrome, turning off Low Power Mode, or using another device.'
@@ -240,42 +261,23 @@ async function generate(id, payload, preferLite) {
     backend: activeProfile?.device || ''
   });
 
-  const messages = [
-    {
-      role: 'system',
-      content: 'You are Sparkle, a writing assistant. Write the exact message the user can send. Return only the message itself. Keep the user’s facts and intent. Sound natural and concise.'
-    },
-    {
-      role: 'user',
-      content: 'Write a warm ready-to-send message. I need to tell my friend I cannot make dinner tonight and want to reschedule.'
-    },
-    {
-      role: 'assistant',
-      content: 'Hey, I’m sorry, but I can’t make dinner tonight. Could we reschedule for another day?'
-    },
-    { role: 'user', content: buildUserPrompt(payload || {}) }
-  ];
-
+  const messages = [{ role: 'user', content: buildPrompt(payload || {}) }];
   const another = payload?.refine === 'another';
   const shorter = payload?.refine === 'shorter';
-  const options = {
-    max_new_tokens: shorter ? 80 : 140,
+  const output = await generator(messages, {
+    max_new_tokens: shorter ? 72 : 120,
     do_sample: true,
-    repetition_penalty: 1.08,
-    temperature: another ? 0.82 : 0.7,
+    temperature: another ? 0.8 : 0.55,
     top_p: 0.8,
-    top_k: 20
-  };
-
-  const output = await generator(messages, options);
+    top_k: 20,
+    repetition_penalty: 1.08
+  });
 
   const generated = output?.[0]?.generated_text;
   let text = '';
-  if (Array.isArray(generated)) {
-    text = generated.at(-1)?.content || '';
-  } else {
-    text = generated || '';
-  }
+  if (Array.isArray(generated)) text = generated.at(-1)?.content || '';
+  else text = generated || '';
+
   text = cleanOutput(text);
   if (!text) throw new Error('Sparkle returned an empty message.');
 
@@ -289,7 +291,6 @@ async function generate(id, payload, preferLite) {
 self.addEventListener('message', (event) => {
   const data = event.data || {};
   if (data.type !== 'generate' || !data.id) return;
-
   generate(data.id, data.payload || {}, Boolean(data.preferLite)).catch((error) => {
     const failure = classifyFailure(error);
     post(data.id, 'error', failure);
