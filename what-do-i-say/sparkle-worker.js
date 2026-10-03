@@ -271,7 +271,11 @@ function cleanOutput(value) {
 
 function directAddressGuard(text, payload) {
   if (payload?.refine || payload?.mode !== 'write') return text;
-  const recipient = compact(payload.personName, 60);
+  const recipient = compact(payload.personName, 60)
+    || compact(payload.text).match(/^(?:Please\s+)?tell\s+(.{1,60}?)\s+(?:that\s+)?(?:I|we)\b/i)?.[1]
+    || '';
+  // An unnamed confirmation request is still an instruction to address the reader.
+  text = text.replace(/(^|[.!?]\s+)Ask\s+(if|whether)\s+/ig, '$1Please let me know $2 ');
   if (!recipient) return text;
   const escaped = escapeRegex(recipient);
   const copiedConfirmation = new RegExp(`\\bAsk\\s+${escaped}\\s+to\\s+confirm\\s+(?:she|he|they)\\s+received\\s+(?:the|this)\\s+message\\.?`, 'ig');
