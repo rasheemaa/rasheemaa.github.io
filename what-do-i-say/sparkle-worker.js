@@ -163,9 +163,9 @@ function buildPrompt(payload) {
   const current = compact(payload.currentMessage, 5000);
   const name = compact(payload.personName, 60);
   const refine = String(payload.refine || '');
-  const shorterWords = Math.max(8, Math.floor(current.split(/\s+/).length * 0.7));
+  const shorterWords = Math.max(8, Math.floor(current.split(/\s+/).length * 0.8));
   const instruction = ({
-    shorter: `Rewrite in at most ${shorterWords} words. Remove filler and combine sentences.`,
+    shorter: `Rewrite in at most ${shorterWords} words. Remove filler and combine sentences, but preserve every concrete fact, name, date, time, request, and refusal.`,
     softer: 'Rewrite in a gentle, considerate tone. Make requests polite while keeping the same decision.',
     firmer: 'Rewrite confidently with different wording. Keep every refusal, name, date, and time. Turn tentative questions into polite direct requests such as “Please…” or “Let’s…”.',
     professional: 'Rewrite professionally. Use a professional greeting and no contractions.',
@@ -239,9 +239,13 @@ function anchors(text) {
   return [...new Set(String(text).match(/\$?\d+(?:[.,:/-]\d+)*(?:\s*(?:AM|PM|a\.m\.|p\.m\.|%))?|\b(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|January|February|March|April|May|June|July|August|September|October|November|December)\b/gi) || [])];
 }
 
+function wordCount(text) {
+  return String(text || '').trim().split(/\s+/).filter(Boolean).length;
+}
+
 function outputProblem(text, payload) {
   if (payload.refine && text.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '') === String(payload.currentMessage || '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '')) return 'Use different wording to make the requested change. Do not copy the original.';
-  if (payload.refine === 'shorter' && String(payload.currentMessage || '').length > 80 && text.length > payload.currentMessage.length * 0.85) return 'Make the message at least 15 percent shorter without losing facts. Combine sentences and remove filler.';
+  if (payload.refine === 'shorter' && wordCount(payload.currentMessage) > 12 && wordCount(text) > Math.ceil(wordCount(payload.currentMessage) * 0.85)) return 'Make the message meaningfully shorter without losing any facts. Combine sentences and remove filler.';
   if (!text || /<\/?think>|<\|/i.test(text)) return 'The message was empty or contained model markup.';
   if (!payload.refine && payload.mode !== 'fix' && /^(?:tell|ask|write|reply should|my reply should)\b/i.test(text)) return 'Speak directly to the recipient. Do not repeat my instructions.';
   const reference = payload.refine ? payload.currentMessage : payload.mode === 'reply' ? replyIntent(payload.text) : payload.text;
@@ -304,8 +308,8 @@ async function generate(id, payload, preferLite) {
 
   const messages = buildMessages(payload || {});
   const another = payload?.refine === 'another';
-  const wordCount = String(payload?.refine ? payload.currentMessage : payload?.text || '').split(/\s+/).length;
-  const tokenLimit = Math.min(512, Math.max(160, Math.ceil(wordCount * 2.2)));
+  const inputWords = wordCount(payload?.refine ? payload.currentMessage : payload?.text || '');
+  const tokenLimit = Math.min(512, Math.max(160, Math.ceil(inputWords * 2.2)));
   let text = '';
   for (let attempt = 0; attempt < 2; attempt++) {
     const chatPrompt = generator.tokenizer.apply_chat_template(messages, {
