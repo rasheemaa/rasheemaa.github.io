@@ -78,6 +78,80 @@
     return output.replace(/\s{2,}/g, ' ').trim();
   }
 
+  function detailAnchors(text) {
+    return [...new Set(String(text || '').match(/\$?\d+(?:[.,:/-]\d+)*(?:\s*(?:AM|PM|a\.m\.|p\.m\.|%))?|\b(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|January|February|March|April|May|June|July|August|September|October|November|December)\b/gi) || [])];
+  }
+
+  function anchorKey(value) {
+    return String(value || '').toLowerCase().replace(/\s/g, '');
+  }
+
+  function clausePolarity(clause) {
+    const text = String(clause || '');
+    if (/\b(?:cannot|can't|can’t|won't|will not|unable|unavailable|not able)\b/i.test(text)) return 'negative';
+    if (/\b(?:can|will|available|able to)\b/i.test(text)) return 'positive';
+    return '';
+  }
+
+  function polarityByAnchor(value) {
+    const map = new Map();
+    const clauses = String(value || '').split(/\bbut\b|[.!?;]+/i);
+    clauses.forEach((clause) => {
+      const polarity = clausePolarity(clause);
+      if (!polarity) return;
+      detailAnchors(clause).forEach((anchor) => map.set(anchorKey(anchor), polarity));
+    });
+    return map;
+  }
+
+  function repairRefinementPolarity(message, payload) {
+    let output = String(message || '').trim();
+    if (!output || !payload?.refine || !payload.currentMessage) return output;
+
+    const expected = polarityByAnchor(payload.currentMessage);
+    if (!expected.size) return output;
+
+    const parts = output.split(/(\bbut\b|[.!?;]+)/i);
+    for (let index = 0; index < parts.length; index += 2) {
+      let clause = parts[index];
+      const targets = new Set(
+        detailAnchors(clause)
+          .map((anchor) => expected.get(anchorKey(anchor)))
+          .filter(Boolean)
+      );
+      if (targets.size !== 1) continue;
+
+      const target = [...targets][0];
+      const actual = clausePolarity(clause);
+      if (!actual || actual === target) continue;
+
+      if (target === 'negative') {
+        clause = clause
+          .replace(/\b(I|we)\s+can\b/i, '$1 cannot')
+          .replace(/\b(I|we)\s+will\b/i, '$1 will not')
+          .replace(/\b(I|we)\s+(am|are)\s+available\b/i, '$1 $2 not available');
+      } else {
+        clause = clause
+          .replace(/\b(I|we)\s+(?:cannot|can't|can’t)\b/i, '$1 can')
+          .replace(/\b(I|we)\s+(?:won't|will not)\b/i, '$1 will')
+          .replace(/\b(I|we)\s+(am|are)\s+(?:not available|unavailable)\b/i, '$1 $2 available');
+      }
+      parts[index] = clause;
+    }
+
+    return parts.join('').replace(/\s{2,}/g, ' ').trim();
+  }
+
+  function refinementPolarityMismatch(message, payload) {
+    if (!payload?.refine || !payload.currentMessage) return false;
+    const expected = polarityByAnchor(payload.currentMessage);
+    const actual = polarityByAnchor(message);
+    for (const [anchor, polarity] of expected.entries()) {
+      if (actual.has(anchor) && actual.get(anchor) !== polarity) return true;
+    }
+    return false;
+  }
+
   function stop(message = 'Sparkle stopped. Your draft is still here.', code = 'sparkle_cancelled') {
     worker?.terminate();
     worker = null;
@@ -118,9 +192,16 @@
       if (data.type === 'result') {
         clearTimeout(item.timer);
         pending.delete(data.id);
-        const message = repairReplyPerspective(data.message, item.payload);
+        let message = repairReplyPerspective(data.message, item.payload);
+        message = repairRefinementPolarity(message, item.payload);
         if (!message) {
           item.reject(new Error('Sparkle returned an empty message. Please try again.'));
+          return;
+        }
+        if (refinementPolarityMismatch(message, item.payload)) {
+          const error = new Error('Sparkle could not safely preserve which date or time is available. Your previous message is still here. Please try again.');
+          error.code = 'sparkle_quality';
+          item.reject(error);
           return;
         }
         rememberProfile(data.profile, data.backend);
