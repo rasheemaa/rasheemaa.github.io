@@ -180,7 +180,7 @@ function buildPrompt(payload) {
   const task = instruction || (payload.mode === 'fix'
     ? 'Correct my draft spelling and grammar. Preserve my point of view and requests. Do not answer the draft.'
     : payload.mode === 'reply'
-      ? 'Write my reply using my stated intent. Address the sender directly as “you” when my intent refers to that person as them, him, or her. Do not speak for the other person or repeat their question unless necessary.'
+      ? 'Write my reply using my stated intent. Keep who feels or does each thing exactly correct. If my intent says “I am not angry at them,” the reply means “I am not angry at you,” never “you are not angry at me.” Address the sender directly as “you” when my intent refers to that person as them, him, or her.'
       : 'Turn my notes into a message I can send directly to the recipient. Treat note-taking directions such as “ask the recipient…” or “tell the recipient…” as instructions to perform, never as wording to repeat.');
   const replyIntentText = payload.mode === 'reply' ? replyIntent(source) : '';
   return [
@@ -213,7 +213,7 @@ function buildMessages(payload) {
   }
 
   const system = payload.mode === 'reply'
-    ? 'You are Sparkle. Understand what the user actually wants to communicate, preserve their facts and stance, then write a direct reply as the user to the sender. Use first person for the user and address the sender as “you” when appropriate. Silently verify the reply is natural, complete, and ready to send. Output only the sendable reply.'
+    ? 'You are Sparkle. Understand what the user actually wants to communicate, preserve their facts, stance, and who feels or does each thing, then write a direct reply as the user to the sender. Use first person for the user and address the sender as “you.” Never reverse the speaker and recipient. Silently verify the reply is natural, complete, and ready to send. Output only the sendable reply.'
     : 'You are Sparkle. Understand what the user actually wants to communicate, preserve their facts and stance, then write the outgoing message as the user to the recipient. Note-taking directions such as “ask Priya” or “tell Jordan” are instructions to perform, not phrases to copy. Address the recipient directly as “you/your” where appropriate. Silently verify the message is natural, complete, and ready to send. Output only the sendable message.';
 
   return [
@@ -256,6 +256,7 @@ function cleanOutput(value) {
   output = output.replace(/^(?:assistant|sparkle|final message|message|rewritten message|revised message|reply|response|rewrite)\s*:\s*/i, '').trim();
   output = output.replace(/^subject\s*:[^\n]*\n+/i, '').trim();
   output = output.replace(/^(?:here(?:'s| is)(?: a| the)?(?: rewritten| revised| polished| shorter| softer| firmer| professional| different| natural)?(?: version| message| reply)?[^:]{0,50}:\s*)/i, '').trim();
+  output = output.replace(/\s*Important:\s*(?:Keep these exact details:|Do not introduce or change numbers|Preserve my refusal|Keep my question|Use different wording|Make the message meaningfully shorter)[\s\S]*$/i, '').trim();
   if ((output.startsWith('“') && output.endsWith('”')) || (output.startsWith('"') && output.endsWith('"'))) {
     output = output.slice(1, -1).trim();
   }
@@ -272,6 +273,16 @@ function directAddressGuard(text, payload) {
   if (!copiedConfirmation.test(text)) return text;
   copiedConfirmation.lastIndex = 0;
   return text.replace(copiedConfirmation, 'Please confirm you received this message.').replace(/\s{2,}/g, ' ').trim();
+}
+
+function replyPerspectiveGuard(text, payload) {
+  if (payload?.refine || payload?.mode !== 'reply') return text;
+  const intent = replyIntent(payload.text);
+  const feeling = intent.match(/\bI\s+(?:am|['’]m)\s+not\s+(mad|angry|upset)\s+(?:at|with)\s+(?:them|him|her)\b/i);
+  if (!feeling) return text;
+  const reversed = /^\s*you(?:'re| are)\s+not\s+(?:mad|angry|upset)\s+(?:at|with)\s+me\s*[,.;:!-]?\s*/i;
+  if (!reversed.test(text)) return text;
+  return cleanOutput(text.replace(reversed, `I'm not ${feeling[1].toLowerCase()} at you. `));
 }
 
 function safeShorterFallback(value) {
@@ -356,6 +367,7 @@ async function generate(id, payload, preferLite) {
       return_full_text: false
     });
     text = directAddressGuard(cleanOutput(output?.[0]?.generated_text || ''), payload || {});
+    text = replyPerspectiveGuard(text, payload || {});
     text = polishRefinement(text, payload || {});
     const problem = outputProblem(text, payload || {});
     if (!problem) break;
