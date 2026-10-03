@@ -1,6 +1,7 @@
 import { chromium } from 'playwright';
 
 const SITE = `https://thesheemaedit.com/what-do-i-say/?sparkle_smoke=${Date.now()}`;
+const FOUNDER_CHECKOUT = 'https://buy.stripe.com/eVq28s3Pf2mZ0sUcicgjC09';
 const RESULT_TIMEOUT = 12 * 60 * 1000;
 
 const browser = await chromium.launch({
@@ -107,22 +108,27 @@ try {
   await page.waitForFunction(() => Boolean(window.Sparkle?.generate), null, { timeout: 30_000 });
 
   const sparkleSrc = await page.locator('script[src*="sparkle.js"]').getAttribute('src');
-  assert(sparkleSrc?.includes('sparkle.js?v=4'), `Unexpected Sparkle runtime asset: ${sparkleSrc}`);
+  assert(sparkleSrc?.includes('sparkle.js?v=5'), `Unexpected Sparkle runtime asset: ${sparkleSrc}`);
 
-  const checkoutActions = await page.locator('#founder a, #founder button').count();
-  assert(checkoutActions === 0, 'Checkout is not paused: actionable founder checkout control was found');
-  console.log('PASS checkout remains paused');
+  const founderLinks = page.locator(`#founder a.founder-button[href="${FOUNDER_CHECKOUT}"]`);
+  assert(await founderLinks.count() === 1, 'Active $19.99 Founding Member Stripe checkout link is missing or incorrect');
+  assert((await founderLinks.first().textContent())?.includes('$19.99'), 'Founding checkout CTA does not show the launch price');
+  console.log('PASS founding checkout is active and points to the verified Stripe Payment Link');
+
+  const verificationPaused = await page.evaluate(() => window.WDIS_PAYMENT_VERIFY_PAUSED === true && !window.WDIS_API_BASE);
+  assert(verificationPaused, 'Broken remote payment verification backend was not safely paused');
+  console.log('PASS broken remote verification is paused during launch access');
 
   const trialBefore = await page.evaluate(() => localStorage.getItem('wdis_trial_started_at_v2'));
-  assert(!trialBefore, 'Trial started before the first successful Sparkle response');
-  console.log('PASS trial has not started before generation');
+  assert(!trialBefore, 'Trial state was present before the first successful Sparkle response');
+  console.log('PASS launch access starts clean before generation');
 
   const write = await generateMode('write', 'Tell my manager I need tomorrow off for a personal matter. I want to be respectful and not overshare.');
   assert(/tomorrow|personal|day off|time off/i.test(write), 'Write result lost the core time-off request');
 
   const trialAfter = await page.evaluate(() => localStorage.getItem('wdis_trial_started_at_v2'));
-  assert(Boolean(trialAfter), 'Trial did not start after the first successful Sparkle response');
-  console.log('PASS trial starts only after first successful result');
+  assert(Boolean(trialAfter), 'Successful Sparkle response did not record local usage state');
+  console.log('PASS successful generation records local usage state');
 
   const profile = await page.evaluate(() => {
     try { return JSON.parse(localStorage.getItem('wdis_sparkle_profile_v1') || 'null'); } catch (_) { return null; }
