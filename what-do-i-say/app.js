@@ -1,7 +1,5 @@
 (() => {
   const API_BASE = String(window.WDIS_API_BASE || '').trim().replace(/\/$/, '');
-  const AI_ENDPOINT = String(window.WDIS_AI_ENDPOINT || (API_BASE ? `${API_BASE}/api/generate` : '')).trim();
-  const CHECKOUT_ENDPOINT = API_BASE ? `${API_BASE}/api/checkout` : '';
   const VERIFY_PAYMENT_ENDPOINT = API_BASE ? `${API_BASE}/api/verify-payment` : '';
   const TRIAL_MS = 3 * 24 * 60 * 60 * 1000;
   const REQUEST_TIMEOUT_MS = 16000;
@@ -38,6 +36,8 @@
   const errorBox = $('#ai-error');
   const errorMessage = $('#ai-error-message');
   const retryButton = $('#ai-retry');
+  const sparkleStatus = $('#sparkle-status');
+  const sparkleStatusText = $('#sparkle-status-text');
 
   const safeGet = (key) => {
     try { return localStorage.getItem(key); } catch (_) { return null; }
@@ -84,6 +84,30 @@
     $$('[data-founder-status]').forEach((item) => { item.textContent = message; });
   }
 
+  function setSparkleStatus(detail = {}) {
+    if (!sparkleStatus || !sparkleStatusText) return;
+    const phase = String(detail.phase || detail.status || '').toLowerCase();
+    sparkleStatus.dataset.state = phase || 'idle';
+
+    if (detail.type === 'progress' && Number.isFinite(detail.progress)) {
+      const percent = Math.round(detail.progress);
+      sparkleStatusText.textContent = `Downloading Sparkle to this device… ${percent}%`;
+      return;
+    }
+
+    if (phase === 'loading' && detail.approxDownload) {
+      sparkleStatusText.textContent = `${detail.message || 'Loading Sparkle…'} First setup is about ${detail.approxDownload}; it is cached after download.`;
+      return;
+    }
+
+    if (phase === 'ready' || phase === 'complete') {
+      sparkleStatusText.textContent = `${detail.message || 'Sparkle is ready.'} Your message stays on this device.`;
+      return;
+    }
+
+    if (detail.message) sparkleStatusText.textContent = detail.message;
+  }
+
   function updateTrial() {
     if (!trialStatus || !trialDetail) return;
 
@@ -95,7 +119,7 @@
 
     if (!trialStarted()) {
       trialStatus.textContent = '3-day free trial';
-      trialDetail.textContent = ' · starts with your first AI message · no card required';
+      trialDetail.textContent = ' · starts with your first Sparkle message · no card required';
       return;
     }
 
@@ -107,11 +131,9 @@
     }
 
     const hours = Math.max(1, Math.ceil(remaining / (60 * 60 * 1000)));
-    if (hours > 24) {
-      trialStatus.textContent = `${Math.ceil(hours / 24)} days left`;
-    } else {
-      trialStatus.textContent = `${hours} ${hours === 1 ? 'hour' : 'hours'} left`;
-    }
+    trialStatus.textContent = hours > 24
+      ? `${Math.ceil(hours / 24)} days left`
+      : `${hours} ${hours === 1 ? 'hour' : 'hours'} left`;
     trialDetail.textContent = ' · your free trial is active';
   }
 
@@ -154,26 +176,13 @@
     if (errorMessage) errorMessage.textContent = '';
   }
 
-  function setLoading(active, label = 'Finding the words…') {
+  function setLoading(active, label = 'Sparkle is finding the words…') {
     state.pending = active;
     generateButton.disabled = active;
     generateButton.dataset.loading = active ? 'true' : 'false';
     generateButton.textContent = active ? label : 'Give me the words';
     $$('.refine-row button').forEach((button) => { button.disabled = active; });
     $$('.mode').forEach((button) => { button.disabled = active; });
-  }
-
-  function setCheckoutLoading(active) {
-    $$('[data-founder-checkout]').forEach((link) => {
-      link.setAttribute('aria-disabled', String(active));
-      link.dataset.loading = active ? 'true' : 'false';
-      if (active) {
-        if (!link.dataset.originalText) link.dataset.originalText = link.textContent;
-        link.textContent = 'Opening secure checkout…';
-      } else if (link.dataset.originalText) {
-        link.textContent = link.dataset.originalText;
-      }
-    });
   }
 
   function saveHistory(message) {
@@ -248,49 +257,13 @@
     }
   }
 
-  async function callAI(payload, allowRetry = true) {
-    if (!AI_ENDPOINT) {
-      const error = new Error('The AI connection is still being finished. Please try again in a moment.');
-      error.code = 'endpoint_missing';
+  async function callAI(payload) {
+    if (!window.Sparkle?.generate) {
+      const error = new Error('Sparkle has not loaded yet. Refresh the page and try again.');
+      error.code = 'sparkle_missing';
       throw error;
     }
-
-    try {
-      const { response, data } = await callJSON(AI_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        if (allowRetry && response.status >= 500) {
-          await new Promise((resolve) => setTimeout(resolve, 650));
-          return callAI(payload, false);
-        }
-        const error = new Error(data.error || 'That did not go through. Please try again.');
-        error.code = `http_${response.status}`;
-        throw error;
-      }
-
-      const message = String(data.message || '').trim();
-      if (!message) {
-        const error = new Error('The AI came back empty. Please try again.');
-        error.code = 'empty_response';
-        throw error;
-      }
-      return message;
-    } catch (error) {
-      if (error?.name === 'AbortError') {
-        const timeoutError = new Error('The AI took too long to answer. Tap try again.');
-        timeoutError.code = 'timeout';
-        throw timeoutError;
-      }
-      if (allowRetry && (error?.name === 'TypeError' || error?.code === 'network')) {
-        await new Promise((resolve) => setTimeout(resolve, 650));
-        return callAI(payload, false);
-      }
-      throw error;
-    }
+    return window.Sparkle.generate(payload, { onStatus: setSparkleStatus });
   }
 
   async function verifyFounderSession(sessionId, { persist = true, quiet = false } = {}) {
@@ -332,39 +305,6 @@
     }
   }
 
-  async function beginCheckout(event) {
-    event.preventDefault();
-    if (!CHECKOUT_ENDPOINT) {
-      showError('Secure checkout is temporarily unavailable. Please try again in a moment.');
-      return;
-    }
-    if ($('[data-founder-checkout][data-loading="true"]')) return;
-
-    clearError();
-    setCheckoutLoading(true);
-    setFounderStatus('Opening Stripe’s secure checkout…');
-    track('wdis_founder_checkout_click', { offer: '19.99_lifetime_beta', trial_days: 3 });
-
-    try {
-      const { response, data } = await callJSON(CHECKOUT_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: '{}'
-      });
-
-      if (!response.ok || !data.url) {
-        throw new Error(data.error || 'Secure checkout could not start. Please try again.');
-      }
-
-      window.location.assign(data.url);
-    } catch (error) {
-      setCheckoutLoading(false);
-      setFounderStatus('Checkout did not open. No payment was taken.');
-      showError(error?.message || 'Secure checkout could not start. Please try again.');
-      track('wdis_checkout_error', { stage: 'create_session' });
-    }
-  }
-
   async function runAI(refine = '') {
     if (state.pending) return;
     await state.accessReady;
@@ -380,11 +320,12 @@
 
     clearError();
     state.lastAction = { refine };
-    setLoading(true, refine ? 'Reworking it…' : 'Finding the words…');
+    setLoading(true, refine ? 'Sparkle is reworking it…' : 'Sparkle is finding the words…');
     const started = performance.now();
 
     try {
       const message = await callAI(requestPayload(refine));
+      if (!message) throw new Error('Sparkle came back empty. Please try again.');
       state.last = message;
       result.textContent = message;
       resultPanel.hidden = false;
@@ -393,6 +334,7 @@
       saveHistory(message);
 
       const metadata = {
+        engine: 'sparkle_on_device',
         mode: state.mode,
         situation: situation.value,
         tone: currentTone(),
@@ -405,9 +347,12 @@
       }
       resultPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } catch (error) {
-      showError(error?.message || 'The AI could not answer right now. Please try again.');
+      sparkleStatus.dataset.state = 'error';
+      sparkleStatusText.textContent = 'Sparkle could not run on this device right now.';
+      showError(error?.message || 'Sparkle could not answer right now. Please try again.');
       track('wdis_ai_error', {
         stage: refine ? 'refine' : 'generate',
+        engine: 'sparkle_on_device',
         error_type: String(error?.code || error?.name || 'unknown').slice(0, 40)
       });
     } finally {
@@ -466,8 +411,6 @@
     clearError();
     runAI(state.lastAction?.refine || '');
   });
-
-  $$('[data-founder-checkout]').forEach((link) => link.addEventListener('click', beginCheckout));
 
   $('.paywall-close')?.addEventListener('click', hidePaywall);
   paywall?.addEventListener('click', (event) => { if (event.target === paywall) hidePaywall(); });
