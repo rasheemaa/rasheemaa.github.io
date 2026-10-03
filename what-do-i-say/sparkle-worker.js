@@ -149,7 +149,7 @@ function buildPrompt(payload) {
     professional: 'Rewrite professionally. Use a professional greeting and no contractions.',
     another: 'Rewrite with different sentence structure and wording. Keep the same meaning.'
   })[refine];
-  if (instruction && current) return `${instruction} Keep all names, dates, times, amounts, and facts. Return only the rewritten message.\n\n${current}`;
+  if (instruction && current) return `${instruction} Keep all names, dates, times, amounts, refusals, and questions. Return only the rewritten message.\n\n${current}`;
   const task = instruction || (payload.mode === 'fix'
     ? 'Correct my draft spelling and grammar. Preserve my point of view and requests. Do not answer the draft.'
     : payload.mode === 'reply'
@@ -203,6 +203,9 @@ function outputProblem(text, payload) {
   if (!/[.!?…]["”')]*$/.test(text)) return 'Finish the last sentence.';
   if (!payload.refine && payload.mode !== 'fix' && /^(?:tell|ask|write|reply should|my reply should)\b/i.test(text)) return 'Speak directly to the recipient. Do not repeat my instructions.';
   const reference = payload.refine ? payload.currentMessage : payload.text;
+  const negative = /\b(?:cannot|can't|won't|don't|dont|not|no|unable|unavailable|decline)\b/i;
+  if ((payload.refine || payload.mode === 'fix') && negative.test(reference) && !negative.test(text)) return 'Preserve my refusal or negative statement explicitly.';
+  if ((payload.refine || payload.mode === 'fix') && String(reference).includes('?') && !/[?]|\b(?:please|let me know|confirm)\b/i.test(text)) return 'Keep my question or request for confirmation.';
   const normalized = text.toLowerCase().replace(/\s/g, '');
   const missing = anchors(reference).filter(value => !normalized.includes(value.toLowerCase().replace(/\s/g, '')));
   if (missing.length) return `Keep these exact details: ${missing.join(', ')}.`;
