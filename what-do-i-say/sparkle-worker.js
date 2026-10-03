@@ -13,11 +13,11 @@ const PRIMARY = {
 };
 
 const FALLBACK = {
-  model: 'onnx-community/SmolLM2-135M-Instruct-ONNX-MHA',
+  model: 'onnx-community/SmolLM2-360M-Instruct-ONNX',
   device: 'wasm',
   dtype: 'q8',
-  label: 'Sparkle Lite',
-  approxDownload: '~150 MB'
+  label: 'Sparkle Compatible',
+  approxDownload: '~365 MB'
 };
 
 let generatorPromise = null;
@@ -73,7 +73,7 @@ async function createGenerator(id, preferLite = false) {
       } catch (error) {
         post(id, 'status', {
           phase: 'fallback',
-          message: 'This device needs the lighter local engine. Switching to Sparkle Lite…',
+          message: 'This device needs the compatibility engine. Switching Sparkle to a broader browser mode…',
           profile: FALLBACK.label,
           backend: FALLBACK.device
         });
@@ -210,7 +210,7 @@ function classifyFailure(error) {
   if (/memory|allocation|out of memory|oom/.test(text)) {
     return {
       code: 'sparkle_memory',
-      message: 'This device ran low on memory while starting Sparkle. Close a few apps or browser tabs, then try again. Sparkle will use its lighter local engine when possible.'
+      message: 'This device ran low on memory while starting Sparkle. Close a few apps or browser tabs, then try again. Sparkle will use its compatibility engine when possible.'
     };
   }
 
