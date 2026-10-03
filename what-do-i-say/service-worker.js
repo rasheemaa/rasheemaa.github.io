@@ -1,4 +1,4 @@
-const CACHE = 'wdis-v6';
+const CACHE = 'wdis-v7';
 const SHELL = [
   '/what-do-i-say/',
   '/what-do-i-say/index.html',
@@ -33,7 +33,6 @@ self.addEventListener('fetch', event => {
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
     const fresh = request.mode === 'navigate' || FRESH.has(url.pathname);
-    // Canonical keys also serve the versioned asset URLs used by the page offline.
     const key = FRESH.has(url.pathname) ? url.pathname : request;
     if (!fresh) {
       const cached = await cache.match(key);
