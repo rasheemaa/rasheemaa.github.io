@@ -240,24 +240,25 @@ async function generate(id, payload, preferLite) {
   });
 
   const messages = [{ role: 'user', content: buildPrompt(payload || {}) }];
+  const chatPrompt = generator.tokenizer.apply_chat_template(messages, {
+    tokenize: false,
+    add_generation_prompt: true
+  });
+  const nonThinkingPrompt = `${chatPrompt}<think>\n\n</think>\n\n`;
   const another = payload?.refine === 'another';
   const shorter = payload?.refine === 'shorter';
-  const output = await generator(messages, {
+  const output = await generator(nonThinkingPrompt, {
     max_new_tokens: shorter ? 72 : 120,
     do_sample: true,
     temperature: another ? 0.8 : 0.7,
     top_p: 0.8,
     top_k: 20,
     repetition_penalty: 1.08,
-    tokenizer_encode_kwargs: { enable_thinking: false }
+    return_full_text: false
   });
 
   const generated = output?.[0]?.generated_text;
-  let text = '';
-  if (Array.isArray(generated)) text = generated.at(-1)?.content || '';
-  else text = generated || '';
-
-  text = cleanOutput(text);
+  const text = cleanOutput(generated || '');
   if (!text) throw new Error('Sparkle did not produce a sendable message.');
 
   post(id, 'result', {
