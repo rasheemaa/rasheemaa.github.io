@@ -86,6 +86,19 @@
     $$('[data-founder-status]').forEach((item) => { item.textContent = message; });
   }
 
+  function setOutputActivity(active, message = 'Sparkle is working on your message…') {
+    if (!resultPanel || !result) return;
+    resultPanel.hidden = false;
+    result.classList.toggle('is-working', active);
+    if (active) {
+      result.dataset.workingMessage = message;
+      resultPanel.setAttribute('aria-busy', 'true');
+    } else {
+      delete result.dataset.workingMessage;
+      resultPanel.setAttribute('aria-busy', 'false');
+    }
+  }
+
   function setSparkleStatus(detail = {}) {
     if (!sparkleStatus || !sparkleStatusText) return;
     const phase = String(detail.phase || detail.status || '').toLowerCase();
@@ -93,21 +106,42 @@
 
     if (detail.type === 'progress' && Number.isFinite(detail.progress)) {
       const percent = Math.round(detail.progress);
-      sparkleStatusText.textContent = `Downloading a Sparkle setup file… ${percent}%. Several files may be needed.`;
+      const message = `Downloading Sparkle setup… ${percent}%`;
+      sparkleStatusText.textContent = `${message}. Several files may be needed.`;
+      if (state.pending) setOutputActivity(true, message);
       return;
     }
 
     if (phase === 'loading' && detail.approxDownload) {
-      sparkleStatusText.textContent = `${detail.message || 'Loading Sparkle…'} First setup is about ${detail.approxDownload}; it is cached after download.`;
+      const message = detail.message || 'Loading Sparkle on this device…';
+      sparkleStatusText.textContent = `${message} First setup is about ${detail.approxDownload}; it is cached after download.`;
+      if (state.pending) setOutputActivity(true, message);
       return;
     }
 
-    if (phase === 'ready' || phase === 'complete') {
+    if (phase === 'generating' || phase === 'checking' || phase === 'starting' || phase === 'ready') {
+      const message = detail.message || (phase === 'checking'
+        ? 'Sparkle is checking the details…'
+        : phase === 'generating'
+          ? 'Sparkle is writing your message…'
+          : 'Sparkle is getting ready…');
+      sparkleStatusText.textContent = phase === 'ready'
+        ? `${message} Your message stays on this device.`
+        : message;
+      if (state.pending) setOutputActivity(true, message);
+      return;
+    }
+
+    if (phase === 'complete') {
       sparkleStatusText.textContent = `${detail.message || 'Sparkle is ready.'} Your message stays on this device.`;
+      setOutputActivity(false);
       return;
     }
 
-    if (detail.message) sparkleStatusText.textContent = detail.message;
+    if (detail.message) {
+      sparkleStatusText.textContent = detail.message;
+      if (state.pending) setOutputActivity(true, detail.message);
+    }
   }
 
   function updateTrial() {
@@ -185,8 +219,12 @@
     generateButton.disabled = active;
     generateButton.dataset.loading = active ? 'true' : 'false';
     generateButton.textContent = active ? label : 'Give me the words';
-    $$('.refine-row button').forEach((button) => { button.disabled = active; });
-    $$('.mode').forEach((button) => { button.disabled = active; });
+    $('.refine-row button').forEach((button) => { button.disabled = active; });
+    $('.mode').forEach((button) => { button.disabled = active; });
+    setOutputActivity(active, active ? label : '');
+    if (active) {
+      requestAnimationFrame(() => resultPanel?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
+    }
   }
 
   function readHistory() {
