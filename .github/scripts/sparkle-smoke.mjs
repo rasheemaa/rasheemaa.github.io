@@ -65,6 +65,14 @@ function has(text, pattern) {
   return pattern.test(String(text || ''));
 }
 
+function wordCount(text) {
+  return String(text || '').trim().split(/\s+/).filter(Boolean).length;
+}
+
+function normalizedWording(text) {
+  return String(text || '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+}
+
 function assertSendable(output, label) {
   const text = String(output || '').trim();
   assert(text.length >= 8, `${label} is too short to be a useful message`);
@@ -237,6 +245,8 @@ async function retryAfterTransientFailure(previousOutput) {
   assert(has(value.output, /\bTuesday\b/i), 'Retry lost Tuesday');
   assert(has(value.output, /\b3\s*PM\b/i), 'Retry lost 3 PM');
   assert(has(value.output, /\b4\s*PM\b/i), 'Retry lost 4 PM');
+  assert(has(value.output, /\b(?:cannot|can['’]t|unable|unavailable|not able|conflict|reschedul(?:e|ing)|another commitment)\b/i), 'Retry lost the explicit 3 PM refusal');
+  assert(!has(value.output, /\bI\s+can\s+make\s+(?:the\s+)?3\s*PM\b/i), 'Retry reversed the 3 PM refusal');
   assert(has(value.output, /\b(?:work|works|okay|ok|available)\b/i), 'Retry lost the request to check whether 4 PM works');
   assert(!/\bAsk\s+Priya\b/i.test(value.output), 'Retry repeated a note-taking instruction instead of addressing Priya');
   console.log(`PASS RETRY | ${value.status}`);
@@ -249,7 +259,17 @@ try {
   await page.waitForFunction(() => Boolean(window.Sparkle?.generate), null, { timeout: 30_000 });
 
   const sparkleSrc = await page.locator('script[src*="sparkle.js"]').getAttribute('src');
-  assert(sparkleSrc?.includes('sparkle.js?v=11'), `Unexpected Sparkle runtime asset: ${sparkleSrc}`);
+  assert(sparkleSrc?.includes('sparkle.js?v=14'), `Unexpected Sparkle runtime asset: ${sparkleSrc}`);
+
+  const mobile = await page.evaluate(() => ({
+    innerWidth: window.innerWidth,
+    scrollWidth: document.documentElement.scrollWidth,
+    generateRight: document.querySelector('#generate')?.getBoundingClientRect().right || 0
+  }));
+  assert(mobile.innerWidth === 390, `Unexpected mobile viewport width: ${mobile.innerWidth}`);
+  assert(mobile.scrollWidth <= mobile.innerWidth + 2, `Mobile layout has horizontal overflow: ${JSON.stringify(mobile)}`);
+  assert(mobile.generateRight <= mobile.innerWidth + 1, `Generate button overflows the mobile viewport: ${JSON.stringify(mobile)}`);
+  console.log('PASS mobile-size UI | 390x844 with no horizontal overflow');
 
   const resultVisible = await page.locator('#result-panel').evaluate((node) => !node.hidden);
   assert(resultVisible, 'Sparkle output panel is not visible before generation');
@@ -313,9 +333,27 @@ try {
   );
   assertFixFacts(fixed, 'Fix');
 
+  let previousRefinement = fixed;
   for (const action of ['shorter', 'softer', 'firmer', 'professional', 'another']) {
     const output = await refine(action);
     assertFixFacts(output, `Refine ${action}`);
+    if (action === 'shorter') {
+      assert(wordCount(output) < wordCount(previousRefinement), `Shorter did not reduce the message length: ${wordCount(previousRefinement)} -> ${wordCount(output)}`);
+    }
+    if (action === 'softer') {
+      assert(has(output, /\b(?:sorry|please|thank|thanks|appreciate|understand|unfortunately|would|could|hope|kindly)\b/i), `Softer did not include a gentler cue: ${output}`);
+    }
+    if (action === 'firmer') {
+      assert(!/\bPlease\.\s*$/i.test(output), `Firmer ended with a dangling “Please.”: ${output}`);
+    }
+    if (action === 'professional') {
+      assert(!/\b(?:can't|won't|don't|doesn't|didn't|I'm|I'll|I've|we're|we'll)\b/i.test(output), `Professional kept casual contractions: ${output}`);
+      assert(has(output, /^(?:Hello|Hi|Dear)\s+Maya\b/i), `Professional lacks a polished greeting to Maya: ${output}`);
+    }
+    if (action === 'another') {
+      assert(normalizedWording(output) !== normalizedWording(previousRefinement), `Another did not genuinely rephrase the previous message: ${output}`);
+    }
+    previousRefinement = output;
   }
 
   assert((await page.evaluate(() => localStorage.getItem('wdis_trial_started_at_v2'))) === trialAfter, 'Later actions restarted the trial');
