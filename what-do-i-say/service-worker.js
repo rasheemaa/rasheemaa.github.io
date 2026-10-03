@@ -1,9 +1,10 @@
-const CACHE = 'wdis-v8';
+const CACHE = 'wdis-v9';
 const SHELL = [
   '/what-do-i-say/',
   '/what-do-i-say/index.html',
   '/what-do-i-say/styles.css',
   '/what-do-i-say/sparkle.css',
+  '/what-do-i-say/bootstrap.js',
   '/what-do-i-say/config.js',
   '/what-do-i-say/app.js',
   '/what-do-i-say/sparkle.js',
@@ -40,7 +41,6 @@ self.addEventListener('fetch', event => {
     }
     try {
       const response = await fetch(fresh ? new Request(request, { cache: 'no-store' }) : request);
-      // A full cache must never turn a successful network response into failure.
       if (response.ok) {
         try { await cache.put(key, response.clone()); } catch (_) {}
       }
