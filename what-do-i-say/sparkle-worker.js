@@ -274,6 +274,18 @@ function directAddressGuard(text, payload) {
   return text.replace(copiedConfirmation, 'Please confirm you received this message.').replace(/\s{2,}/g, ' ').trim();
 }
 
+function safeShorterFallback(value) {
+  let output = cleanOutput(value);
+  output = output.replace(/^Hi\s+([^,\n]{1,60}),\s*/i, '$1, ');
+  output = output.replace(/\bI wanted to let you know that\b\s*/gi, '');
+  output = output.replace(/\bI just wanted to let you know that\b\s*/gi, '');
+  output = output.replace(/\b(?:just|really|actually)\b\s*/gi, '');
+  output = output.replace(/\bon\s+(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b/gi, '$1');
+  output = output.replace(/\bI'm sorry\b/gi, 'Sorry');
+  output = output.replace(/\s+([,.!?])/g, '$1').replace(/\s{2,}/g, ' ').trim();
+  return cleanOutput(output);
+}
+
 function classifyFailure(error) {
   if (error?.code === 'sparkle_quality') return { code: error.code, message: error.message };
   const text = `${error?.name || ''} ${error?.message || ''}`.toLowerCase();
@@ -315,6 +327,13 @@ async function generate(id, payload, preferLite) {
     const problem = outputProblem(text, payload || {});
     if (!problem) break;
     if (attempt === 1) {
+      if (payload?.refine === 'shorter') {
+        const fallback = safeShorterFallback(payload.currentMessage);
+        if (!outputProblem(fallback, payload || {})) {
+          text = fallback;
+          break;
+        }
+      }
       const error = new Error('Sparkle could not keep all the details reliably. Try a shorter draft with the key facts. Your previous message has not been replaced.');
       error.code = 'sparkle_quality';
       throw error;
