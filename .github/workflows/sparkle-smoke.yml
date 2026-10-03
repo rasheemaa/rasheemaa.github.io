@@ -1,6 +1,5 @@
 name: Sparkle live smoke test
 
-# Manual full-suite retrigger after the Another live hotfix.
 on:
   push:
     paths:
@@ -9,6 +8,7 @@ on:
       - '.github/scripts/sparkle-targeted-retry.mjs'
       - '.github/scripts/sparkle-targeted-mobile.mjs'
       - 'what-do-i-say/index.html'
+      - 'what-do-i-say/bootstrap.js'
       - 'what-do-i-say/config.js'
       - 'what-do-i-say/app.js'
       - 'what-do-i-say/sparkle.js'
@@ -21,28 +21,34 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: sparkle-live-smoke-main
+  cancel-in-progress: true
+
 jobs:
   sparkle-smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout exact repository revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '20'
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-1.55.0
 
-      - name: Install Playwright
+      - name: Install exact Playwright version without package lifecycle scripts
         run: |
-          npm install --no-save playwright@1.55.0
+          npm install --no-save --ignore-scripts playwright@1.55.0
           npx playwright install --with-deps chromium
 
       - name: Test targeted Sparkle mobile UI live
