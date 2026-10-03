@@ -13,20 +13,20 @@ permalink: /what-do-i-say/
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="What Do I Say?">
 <title>What Do I Say? | The Sheema Edit</title>
-<meta name="description" content="AI powered help for the messages you overthink. Start a 3-day free trial and write, reply to, and clean up everyday messages in seconds.">
+<meta name="description" content="Private on-device AI help for the messages you overthink. Sparkle helps you write, reply to, and clean up everyday messages without sending the message to a paid AI API.">
 <link rel="canonical" href="https://thesheemaedit.com/what-do-i-say/">
 <link rel="manifest" href="/what-do-i-say/manifest.webmanifest">
 <link rel="icon" href="/assets/images/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
 <meta property="og:type" content="website">
 <meta property="og:title" content="What Do I Say? | The Sheema Edit">
-<meta property="og:description" content="You know what you mean. AI helps you find the words. Start with a 3-day free trial.">
+<meta property="og:description" content="You know what you mean. Sparkle helps you find the words privately on your device.">
 <meta property="og:url" content="https://thesheemaedit.com/what-do-i-say/">
 <meta property="og:image" content="https://thesheemaedit.com/assets/images/social-card.png">
 <meta name="twitter:card" content="summary_large_image">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-C7XV3YJCZE"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-C7XV3YJCZE');</script>
-<link rel="stylesheet" href="/what-do-i-say/styles.css">
+<link rel="stylesheet" href="/what-do-i-say/styles.css?v=6">
 </head>
 <body>
 <a class="skip" href="#app">Skip to the tool</a>
@@ -39,17 +39,22 @@ permalink: /what-do-i-say/
 </header>
 <main id="app" class="shell">
   <section class="hero">
-    <p class="kicker">AI powered · 3 days free</p>
+    <p class="kicker">Powered by Sparkle ✦ · 3 days free</p>
     <h1>You know what you mean.<br><span>You just need the words.</span></h1>
-    <p class="lede">Tell it what happened, paste what they sent, or drop in your draft. The AI writes a custom response around your exact situation and tone.</p>
-    <div class="trial-pill" aria-live="polite"><strong id="trial-status">3-day free trial</strong><span id="trial-detail"> · starts with your first AI message · no card required</span></div>
+    <p class="lede">Tell Sparkle what happened, paste what they sent, or drop in your draft. Sparkle writes a custom response around your exact situation and tone right on your device.</p>
+    <div class="trial-pill" aria-live="polite"><strong id="trial-status">3-day free trial</strong><span id="trial-detail"> · starts with your first Sparkle message · no card required</span></div>
   </section>
 
-  <section class="workspace" aria-label="AI message generator">
+  <section class="workspace" aria-label="Sparkle message generator">
     <div class="mode-tabs" role="tablist" aria-label="Choose what you need help with">
       <button class="mode active" type="button" data-mode="write" aria-selected="true">Write it for me</button>
       <button class="mode" type="button" data-mode="reply" aria-selected="false">Reply for me</button>
       <button class="mode" type="button" data-mode="fix" aria-selected="false">Fix what I wrote</button>
+    </div>
+
+    <div class="sparkle-status" id="sparkle-status" data-state="idle" role="status" aria-live="polite">
+      <span class="sparkle-mark" aria-hidden="true">✦</span>
+      <div><strong>Powered by Sparkle</strong><span id="sparkle-status-text">Private on-device AI. Sparkle downloads to this device on first use and is cached after that.</span></div>
     </div>
 
     <form id="message-form" class="composer">
@@ -89,20 +94,20 @@ permalink: /what-do-i-say/
       </fieldset>
 
       <button class="primary" id="generate" type="submit">Give me the words</button>
-      <p class="privacy-note">Your 3-day trial begins after your first successful AI response. Your message is sent securely to the AI service to generate your result, but the message itself is not sent to Google Analytics. Don’t enter passwords, card numbers, or other highly sensitive information.</p>
+      <p class="privacy-note">Your 3-day trial begins after your first successful Sparkle response. Sparkle runs an open-weight language model locally in your browser, so the message you enter is not sent to OpenAI, Claude, Cloudflare AI, or Google Analytics. The first use downloads the model to your device and later uses are cached. Don’t enter passwords, card numbers, or other highly sensitive information.</p>
     </form>
 
     <div id="ai-error" class="ai-error" hidden role="alert" aria-live="assertive">
       <div>
         <strong>That didn’t go through.</strong>
-        <p id="ai-error-message">The AI could not answer right now.</p>
+        <p id="ai-error-message">Sparkle could not answer right now.</p>
       </div>
       <button id="ai-retry" type="button">Try again</button>
     </div>
 
     <section id="result-panel" class="result-panel" hidden aria-live="polite">
       <div class="result-heading">
-        <div><p class="mini">AI generated · ready to copy</p><h2>Your message</h2></div>
+        <div><p class="mini">Sparkle generated · ready to copy</p><h2>Your message</h2></div>
         <button id="copy" class="copy-button" type="button">Copy</button>
       </div>
       <div id="result" class="result" tabindex="0"></div>
@@ -119,7 +124,7 @@ permalink: /what-do-i-say/
   <section class="founder-card" id="founder">
     <div>
       <p class="kicker">Launch plan</p>
-      <h2>Try the AI free for 3 days. Then choose Founding Member access.</h2>
+      <h2>Try Sparkle free for 3 days. Then choose Founding Member access.</h2>
       <p><strong>Free trial:</strong> 3 full days, no card required. <strong>Founding Member:</strong> $19.99 once for the first 100 members, with core platform access for life. After the founding launch, the regular plan is intended to be $9.99/month.</p>
     </div>
     <div class="founder-actions">
@@ -156,7 +161,8 @@ permalink: /what-do-i-say/
 </div>
 
 <footer><a href="/">The Sheema Edit</a><span>·</span><a href="/shop/">Shop</a><span>·</span><a href="https://www.tiktok.com/@_rasheemaa" target="_blank" rel="noopener noreferrer">TikTok</a></footer>
-<script src="/what-do-i-say/config.js?v=5"></script>
-<script src="/what-do-i-say/app.js?v=5" defer></script>
+<script src="/what-do-i-say/config.js?v=6"></script>
+<script src="/what-do-i-say/sparkle.js?v=1"></script>
+<script src="/what-do-i-say/app.js?v=6" defer></script>
 </body>
 </html>
