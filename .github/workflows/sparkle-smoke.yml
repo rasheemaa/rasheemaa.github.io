@@ -28,5 +28,5 @@ jobs:
           npm install --no-save playwright@1.55.0
           npx playwright install --with-deps chromium
 
-      - name: Test live Sparkle end to end
+      - name: Test tuned Sparkle live end to end
         run: node .github/scripts/sparkle-smoke.mjs
