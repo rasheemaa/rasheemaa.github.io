@@ -107,12 +107,12 @@ permalink: /what-do-i-say/
       <button id="ai-retry" type="button">Try again</button>
     </div>
 
-    <section id="result-panel" class="result-panel" hidden aria-live="polite">
+    <section id="result-panel" class="result-panel" aria-live="polite">
       <div class="result-heading">
-        <div><p class="mini">Sparkle generated · ready to copy</p><h2>Your message</h2></div>
+        <div><p class="mini">Sparkle output</p><h2>Your message</h2></div>
         <button id="copy" class="copy-button" type="button">Copy</button>
       </div>
-      <div id="result" class="result" tabindex="0"></div>
+      <div id="result" class="result" tabindex="0">Your Sparkle message will appear here.</div>
       <div class="refine-row" aria-label="Refine the message">
         <button type="button" data-refine="shorter">Make it shorter</button>
         <button type="button" data-refine="softer">Make it softer</button>
@@ -182,7 +182,7 @@ permalink: /what-do-i-say/
 })();
 </script>
 <script src="/what-do-i-say/config.js?v=7"></script>
-<script src="/what-do-i-say/sparkle.js?v=5"></script>
+<script src="/what-do-i-say/sparkle.js?v=6"></script>
 <script src="/what-do-i-say/app.js?v=8" defer></script>
 </body>
 </html>
