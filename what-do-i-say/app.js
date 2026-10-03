@@ -367,7 +367,9 @@
         return;
       }
       sparkleStatus.dataset.state = 'error';
-      sparkleStatusText.textContent = 'Sparkle could not run on this device right now.';
+      sparkleStatusText.textContent = error?.code === 'sparkle_quality'
+        ? 'Sparkle could not verify this wording. Your draft is still here.'
+        : 'Sparkle could not run on this device right now.';
       showError(error?.message || 'Sparkle could not answer right now. Please try again.');
       track('wdis_ai_error', {
         stage: refine ? 'refine' : 'generate',
@@ -498,4 +500,3 @@
   state.accessReady = initializeAccess().finally(updateTrial);
   window.setInterval(updateTrial, 60 * 1000);
 })();
-

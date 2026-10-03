@@ -15,7 +15,7 @@ let stopped=false;
 document.querySelector('#stop').onclick=()=>{stopped=true;Sparkle.cancel();};
 document.querySelector('#run').onclick=async()=>{
   stopped=false;document.querySelector('#run').disabled=true;document.querySelector('#results').replaceChildren();
-  for(const fixture of fixtures){
+  for(const fixture of location.search === '?refinements=1' ? fixtures.slice(3) : fixtures){
     if(stopped)break;
     const article=document.createElement('article'); const heading=document.createElement('h2');heading.textContent=fixture.label;article.append(heading);
     const pre=document.createElement('pre');pre.textContent='Running…';article.append(pre);document.querySelector('#results').append(article);
