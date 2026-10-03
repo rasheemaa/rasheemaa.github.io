@@ -6,11 +6,14 @@ on:
       - '.github/workflows/sparkle-smoke.yml'
       - '.github/scripts/sparkle-smoke.mjs'
       - '.github/scripts/sparkle-targeted-retry.mjs'
+      - '.github/scripts/sparkle-targeted-mobile.mjs'
       - 'what-do-i-say/index.html'
       - 'what-do-i-say/config.js'
       - 'what-do-i-say/app.js'
       - 'what-do-i-say/sparkle.js'
       - 'what-do-i-say/sparkle-worker.js'
+      - 'what-do-i-say/styles.css'
+      - 'what-do-i-say/sparkle.css'
       - 'what-do-i-say/service-worker.js'
   workflow_dispatch:
 
@@ -41,10 +44,14 @@ jobs:
           npm install --no-save playwright@1.55.0
           npx playwright install --with-deps chromium
 
+      - name: Test targeted Sparkle mobile UI live
+        if: contains(github.event.head_commit.message, '[sparkle-mobile]')
+        run: node .github/scripts/sparkle-targeted-mobile.mjs
+
       - name: Test targeted Sparkle retry refusal live
-        if: contains(github.event.head_commit.message, '[sparkle-targeted]')
+        if: ${{ contains(github.event.head_commit.message, '[sparkle-targeted]') && !contains(github.event.head_commit.message, '[sparkle-mobile]') }}
         run: node .github/scripts/sparkle-targeted-retry.mjs
 
       - name: Test tuned Sparkle live end to end
-        if: ${{ !contains(github.event.head_commit.message, '[sparkle-targeted]') }}
+        if: ${{ !contains(github.event.head_commit.message, '[sparkle-targeted]') && !contains(github.event.head_commit.message, '[sparkle-mobile]') }}
         run: node .github/scripts/sparkle-smoke.mjs
