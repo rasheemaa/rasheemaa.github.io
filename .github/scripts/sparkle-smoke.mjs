@@ -54,6 +54,24 @@ function assertSendable(output, label) {
   assert(!/\bAlex\b|\blunch\b|next week/i.test(text), `${label} leaked a training/example fact: ${text}`);
 }
 
+function schedulePolarityByAnchor(output) {
+  const map = new Map();
+  const clauses = String(output || '').split(/\bbut\b|[.!?;]+/i);
+  clauses.forEach((clause) => {
+    const polarity = /\b(?:cannot|can't|can’t|unable|unavailable|not able)\b/i.test(clause)
+      ? 'negative'
+      : /\b(?:can|available|able to)\b/i.test(clause)
+        ? 'positive'
+        : '';
+    if (!polarity) return;
+    if (/\bFriday\b/i.test(clause)) map.set('friday', polarity);
+    if (/\b4\s*PM\b/i.test(clause)) map.set('4pm', polarity);
+    if (/\bSaturday\b/i.test(clause)) map.set('saturday', polarity);
+    if (/\b10\s*AM\b/i.test(clause)) map.set('10am', polarity);
+  });
+  return map;
+}
+
 function assertFixFacts(output, label) {
   assert(has(output, /\bMaya\b/i), `${label} lost Maya`);
   assert(has(output, /\bEli\b/i), `${label} lost Eli`);
@@ -62,6 +80,11 @@ function assertFixFacts(output, label) {
   assert(has(output, /\bSaturday\b/i), `${label} lost Saturday`);
   assert(has(output, /\b10\s*AM\b/i), `${label} lost 10 AM`);
   assert(has(output, /\b(?:can't|cannot|unable|not able)\b/i), `${label} lost the refusal`);
+  const polarity = schedulePolarityByAnchor(output);
+  assert(polarity.get('friday') === 'negative', `${label} changed Friday from unavailable to available`);
+  assert(polarity.get('4pm') === 'negative', `${label} changed 4 PM from unavailable to available`);
+  assert(polarity.get('saturday') === 'positive', `${label} changed Saturday from available to unavailable`);
+  assert(polarity.get('10am') === 'positive', `${label} changed 10 AM from available to unavailable`);
 }
 
 async function resultOrError(previous = '') {
