@@ -400,7 +400,15 @@ async function generate(id, payload, preferLite) {
           break;
         }
       }
-      const error = new Error('Sparkle could not keep all the details reliably. Try a shorter draft with the key facts. Your previous message has not been replaced.');
+      const issue = problem.includes('refusal') ? 'The refusal did not stay explicit.'
+        : problem.startsWith('Keep these exact details') ? 'A date, time, or amount was missing.'
+        : problem.startsWith('Do not introduce') ? 'A date, time, or amount changed.'
+        : problem.includes('question') ? 'The question or confirmation request was lost.'
+        : problem.includes('different wording') ? 'The requested wording change was not made.'
+        : problem.includes('shorter') ? 'The message was not made shorter.'
+        : problem.includes('recipient') ? 'The wording still contained instructions instead of a direct message.'
+        : 'The result was not a complete message.';
+      const error = new Error(`Sparkle could not keep all the details reliably. ${issue} Your previous message has not been replaced. Please try again.`);
       error.code = 'sparkle_quality';
       throw error;
     }
