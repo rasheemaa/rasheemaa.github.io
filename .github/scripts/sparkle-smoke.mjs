@@ -21,7 +21,7 @@ await context.addInitScript(() => {
     localStorage.removeItem('wdis_trial_started_at_v2');
     localStorage.removeItem('wdis_history_v1');
     localStorage.setItem('wdis_sparkle_profile_v1', JSON.stringify({
-      profile: 'Sparkle Lite',
+      profile: 'Sparkle Compatible',
       backend: 'wasm',
       at: Date.now()
     }));
@@ -37,6 +37,15 @@ page.on('console', (message) => {
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
+}
+
+function assertSendable(output, label) {
+  const text = String(output || '').trim();
+  assert(text.length >= 8, `${label} is too short to be a useful message`);
+  assert(text.length <= 1600, `${label} is too long to be a practical message`);
+  const meta = /^(?:here(?:'s| is)|the (?:message|response|tone)|your draft|i would say|task:|tone:|context:|details:|output only|rewritten message|revised message)/i;
+  assert(!meta.test(text), `${label} starts with meta commentary: ${text.slice(0, 140)}`);
+  assert(!/output only the final message|do not invent facts|tone:\s*(?:warm|direct|professional|casual|firm|short)/i.test(text), `${label} echoed prompt instructions`);
 }
 
 async function resultOrError(previous = '') {
@@ -77,7 +86,7 @@ async function generateMode(mode, text) {
   const before = (await page.locator('#result').textContent())?.trim() || '';
   await page.locator('#generate').click();
   const value = await resultOrError(before);
-  assert(value.output.length >= 2, `${mode} returned an empty/too-short result`);
+  assertSendable(value.output, mode);
   console.log(`PASS ${mode.toUpperCase()} | ${value.status}`);
   console.log(`OUTPUT ${mode.toUpperCase()}: ${value.output.replace(/\s+/g, ' ').slice(0, 500)}`);
   return value.output;
@@ -87,7 +96,7 @@ async function refine(action) {
   const before = (await page.locator('#result').textContent())?.trim() || '';
   await page.locator(`[data-refine="${action}"]`).click();
   const value = await resultOrError(before);
-  assert(value.output.length >= 2, `${action} returned an empty/too-short result`);
+  assertSendable(value.output, `refine ${action}`);
   console.log(`PASS REFINE ${action.toUpperCase()} | ${value.status}`);
   console.log(`OUTPUT REFINE ${action.toUpperCase()}: ${value.output.replace(/\s+/g, ' ').slice(0, 500)}`);
   return value.output;
@@ -108,7 +117,8 @@ try {
   assert(!trialBefore, 'Trial started before the first successful Sparkle response');
   console.log('PASS trial has not started before generation');
 
-  await generateMode('write', 'Tell my manager I need tomorrow off for a personal matter. I want to be respectful and not overshare.');
+  const write = await generateMode('write', 'Tell my manager I need tomorrow off for a personal matter. I want to be respectful and not overshare.');
+  assert(/tomorrow|personal|day off|time off/i.test(write), 'Write result lost the core time-off request');
 
   const trialAfter = await page.evaluate(() => localStorage.getItem('wdis_trial_started_at_v2'));
   assert(Boolean(trialAfter), 'Trial did not start after the first successful Sparkle response');
@@ -117,12 +127,15 @@ try {
   const profile = await page.evaluate(() => {
     try { return JSON.parse(localStorage.getItem('wdis_sparkle_profile_v1') || 'null'); } catch (_) { return null; }
   });
-  assert(profile?.profile === 'Sparkle Lite', `Expected Sparkle Lite profile, received ${JSON.stringify(profile)}`);
+  assert(profile?.profile === 'Sparkle Compatible', `Expected Sparkle Compatible profile, received ${JSON.stringify(profile)}`);
   assert(profile?.backend === 'wasm', `Expected WASM backend, received ${JSON.stringify(profile)}`);
   console.log(`PASS model initialized | ${profile.profile} / ${profile.backend}`);
 
-  await generateMode('reply', 'They said: “Are you mad at me? You have been quiet all day.” I want to say I am overwhelmed and need a little space, but I am not angry at them.');
-  await generateMode('fix', 'hey i cant make it today sorry i know this is last minute but something came up can we do another day');
+  const reply = await generateMode('reply', 'They said: “Are you mad at me? You have been quiet all day.” I want to say I am overwhelmed and need a little space, but I am not angry at them.');
+  assert(/not (?:mad|angry)|overwhelm|space/i.test(reply), 'Reply result lost the core relationship intent');
+
+  const fixed = await generateMode('fix', 'hey i cant make it today sorry i know this is last minute but something came up can we do another day');
+  assert(/today|another day|reschedul|make it/i.test(fixed), 'Fix result lost the core cancellation intent');
 
   for (const action of ['shorter', 'softer', 'firmer', 'professional', 'another']) {
     await refine(action);
