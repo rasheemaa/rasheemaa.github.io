@@ -223,7 +223,12 @@ function buildMessages(payload) {
 }
 
 function anchors(text) {
-  return [...new Set(String(text).match(/\$?\d+(?:[.,:/-]\d+)*(?:\s*(?:AM|PM|a\.m\.|p\.m\.|%))?|\b(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|January|February|March|April|May|June|July|August|September|October|November|December)\b/gi) || [])];
+  return [...new Set(normalizeTimes(text).match(/\$?\d+(?:[.,:/-]\d+)*(?:\s*(?:AM|PM|%))?|\b(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|January|February|March|April|May|June|July|August|September|October|November|December)\b/gi) || [])];
+}
+
+function normalizeTimes(value) {
+  return String(value || '').replace(/\b(0?[1-9]|1[0-2])(?::00)?\s*([ap])\.?m\.?(?!\w)/gi,
+    (_match, hour, period) => `${Number(hour)} ${period.toUpperCase()}M`);
 }
 
 function wordCount(text) {
@@ -239,7 +244,7 @@ function outputProblem(text, payload) {
   const negative = /\b(?:cannot|can't|won't|don't|dont|not|no|unable|unavailable|decline)\b/i;
   if ((payload.refine || payload.mode === 'fix' || payload.mode === 'reply') && negative.test(reference) && !negative.test(text)) return 'Preserve my refusal or negative statement explicitly.';
   if (payload.refine !== 'firmer' && (payload.refine || payload.mode === 'fix' || payload.mode === 'reply') && String(reference).includes('?') && !/[?]|\b(?:please|let me know|confirm)\b/i.test(text)) return 'Keep my question or request for confirmation.';
-  const normalized = text.toLowerCase().replace(/\s/g, '');
+  const normalized = normalizeTimes(text).toLowerCase().replace(/\s/g, '');
   const missing = anchors(reference).filter(value => !normalized.includes(value.toLowerCase().replace(/\s/g, '')));
   if (missing.length) return `Keep these exact details: ${missing.join(', ')}.`;
   const allowedNumberSource = payload.mode === 'reply' && !payload.refine ? `${replyIntent(payload.text)} ${payload.personName || ''}` : `${payload.text} ${payload.currentMessage || ''} ${payload.personName || ''}`;
@@ -270,9 +275,11 @@ function directAddressGuard(text, payload) {
   if (!recipient) return text;
   const escaped = escapeRegex(recipient);
   const copiedConfirmation = new RegExp(`\\bAsk\\s+${escaped}\\s+to\\s+confirm\\s+(?:she|he|they)\\s+received\\s+(?:the|this)\\s+message\\.?`, 'ig');
-  if (!copiedConfirmation.test(text)) return text;
-  copiedConfirmation.lastIndex = 0;
-  return text.replace(copiedConfirmation, 'Please confirm you received this message.').replace(/\s{2,}/g, ' ').trim();
+  return text
+    .replace(copiedConfirmation, 'Please confirm you received this message.')
+    .replace(new RegExp(`(^|[.!?]\\s+)Ask\\s+${escaped}\\s+(if|whether)\\s+`, 'ig'), '$1Please let me know $2 ')
+    .replace(new RegExp(`(^|[.!?]\\s+)Tell\\s+${escaped}\\s+(?:that\\s+)?(?=I\\b)`, 'ig'), '$1')
+    .replace(/\s{2,}/g, ' ').trim();
 }
 
 function replyPerspectiveGuard(text, payload) {
