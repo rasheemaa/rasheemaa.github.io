@@ -167,8 +167,8 @@ function buildPrompt(payload) {
   const instruction = ({
     shorter: `Rewrite in at most ${shorterWords} words. Remove filler and combine sentences, but preserve every concrete fact, name, date, time, request, and refusal.`,
     softer: 'Rewrite in a gentle, considerate tone. Make requests polite while keeping the same decision.',
-    firmer: 'Rewrite confidently with different wording. Keep every refusal, name, date, and time. Turn tentative questions into polite direct requests such as “Please…” or “Let’s…”.',
-    professional: 'Rewrite professionally. Use a professional greeting and no contractions.',
+    firmer: 'Rewrite confidently with different wording. Keep every refusal, name, date, and time. Remove unnecessary apologies. Do not add dangling words such as “Please” by themselves.',
+    professional: 'Rewrite professionally. Use a natural professional greeting, no contractions, and complete sentences. Keep every concrete fact and decision.',
     another: 'Rewrite with different sentence structure and wording. Keep the same meaning.'
   })[refine];
   if (instruction && current) {
@@ -286,6 +286,38 @@ function safeShorterFallback(value) {
   return cleanOutput(output);
 }
 
+function professionalFallback(value, recipient) {
+  let output = cleanOutput(value)
+    .replace(/\bcan't\b/gi, 'cannot')
+    .replace(/\bwon't\b/gi, 'will not')
+    .replace(/\bdon't\b/gi, 'do not')
+    .replace(/\bdoesn't\b/gi, 'does not')
+    .replace(/\bdidn't\b/gi, 'did not')
+    .replace(/\bI'm\b/g, 'I am')
+    .replace(/\bI'll\b/g, 'I will')
+    .replace(/\bI've\b/g, 'I have')
+    .replace(/\bwe're\b/gi, 'we are')
+    .replace(/\bwe'll\b/gi, 'we will')
+    .replace(/\s+(?:Sorry|Please)\.$/i, '.');
+  const name = compact(recipient, 60);
+  if (name) {
+    const directName = new RegExp(`^${escapeRegex(name)},\\s*`, 'i');
+    if (directName.test(output)) output = output.replace(directName, `Hello ${name}, `);
+    else if (!/^(?:Hello|Hi|Dear)\b/i.test(output)) output = `Hello ${name}, ${output}`;
+  }
+  return cleanOutput(output.replace(/\s{2,}/g, ' ').trim());
+}
+
+function polishRefinement(text, payload) {
+  if (payload?.refine === 'firmer') {
+    return cleanOutput(text.replace(/\s+(?:Please|Sorry)\.$/i, '.'));
+  }
+  if (payload?.refine === 'professional') {
+    return professionalFallback(text, payload.personName);
+  }
+  return text;
+}
+
 function classifyFailure(error) {
   if (error?.code === 'sparkle_quality') return { code: error.code, message: error.message };
   const text = `${error?.name || ''} ${error?.message || ''}`.toLowerCase();
@@ -324,11 +356,19 @@ async function generate(id, payload, preferLite) {
       return_full_text: false
     });
     text = directAddressGuard(cleanOutput(output?.[0]?.generated_text || ''), payload || {});
+    text = polishRefinement(text, payload || {});
     const problem = outputProblem(text, payload || {});
     if (!problem) break;
     if (attempt === 1) {
       if (payload?.refine === 'shorter') {
         const fallback = safeShorterFallback(payload.currentMessage);
+        if (!outputProblem(fallback, payload || {})) {
+          text = fallback;
+          break;
+        }
+      }
+      if (payload?.refine === 'professional') {
+        const fallback = professionalFallback(payload.currentMessage, payload.personName);
         if (!outputProblem(fallback, payload || {})) {
           text = fallback;
           break;
