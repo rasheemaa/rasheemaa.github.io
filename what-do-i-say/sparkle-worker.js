@@ -4,20 +4,22 @@ env.allowLocalModels = false;
 env.allowRemoteModels = true;
 env.useBrowserCache = true;
 
+const SPARKLE_MODEL = 'onnx-community/Qwen2.5-0.5B-Instruct';
+
 const PRIMARY = {
-  model: 'onnx-community/SmolLM2-360M-Instruct-ONNX',
+  model: SPARKLE_MODEL,
   device: 'webgpu',
   dtype: 'q4f16',
   label: 'Sparkle',
-  approxDownload: '~300 MB'
+  approxDownload: '~500 MB'
 };
 
 const FALLBACK = {
-  model: 'onnx-community/SmolLM2-360M-Instruct-ONNX',
+  model: SPARKLE_MODEL,
   device: 'wasm',
   dtype: 'q8',
   label: 'Sparkle Compatible',
-  approxDownload: '~365 MB'
+  approxDownload: '~525 MB'
 };
 
 let generatorPromise = null;
@@ -138,11 +140,11 @@ function buildUserPrompt(payload) {
     relationship: 'a relationship conversation'
   };
   const refineMap = {
-    shorter: 'Rewrite the message so it is much shorter. Keep the same meaning.',
-    softer: 'Rewrite the message so it sounds gentler and more considerate. Keep the same meaning.',
-    firmer: 'Rewrite the message so it sounds firmer and clearer without sounding hostile. Keep the same meaning.',
-    professional: 'Rewrite the message so it sounds polished and professional but still natural. Keep the same meaning.',
-    another: 'Write a genuinely different natural version of the message. Keep the same facts and intent.'
+    shorter: 'Make this message noticeably shorter while preserving its meaning.',
+    softer: 'Make this message gentler and more considerate while preserving its meaning.',
+    firmer: 'Make this message firmer and clearer without sounding hostile.',
+    professional: 'Make this message polished and professional while still sounding human.',
+    another: 'Write a genuinely different natural version that keeps the same facts and intent.'
   };
 
   const mode = String(payload.mode || 'write');
@@ -156,26 +158,28 @@ function buildUserPrompt(payload) {
   if (refinement && currentMessage) {
     return [
       refinement,
-      `Tone: ${tone}.`,
-      `Message:\n${currentMessage}`,
-      'Output only the rewritten message. No explanation, label, heading, notes, or quotation marks.'
+      `Desired tone: ${tone}.`,
+      'Message to rewrite:',
+      currentMessage,
+      'Return only the rewritten message.'
     ].join('\n\n');
   }
 
-  let instruction = 'Write one ready-to-send message based on the details below.';
+  let instruction = 'Write one ready-to-send message from the details below.';
   if (mode === 'reply') {
-    instruction = 'Write only my ready-to-send reply based on what they sent and what I want to communicate below.';
+    instruction = 'Write my ready-to-send reply. The details below include what the other person said and what I want my reply to communicate.';
   } else if (mode === 'fix') {
-    instruction = 'Rewrite my draft below into one ready-to-send message. Keep the facts and intended meaning.';
+    instruction = 'Rewrite my draft into one ready-to-send message. Preserve the facts and intended meaning.';
   }
 
   return [
     instruction,
-    `Tone: ${tone}.`,
-    `Context: ${situation}.`,
-    personName ? `Use the name ${personName} only if it naturally belongs in the message.` : '',
-    `Details:\n${source}`,
-    'Output only the final message I can send. Do not explain, analyze, introduce, label, or quote it. Do not invent facts.'
+    `Desired tone: ${tone}.`,
+    `Situation: ${situation}.`,
+    personName ? `Person's name: ${personName}. Use it only if it sounds natural.` : '',
+    'User details:',
+    source,
+    'Return only the final message. Do not explain your work or invent facts.'
   ].filter(Boolean).join('\n\n');
 }
 
@@ -237,12 +241,12 @@ async function generate(id, payload, preferLite) {
   });
 
   const system = [
-    'You are Sparkle. Write one natural message the user can send.',
-    'Return only the message itself.',
-    'Never explain, analyze, introduce, label, or quote your answer.',
-    'Keep the user’s facts and intent. Do not invent details.',
-    'Keep the writing concise, human, and appropriate for the requested tone.',
-    'Do not produce threats, coercion, fraud, impersonation, blackmail, or instructions for wrongdoing.'
+    'You are Sparkle, a writing assistant for everyday communication.',
+    'Write the exact message the user can send.',
+    'Return only that message, with no analysis, labels, or preamble.',
+    'Preserve the user’s facts and intent, and never invent details.',
+    'Keep it concise, natural, and appropriate for the requested tone.',
+    'Avoid unsafe, deceptive, or coercive content.'
   ].join(' ');
 
   const messages = [
@@ -260,6 +264,7 @@ async function generate(id, payload, preferLite) {
   if (another) {
     options.temperature = 0.72;
     options.top_p = 0.9;
+    options.top_k = 20;
   }
 
   const output = await generator(messages, options);
