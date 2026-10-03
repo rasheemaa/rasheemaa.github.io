@@ -54,7 +54,8 @@ async function createGenerator(id, preferLite = false) {
         phase: 'loading',
         message: `Loading ${PRIMARY.label} on this device…`,
         profile: PRIMARY.label,
-        approxDownload: PRIMARY.approxDownload
+        approxDownload: PRIMARY.approxDownload,
+        backend: PRIMARY.device
       });
       try {
         const generator = await pipeline('text-generation', PRIMARY.model, {
@@ -72,8 +73,9 @@ async function createGenerator(id, preferLite = false) {
       } catch (error) {
         post(id, 'status', {
           phase: 'fallback',
-          message: 'This browser could not use the faster local engine. Switching to Sparkle Lite…',
-          profile: FALLBACK.label
+          message: 'This device needs the lighter local engine. Switching to Sparkle Lite…',
+          profile: FALLBACK.label,
+          backend: FALLBACK.device
         });
       }
     }
@@ -83,7 +85,8 @@ async function createGenerator(id, preferLite = false) {
       phase: 'loading',
       message: `Loading ${FALLBACK.label} on this device…`,
       profile: FALLBACK.label,
-      approxDownload: FALLBACK.approxDownload
+      approxDownload: FALLBACK.approxDownload,
+      backend: FALLBACK.device
     });
     const generator = await pipeline('text-generation', FALLBACK.model, {
       device: FALLBACK.device,
@@ -182,12 +185,50 @@ function cleanOutput(value) {
   return output.slice(0, 5000);
 }
 
+function classifyFailure(error) {
+  const text = `${error?.name || ''} ${error?.message || ''}`.toLowerCase();
+
+  if (self.navigator?.onLine === false) {
+    return {
+      code: 'sparkle_offline',
+      message: 'Sparkle could not finish offline on this device. Connect to the internet once so any missing setup files can download, then try again.'
+    };
+  }
+
+  if (/quota|storage|disk|space|cache/.test(text)) {
+    return {
+      code: 'sparkle_storage',
+      message: 'Sparkle needs a little more browser storage for its on-device model. Free up some device space or browser storage, then try again.'
+    };
+  }
+
+  if (/memory|allocation|out of memory|oom/.test(text)) {
+    return {
+      code: 'sparkle_memory',
+      message: 'This device ran low on memory while starting Sparkle. Close a few apps or browser tabs, then try again. Sparkle will use its lighter local engine when possible.'
+    };
+  }
+
+  if (/network|fetch|download|load|connection/.test(text)) {
+    return {
+      code: 'sparkle_download',
+      message: 'Sparkle could not download one of its setup files. Check your connection and try again. After setup, the model is cached on this device.'
+    };
+  }
+
+  return {
+    code: 'sparkle_compatibility',
+    message: 'Sparkle could not start on this browser. Try updating Safari or Chrome, turning off Low Power Mode, or using another device.'
+  };
+}
+
 async function generate(id, payload, preferLite) {
   const generator = await createGenerator(id, preferLite);
   post(id, 'status', {
     phase: 'generating',
     message: `${activeProfile?.label || 'Sparkle'} is finding the words on your device…`,
-    profile: activeProfile?.label || 'Sparkle'
+    profile: activeProfile?.label || 'Sparkle',
+    backend: activeProfile?.device || ''
   });
 
   const system = [
@@ -236,9 +277,7 @@ self.addEventListener('message', (event) => {
   if (data.type !== 'generate' || !data.id) return;
 
   generate(data.id, data.payload || {}, Boolean(data.preferLite)).catch((error) => {
-    post(data.id, 'error', {
-      message: 'Sparkle could not start on this browser. Try updating Safari or Chrome, turning off Low Power Mode, or using another device.',
-      code: String(error?.name || 'sparkle_error').slice(0, 60)
-    });
+    const failure = classifyFailure(error);
+    post(data.id, 'error', failure);
   });
 });
