@@ -50,6 +50,7 @@ function assertSendable(output, label) {
   const meta = /^(?:here(?:'s| is)|the (?:message|response|tone)|your draft|i would say|task:|tone:|context:|details:|output only|rewritten message|revised message)/i;
   assert(!meta.test(text), `${label} starts with meta commentary: ${text.slice(0, 140)}`);
   assert(!/output only the final message|do not invent facts|tone:\s*(?:warm|direct|professional|casual|firm|short)/i.test(text), `${label} echoed prompt instructions`);
+  assert(!/\bImportant:\s*(?:Keep these exact details:|Do not introduce or change numbers|Preserve my refusal|Keep my question|Use different wording|Make the message meaningfully shorter)/i.test(text), `${label} leaked an internal Sparkle quality check: ${text}`);
   assert(!/\bAlex\b|\blunch\b|next week/i.test(text), `${label} leaked a training/example fact: ${text}`);
 }
 
@@ -163,7 +164,8 @@ try {
     { name: 'Jordan', situation: 'relationship' }
   );
   assert(has(reply, /overwhelm|space/i), 'Reply lost the need for space');
-  assert(has(reply, /not (?:mad|angry)|not upset/i), 'Reply lost the not-angry intent');
+  assert(has(reply, /\bI(?:'m| am)\s+not\s+(?:mad|angry|upset)\s+(?:at|with)\s+you\b/i), 'Reply reversed or lost who is not angry');
+  assert(!has(reply, /\byou(?:'re| are)\s+not\s+(?:mad|angry|upset)\s+(?:at|with)\s+me\b/i), 'Reply reversed the speaker and recipient');
   assert(has(reply, /tomorrow/i), 'Reply lost the tomorrow follow-up');
   assert(has(reply, /\byou\b/i), 'Reply does not address the sender directly');
   assert(!has(reply, /\bthem\b/i), 'Reply still talks about the sender in third person');
