@@ -45,6 +45,15 @@ jobs:
           grep -Fq 'upgrade-insecure-requests' "$FILE"
           grep -Fq '<meta name="referrer" content="no-referrer">' "$FILE"
 
+      - name: Keep third party analytics off the private message page
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -Eiq 'googletagmanager\.com|google-analytics\.com|analytics\.google\.com' what-do-i-say/index.html what-do-i-say/bootstrap.js; then
+            echo 'Third party analytics detected on the private Sparkle message page.' >&2
+            exit 1
+          fi
+
       - name: Reject inline executable HTML and event handlers
         shell: bash
         run: |
