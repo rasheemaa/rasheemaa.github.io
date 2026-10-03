@@ -242,12 +242,12 @@ async function generate(id, payload, preferLite) {
   const messages = [{ role: 'user', content: buildPrompt(payload || {}) }];
   const chatPrompt = generator.tokenizer.apply_chat_template(messages, {
     tokenize: false,
-    add_generation_prompt: true
+    add_generation_prompt: true,
+    enable_thinking: false
   });
-  const nonThinkingPrompt = `${chatPrompt}<think>\n\n</think>\n\n`;
   const another = payload?.refine === 'another';
   const shorter = payload?.refine === 'shorter';
-  const output = await generator(nonThinkingPrompt, {
+  const output = await generator(chatPrompt, {
     max_new_tokens: shorter ? 72 : 120,
     do_sample: true,
     temperature: another ? 0.8 : 0.7,
