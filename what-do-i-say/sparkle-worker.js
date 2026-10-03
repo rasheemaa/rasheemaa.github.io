@@ -136,6 +136,17 @@ function toneText(tone) {
   })[tone] || 'warm, natural, and sincere';
 }
 
+function replyIntent(text) {
+  const source = compact(text, 3500);
+  const marker = /\b(?:i want to say|i want my reply to (?:say|communicate)|i want to tell (?:them|him|her)|i need to say|i need my reply to (?:say|communicate)|my reply should (?:say|communicate)|reply that|respond that)\b\s*[:,-]?\s*/ig;
+  let match;
+  let last = null;
+  while ((match = marker.exec(source))) last = match;
+  if (!last) return source;
+  const intent = source.slice(last.index + last[0].length).trim();
+  return intent.length >= 4 ? intent : source;
+}
+
 function buildPrompt(payload) {
   const source = compact(payload.text, 3500);
   const current = compact(payload.currentMessage, 5000);
@@ -153,14 +164,16 @@ function buildPrompt(payload) {
   const task = instruction || (payload.mode === 'fix'
     ? 'Correct my draft spelling and grammar. Preserve my point of view and requests. Do not answer the draft.'
     : payload.mode === 'reply'
-      ? 'Write my reply, using my stated intent. Do not speak for the other person.'
+      ? 'Write my reply, using my stated intent. Do not speak for the other person and do not repeat their question unless it is necessary.'
       : 'Turn my notes into a message I can send directly to the person.');
+  const replyIntentText = payload.mode === 'reply' ? replyIntent(source) : '';
   return [
     task,
     instruction ? '' : `Style: ${toneText(payload.tone)}.`,
     name ? `Recipient: ${name}.` : '',
-    'Preserve names, dates, times including AM/PM, amounts, and refusals. Do not add promises or reasons.',
-    instruction ? `My message to edit:\n${current}` : `My ${payload.mode === 'fix' ? 'draft' : 'notes'}:\n${source}`,
+    'Preserve names, dates, times including AM/PM, amounts, and refusals that belong in my outgoing message. Do not add promises or reasons.',
+    payload.mode === 'reply' && replyIntentText !== source ? `Conversation and incoming message:\n${source}\n\nMy reply intent:\n${replyIntentText}` : '',
+    instruction ? `My message to edit:\n${current}` : payload.mode === 'reply' && replyIntentText !== source ? '' : `My ${payload.mode === 'fix' ? 'draft' : 'notes'}:\n${source}`,
     'Output only my complete message, with no explanation or instructions.'
   ].filter(Boolean).join('\n\n');
 }
@@ -180,8 +193,8 @@ function buildMessages(payload) {
     ? ["Edit my draft: hi Sam i paid $20 for order 42. it arrived broken. i want a refund not a replacement.",
        "Hi Sam, I paid $20 for order 42. It arrived broken. I want a refund, not a replacement."]
     : payload.mode === 'reply'
-      ? ["Write my reply. Lee asked if I can help Tuesday. I cannot help Tuesday, but I can help Thursday at 10 AM.",
-         "I can't help on Tuesday, but I can help on Thursday at 10 AM."]
+      ? ["They said: Are you upset with me? I want to say I am overwhelmed and need some space, but I am not angry at them.",
+         "I'm not angry at you. I'm just feeling overwhelmed and need a little space right now."]
       : ["Write a message from my notes: Tell Alex I cannot come to lunch tomorrow. Ask if we can meet next week instead.",
          "Hi Alex, I can't come to lunch tomorrow. Could we meet next week instead?"];
   return [
@@ -200,16 +213,16 @@ function outputProblem(text, payload) {
   if (payload.refine && text.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '') === String(payload.currentMessage || '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '')) return 'Use different wording to make the requested change. Do not copy the original.';
   if (payload.refine === 'shorter' && String(payload.currentMessage || '').length > 80 && text.length > payload.currentMessage.length * 0.85) return 'Make the message at least 15 percent shorter without losing facts. Combine sentences and remove filler.';
   if (!text || /<\/?think>|<\|/i.test(text)) return 'The message was empty or contained model markup.';
-  if (!/[.!?…]["”')]*$/.test(text)) return 'Finish the last sentence.';
   if (!payload.refine && payload.mode !== 'fix' && /^(?:tell|ask|write|reply should|my reply should)\b/i.test(text)) return 'Speak directly to the recipient. Do not repeat my instructions.';
-  const reference = payload.refine ? payload.currentMessage : payload.text;
+  const reference = payload.refine ? payload.currentMessage : payload.mode === 'reply' ? replyIntent(payload.text) : payload.text;
   const negative = /\b(?:cannot|can't|won't|don't|dont|not|no|unable|unavailable|decline)\b/i;
-  if ((payload.refine || payload.mode === 'fix') && negative.test(reference) && !negative.test(text)) return 'Preserve my refusal or negative statement explicitly.';
-  if ((payload.refine || payload.mode === 'fix') && String(reference).includes('?') && !/[?]|\b(?:please|let me know|confirm)\b/i.test(text)) return 'Keep my question or request for confirmation.';
+  if ((payload.refine || payload.mode === 'fix' || payload.mode === 'reply') && negative.test(reference) && !negative.test(text)) return 'Preserve my refusal or negative statement explicitly.';
+  if ((payload.refine || payload.mode === 'fix' || payload.mode === 'reply') && String(reference).includes('?') && !/[?]|\b(?:please|let me know|confirm)\b/i.test(text)) return 'Keep my question or request for confirmation.';
   const normalized = text.toLowerCase().replace(/\s/g, '');
   const missing = anchors(reference).filter(value => !normalized.includes(value.toLowerCase().replace(/\s/g, '')));
   if (missing.length) return `Keep these exact details: ${missing.join(', ')}.`;
-  const referenceNumbers = new Set(anchors(`${payload.text} ${payload.currentMessage || ''} ${payload.personName || ''}`).filter(v => /\d/.test(v)).map(v => v.toLowerCase().replace(/\s/g, '')));
+  const allowedNumberSource = payload.mode === 'reply' && !payload.refine ? `${replyIntent(payload.text)} ${payload.personName || ''}` : `${payload.text} ${payload.currentMessage || ''} ${payload.personName || ''}`;
+  const referenceNumbers = new Set(anchors(allowedNumberSource).filter(v => /\d/.test(v)).map(v => v.toLowerCase().replace(/\s/g, '')));
   if (anchors(text).filter(v => /\d/.test(v)).some(v => !referenceNumbers.has(v.toLowerCase().replace(/\s/g, '')))) return 'Do not introduce or change numbers, dates, amounts or times.';
   return '';
 }
@@ -225,6 +238,7 @@ function cleanOutput(value) {
   if ((output.startsWith('“') && output.endsWith('”')) || (output.startsWith('"') && output.endsWith('"'))) {
     output = output.slice(1, -1).trim();
   }
+  if (output && !/[.!?…]["”')]*$/.test(output)) output += '.';
   return output.slice(0, 5000);
 }
 
