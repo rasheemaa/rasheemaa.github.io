@@ -4,8 +4,41 @@
   const pending = new Map();
   const SETUP_TIMEOUT_MS = 10 * 60 * 1000;
   const GENERATION_TIMEOUT_MS = 2 * 60 * 1000;
+  const PROFILE_KEY = 'wdis_sparkle_profile_v1';
+  const PROFILE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
-  function connectionPrefersLite() {
+  function readProfilePreference() {
+    try {
+      const value = JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null');
+      if (!value || !Number.isFinite(Number(value.at))) return null;
+      if (Date.now() - Number(value.at) > PROFILE_TTL_MS) {
+        localStorage.removeItem(PROFILE_KEY);
+        return null;
+      }
+      return value;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function rememberProfile(profile, backend) {
+    if (!profile && !backend) return;
+    try {
+      localStorage.setItem(PROFILE_KEY, JSON.stringify({
+        profile: String(profile || ''),
+        backend: String(backend || ''),
+        at: Date.now()
+      }));
+    } catch (_) {}
+  }
+
+  function devicePrefersLite() {
+    const saved = readProfilePreference();
+    if (saved?.backend === 'wasm' || saved?.profile === 'Sparkle Lite') return true;
+
+    const memory = Number(navigator.deviceMemory || 0);
+    if (memory > 0 && memory <= 4) return true;
+
     const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
     if (!connection) return false;
     if (connection.saveData) return true;
@@ -34,7 +67,7 @@
 
   function ensureWorker() {
     if (worker) return worker;
-    worker = new Worker('/what-do-i-say/sparkle-worker.js?v=3', { type: 'module' });
+    worker = new Worker('/what-do-i-say/sparkle-worker.js?v=4', { type: 'module' });
 
     worker.addEventListener('message', (event) => {
       const data = event.data || {};
@@ -43,6 +76,8 @@
 
       if (data.type === 'status' || data.type === 'progress') {
         if (data.phase === 'generating') armTimeout(item, GENERATION_TIMEOUT_MS);
+        if (data.phase === 'fallback') rememberProfile(data.profile || 'Sparkle Lite', data.backend || 'wasm');
+        if (data.phase === 'ready' && data.backend) rememberProfile(data.profile, data.backend);
         item.onStatus?.(data);
         return;
       }
@@ -54,6 +89,7 @@
           item.reject(new Error('Sparkle returned an empty message. Please try again.'));
           return;
         }
+        rememberProfile(data.profile, data.backend);
         item.onStatus?.({
           type: 'status',
           phase: 'complete',
@@ -97,12 +133,14 @@
         message: 'Starting Sparkle on this device…',
         profile: 'Sparkle'
       });
-      try { activeWorker.postMessage({
-        type: 'generate',
-        id,
-        payload,
-        preferLite: connectionPrefersLite()
-      }); } catch (_) {
+      try {
+        activeWorker.postMessage({
+          type: 'generate',
+          id,
+          payload,
+          preferLite: devicePrefersLite()
+        });
+      } catch (_) {
         stop('Sparkle could not start this request. Please try again.', 'sparkle_request_error');
       }
     });
