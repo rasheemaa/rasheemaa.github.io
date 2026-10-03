@@ -156,7 +156,7 @@ function buildPrompt(payload) {
   const instruction = ({
     shorter: `Rewrite in at most ${shorterWords} words. Remove filler and combine sentences.`,
     softer: 'Rewrite in a gentle, considerate tone. Make requests polite while keeping the same decision.',
-    firmer: 'Rewrite confidently. Replace tentative questions with polite, direct requests. Keep the same decision.',
+    firmer: 'Rewrite confidently with different wording. Keep every refusal, name, date, and time. Turn tentative questions into polite direct requests such as “Please…” or “Let’s…”.',
     professional: 'Rewrite professionally. Use a professional greeting and no contractions.',
     another: 'Rewrite with different sentence structure and wording. Keep the same meaning.'
   })[refine];
@@ -169,17 +169,17 @@ function buildPrompt(payload) {
   const task = instruction || (payload.mode === 'fix'
     ? 'Correct my draft spelling and grammar. Preserve my point of view and requests. Do not answer the draft.'
     : payload.mode === 'reply'
-      ? 'Write my reply, using my stated intent. Do not speak for the other person and do not repeat their question unless it is necessary.'
+      ? 'Write my reply using my stated intent. Address the sender directly as “you” when my intent refers to that person as them, him, or her. Do not speak for the other person or repeat their question unless necessary.'
       : 'Turn my notes into a message I can send directly to the person.');
   const replyIntentText = payload.mode === 'reply' ? replyIntent(source) : '';
   return [
     task,
     instruction ? '' : `Style: ${toneText(payload.tone)}.`,
     name ? `Recipient: ${name}.` : '',
-    'Preserve names, dates, times including AM/PM, amounts, and refusals that belong in my outgoing message. Do not add promises or reasons.',
+    'Preserve the user’s facts, important people and relationships, names, dates, times including AM/PM, amounts, requests, and refusals. Do not invent promises, reasons, people, dates, or events.',
     payload.mode === 'reply' && replyIntentText !== source ? `Conversation and incoming message:\n${source}\n\nMy reply intent:\n${replyIntentText}` : '',
     instruction ? `My message to edit:\n${current}` : payload.mode === 'reply' && replyIntentText !== source ? '' : `My ${payload.mode === 'fix' ? 'draft' : 'notes'}:\n${source}`,
-    'Output only my complete message, with no explanation or instructions.'
+    'Output only my complete sendable message, with no explanation or instructions.'
   ].filter(Boolean).join('\n\n');
 }
 
@@ -187,25 +187,38 @@ function buildMessages(payload) {
   const refinementExamples = {
     shorter: ['I wanted to let you know that I cannot join the call tomorrow. Would it be possible to move it to next week?', "I can't join tomorrow's call. Can we move it to next week?"],
     softer: ['I cannot help tomorrow. Ask someone else.', "I'm sorry, but I won't be able to help tomorrow. Could you please ask someone else?"],
-    firmer: ["I'm sorry, but I don't think I can help tomorrow. Maybe you could ask someone else?", "I cannot help tomorrow. Please ask someone else."],
+    firmer: ["Hi, I can't make it today. Could we do another day?", "I can't make it today. Let's reschedule for another day."],
     professional: ["hey Lee i cant make the call tomorrow. can we do next week?", "Hello Lee, I am unable to attend tomorrow's call. Would you be available next week?"],
     another: ["Hi Lee, I cannot join tomorrow's call. Could we move it to next week?", "Lee, would next week work for our call? I am unavailable tomorrow."]
   };
-  const refinementExample = refinementExamples[payload.refine];
-  const example = refinementExample
-    ? [`Rewrite this message. Action: ${payload.refine}. Message: ${refinementExample[0]}`, refinementExample[1]]
-    : payload.mode === 'fix'
-    ? ["Edit my draft: hi Sam i paid $20 for order 42. it arrived broken. i want a refund not a replacement.",
-       "Hi Sam, I paid $20 for order 42. It arrived broken. I want a refund, not a replacement."]
-    : payload.mode === 'reply'
-      ? ["They said: Are you upset with me? I want to say I am overwhelmed and need some space, but I am not angry at them.",
-         "I'm not angry at you. I'm just feeling overwhelmed and need a little space right now."]
-      : ["Write a message from my notes: Tell Alex I cannot come to lunch tomorrow. Ask if we can meet next week instead.",
-         "Hi Alex, I can't come to lunch tomorrow. Could we meet next week instead?"];
+
+  if (payload.refine) {
+    const example = refinementExamples[payload.refine];
+    return [
+      { role: 'system', content: 'You are a copy editor. Follow the requested editing task. Preserve the user’s facts and intent. Return only the edited message.' },
+      ...(example ? [
+        { role: 'user', content: `Rewrite this message. Action: ${payload.refine}. Message: ${example[0]}` },
+        { role: 'assistant', content: example[1] }
+      ] : []),
+      { role: 'user', content: buildPrompt(payload) }
+    ];
+  }
+
+  if (payload.mode === 'fix') {
+    return [
+      { role: 'system', content: 'You are a copy editor. Correct the user’s draft without changing their facts, point of view, requests, or decision. Return only the edited message.' },
+      { role: 'user', content: 'Edit my draft: hi Sam i paid $20 for order 42. it arrived broken. i want a refund not a replacement.' },
+      { role: 'assistant', content: 'Hi Sam, I paid $20 for order 42. It arrived broken. I want a refund, not a replacement.' },
+      { role: 'user', content: buildPrompt(payload) }
+    ];
+  }
+
+  const system = payload.mode === 'reply'
+    ? 'Write a direct reply as the user to the sender. Use first person for the user and address the sender directly as “you” when appropriate. Preserve only the user’s facts and intent. Output only the sendable reply.'
+    : 'Write a direct message as the user to the recipient. Preserve only the user’s facts, intent, important people, dates, and requests. Output only the sendable message.';
+
   return [
-    { role: 'system', content: payload.refine ? 'You are a copy editor. Follow the requested editing task. Return only the edited message.' : 'You edit and write messages on behalf of the user. Speak as the user directly to the recipient. Keep their facts and intent. Output just the message.' },
-    { role: 'user', content: example[0] },
-    { role: 'assistant', content: example[1] },
+    { role: 'system', content: system },
     { role: 'user', content: buildPrompt(payload) }
   ];
 }
