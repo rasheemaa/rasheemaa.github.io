@@ -97,7 +97,7 @@ try {
   await page.waitForFunction(() => Boolean(window.Sparkle?.generate), null, { timeout: 30_000 });
 
   const sparkleSrc = await page.locator('script[src*="sparkle.js"]').getAttribute('src');
-  assert(sparkleSrc?.includes('sparkle.js?v=12'), `Unexpected Sparkle runtime asset: ${sparkleSrc}`);
+  assert(sparkleSrc?.includes('sparkle.js?v=13'), `Unexpected Sparkle runtime asset: ${sparkleSrc}`);
 
   const good = await generate('I need Friday off for a personal matter. Ask Priya to confirm she received the message.');
   assert(/Friday/i.test(good), 'Setup generation lost Friday');
@@ -136,7 +136,8 @@ try {
   assert(/\bTuesday\b/i.test(output), 'Retry lost Tuesday');
   assert(/\b3\s*PM\b/i.test(output), 'Retry lost 3 PM');
   assert(/\b4\s*PM\b/i.test(output), 'Retry lost 4 PM');
-  assert(/\b(?:cannot|can['’]t|unable|unavailable|not able)\b/i.test(output), `Retry lost the explicit refusal: ${output}`);
+  assert(/\b(?:cannot|can['’]t|unable|unavailable|not able|conflict|reschedul(?:e|ing)|another commitment)\b/i.test(output), `Retry lost the explicit scheduling refusal: ${output}`);
+  assert(!/\bI\s+can\s+make\s+(?:the\s+)?3\s*PM\b/i.test(output), `Retry reversed the 3 PM refusal: ${output}`);
   assert(/\b(?:work|works|okay|ok|available|let me know)\b/i.test(output), 'Retry lost the request to check whether 4 PM works');
   assert(!/\bAsk\s+Priya\b/i.test(output), `Retry repeated note-taking instructions: ${output}`);
   assert(!/\bImportant:\s*(?:Keep these exact details:|Preserve my refusal|Use different wording)/i.test(output), `Retry leaked an internal validator note: ${output}`);
