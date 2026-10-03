@@ -4,14 +4,14 @@ env.allowLocalModels = false;
 env.allowRemoteModels = true;
 env.useBrowserCache = true;
 
-const SPARKLE_MODEL = 'onnx-community/Qwen2.5-0.5B-Instruct';
+const SPARKLE_MODEL = 'onnx-community/Qwen3-0.6B-ONNX';
 
 const PRIMARY = {
   model: SPARKLE_MODEL,
   device: 'webgpu',
   dtype: 'q4f16',
   label: 'Sparkle',
-  approxDownload: '~500 MB'
+  approxDownload: '~570 MB'
 };
 
 const FALLBACK = {
@@ -19,7 +19,7 @@ const FALLBACK = {
   device: 'wasm',
   dtype: 'q8',
   label: 'Sparkle Compatible',
-  approxDownload: '~525 MB'
+  approxDownload: '~620 MB'
 };
 
 let generatorPromise = null;
@@ -45,8 +45,8 @@ function progress(info) {
 
 async function createGenerator(id, preferLite = false) {
   if (generatorPromise) return generatorPromise;
-
   progressRequestId = id;
+
   generatorPromise = (async () => {
     const canTryWebGPU = !preferLite && Boolean(self.navigator?.gpu);
 
@@ -148,6 +148,7 @@ function buildPrompt(payload) {
     })[refine] || 'Rewrite it naturally without changing any facts.';
 
     return [
+      '/no_think',
       'Rewrite the ORIGINAL message below.',
       `Instruction: ${instruction}`,
       `Tone: ${tone}.`,
@@ -162,6 +163,7 @@ function buildPrompt(payload) {
 
   if (mode === 'reply') {
     return [
+      '/no_think',
       'Write MY reply to the situation below.',
       'The situation includes what the other person said and what I want to communicate back.',
       'Speak in first person as me. Do not answer as an AI assistant.',
@@ -179,6 +181,7 @@ function buildPrompt(payload) {
 
   if (mode === 'fix') {
     return [
+      '/no_think',
       'Polish the DRAFT below into a ready-to-send message.',
       'Keep every fact, date, request, and meaning exactly the same.',
       `Tone: ${tone}.`,
@@ -193,6 +196,7 @@ function buildPrompt(payload) {
   }
 
   return [
+    '/no_think',
     'Write a ready-to-send message using ONLY the facts below.',
     'Keep every fact, date, and request exactly as given.',
     'Do not turn the request into a different event or task.',
@@ -209,6 +213,7 @@ function buildPrompt(payload) {
 
 function cleanOutput(value) {
   let output = String(value || '').trim();
+  output = output.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
   output = output.replace(/^```(?:text)?\s*/i, '').replace(/\s*```$/i, '').trim();
   output = output.replace(/^(?:assistant|sparkle|final message|message|rewritten message|revised message|reply|response|rewrite)\s*:\s*/i, '').trim();
   output = output.replace(/^subject\s*:[^\n]*\n+/i, '').trim();
@@ -221,35 +226,11 @@ function cleanOutput(value) {
 
 function classifyFailure(error) {
   const text = `${error?.name || ''} ${error?.message || ''}`.toLowerCase();
-
-  if (self.navigator?.onLine === false) {
-    return {
-      code: 'sparkle_offline',
-      message: 'Sparkle could not finish offline on this device. Connect to the internet once so any missing setup files can download, then try again.'
-    };
-  }
-  if (/quota|storage|disk|space|cache/.test(text)) {
-    return {
-      code: 'sparkle_storage',
-      message: 'Sparkle needs a little more browser storage for its on-device model. Free up some device space or browser storage, then try again.'
-    };
-  }
-  if (/memory|allocation|out of memory|oom/.test(text)) {
-    return {
-      code: 'sparkle_memory',
-      message: 'This device ran low on memory while starting Sparkle. Close a few apps or browser tabs, then try again.'
-    };
-  }
-  if (/network|fetch|download|load|connection/.test(text)) {
-    return {
-      code: 'sparkle_download',
-      message: 'Sparkle could not download one of its setup files. Check your connection and try again. After setup, the model is cached on this device.'
-    };
-  }
-  return {
-    code: 'sparkle_compatibility',
-    message: 'Sparkle could not start on this browser. Try updating Safari or Chrome, turning off Low Power Mode, or using another device.'
-  };
+  if (self.navigator?.onLine === false) return { code: 'sparkle_offline', message: 'Sparkle could not finish offline on this device. Connect to the internet once so any missing setup files can download, then try again.' };
+  if (/quota|storage|disk|space|cache/.test(text)) return { code: 'sparkle_storage', message: 'Sparkle needs a little more browser storage for its on-device model. Free up some device space or browser storage, then try again.' };
+  if (/memory|allocation|out of memory|oom/.test(text)) return { code: 'sparkle_memory', message: 'This device ran low on memory while starting Sparkle. Close a few apps or browser tabs, then try again.' };
+  if (/network|fetch|download|load|connection/.test(text)) return { code: 'sparkle_download', message: 'Sparkle could not download one of its setup files. Check your connection and try again. After setup, the model is cached on this device.' };
+  return { code: 'sparkle_compatibility', message: 'Sparkle could not start on this browser. Try updating Safari or Chrome, turning off Low Power Mode, or using another device.' };
 }
 
 async function generate(id, payload, preferLite) {
@@ -267,7 +248,7 @@ async function generate(id, payload, preferLite) {
   const output = await generator(messages, {
     max_new_tokens: shorter ? 72 : 120,
     do_sample: true,
-    temperature: another ? 0.8 : 0.55,
+    temperature: another ? 0.8 : 0.7,
     top_p: 0.8,
     top_k: 20,
     repetition_penalty: 1.08
