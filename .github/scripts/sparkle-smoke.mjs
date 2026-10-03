@@ -1,7 +1,6 @@
 import { chromium } from 'playwright';
 
 const SITE = `https://thesheemaedit.com/what-do-i-say/?sparkle_smoke=${Date.now()}`;
-const FOUNDER_CHECKOUT = 'https://buy.stripe.com/eVq28s3Pf2mZ0sUcicgjC09';
 const RESULT_TIMEOUT = 12 * 60 * 1000;
 
 const browser = await chromium.launch({
@@ -40,6 +39,10 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
+function has(text, pattern) {
+  return pattern.test(String(text || ''));
+}
+
 function assertSendable(output, label) {
   const text = String(output || '').trim();
   assert(text.length >= 8, `${label} is too short to be a useful message`);
@@ -47,6 +50,17 @@ function assertSendable(output, label) {
   const meta = /^(?:here(?:'s| is)|the (?:message|response|tone)|your draft|i would say|task:|tone:|context:|details:|output only|rewritten message|revised message)/i;
   assert(!meta.test(text), `${label} starts with meta commentary: ${text.slice(0, 140)}`);
   assert(!/output only the final message|do not invent facts|tone:\s*(?:warm|direct|professional|casual|firm|short)/i.test(text), `${label} echoed prompt instructions`);
+  assert(!/\bAlex\b|\blunch\b|next week/i.test(text), `${label} leaked a training/example fact: ${text}`);
+}
+
+function assertFixFacts(output, label) {
+  assert(has(output, /\bMaya\b/i), `${label} lost Maya`);
+  assert(has(output, /\bEli\b/i), `${label} lost Eli`);
+  assert(has(output, /\bFriday\b/i), `${label} lost Friday`);
+  assert(has(output, /\b4\s*PM\b/i), `${label} lost 4 PM`);
+  assert(has(output, /\bSaturday\b/i), `${label} lost Saturday`);
+  assert(has(output, /\b10\s*AM\b/i), `${label} lost 10 AM`);
+  assert(has(output, /\b(?:can't|cannot|unable|not able)\b/i), `${label} lost the refusal`);
 }
 
 async function resultOrError(previous = '') {
@@ -81,8 +95,10 @@ async function resultOrError(previous = '') {
   return value;
 }
 
-async function generateMode(mode, text) {
+async function generateMode(mode, text, { name = '', situation = 'general' } = {}) {
   await page.locator(`[data-mode="${mode}"]`).click();
+  await page.locator('#person-name').fill(name);
+  await page.locator('#situation').selectOption(situation);
   await page.locator('#prompt').fill(text);
   const before = (await page.locator('#result').textContent())?.trim() || '';
   await page.locator('#generate').click();
@@ -108,27 +124,30 @@ try {
   await page.waitForFunction(() => Boolean(window.Sparkle?.generate), null, { timeout: 30_000 });
 
   const sparkleSrc = await page.locator('script[src*="sparkle.js"]').getAttribute('src');
-  assert(sparkleSrc?.includes('sparkle.js?v=7'), `Unexpected Sparkle runtime asset: ${sparkleSrc}`);
+  assert(sparkleSrc?.includes('sparkle.js?v=8'), `Unexpected Sparkle runtime asset: ${sparkleSrc}`);
 
-  const founderLinks = page.locator(`#founder a.founder-button[href="${FOUNDER_CHECKOUT}"]`);
-  assert(await founderLinks.count() === 1, 'Active $19.99 Founding Member Stripe checkout link is missing or incorrect');
-  assert((await founderLinks.first().textContent())?.includes('$19.99'), 'Founding checkout CTA does not show the launch price');
-  console.log('PASS founding checkout is active and points to the verified Stripe Payment Link');
-
-  const verificationPaused = await page.evaluate(() => window.WDIS_PAYMENT_VERIFY_PAUSED === true && !window.WDIS_API_BASE);
-  assert(verificationPaused, 'Broken remote payment verification backend was not safely paused');
-  console.log('PASS broken remote verification is paused during launch access');
+  const resultVisible = await page.locator('#result-panel').evaluate((node) => !node.hidden);
+  assert(resultVisible, 'Sparkle output panel is not visible before generation');
+  assert((await page.locator('#result').textContent())?.includes('Sparkle message will appear here'), 'Sparkle output placeholder is missing');
+  console.log('PASS Sparkle output area is visible before generation');
 
   const trialBefore = await page.evaluate(() => localStorage.getItem('wdis_trial_started_at_v2'));
-  assert(!trialBefore, 'Trial state was present before the first successful Sparkle response');
-  console.log('PASS launch access starts clean before generation');
+  assert(!trialBefore, 'Local usage state was present before the first successful Sparkle response');
 
-  const write = await generateMode('write', 'Tell my manager I need tomorrow off for a personal matter. I want to be respectful and not overshare.');
-  assert(/tomorrow|personal|day off|time off/i.test(write), 'Write result lost the core time-off request');
+  const write = await generateMode(
+    'write',
+    'I need Friday off for a personal matter. I do not want to explain why. Ask Priya to confirm she received the message.',
+    { name: 'Priya', situation: 'work' }
+  );
+  assert(has(write, /\bPriya\b/i), 'Write lost the recipient name Priya');
+  assert(has(write, /\bFriday\b/i), 'Write lost Friday');
+  assert(has(write, /personal/i), 'Write lost the personal-matter context');
+  assert(has(write, /\b(?:off|unavailable|away)\b/i), 'Write lost the time-off request');
+  assert(has(write, /\b(?:confirm|received|got (?:this|the message)|let me know)\b/i), 'Write lost the confirmation request');
+  assert(!has(write, /\bAlex\b|\blunch\b|next week/i), 'Write copied the removed example instead of the user facts');
 
   const trialAfter = await page.evaluate(() => localStorage.getItem('wdis_trial_started_at_v2'));
   assert(Boolean(trialAfter), 'Successful Sparkle response did not record local usage state');
-  console.log('PASS successful generation records local usage state');
 
   const profile = await page.evaluate(() => {
     try { return JSON.parse(localStorage.getItem('wdis_sparkle_profile_v1') || 'null'); } catch (_) { return null; }
@@ -137,14 +156,27 @@ try {
   assert(profile?.backend === 'wasm', `Expected WASM backend, received ${JSON.stringify(profile)}`);
   console.log(`PASS model initialized | ${profile.profile} / ${profile.backend}`);
 
-  const reply = await generateMode('reply', 'They said: “Are you mad at me? You have been quiet all day.” I want to say I am overwhelmed and need a little space, but I am not angry at them.');
-  assert(/not (?:mad|angry)|overwhelm|space/i.test(reply), 'Reply result lost the core relationship intent');
+  const reply = await generateMode(
+    'reply',
+    'They said: “Are you mad at me because I cancelled dinner?” I want to say I am overwhelmed and need a little space, but I am not angry at them and I will text them tomorrow.',
+    { name: 'Jordan', situation: 'relationship' }
+  );
+  assert(has(reply, /overwhelm|space/i), 'Reply lost the need for space');
+  assert(has(reply, /not (?:mad|angry)|not upset/i), 'Reply lost the not-angry intent');
+  assert(has(reply, /tomorrow/i), 'Reply lost the tomorrow follow-up');
+  assert(has(reply, /\byou\b/i), 'Reply does not address the sender directly');
+  assert(!has(reply, /\bthem\b/i), 'Reply still talks about the sender in third person');
 
-  const fixed = await generateMode('fix', 'hey i cant make it today sorry i know this is last minute but something came up can we do another day');
-  assert(/today|another day|reschedul|make it/i.test(fixed), 'Fix result lost the core cancellation intent');
+  const fixed = await generateMode(
+    'fix',
+    'hey maya i cant bring eli to soccer friday at 4 pm but i can saturday at 10 am sorry',
+    { name: 'Maya', situation: 'cancel' }
+  );
+  assertFixFacts(fixed, 'Fix');
 
   for (const action of ['shorter', 'softer', 'firmer', 'professional', 'another']) {
-    await refine(action);
+    const output = await refine(action);
+    assertFixFacts(output, `Refine ${action}`);
   }
 
   const uiErrorVisible = await page.locator('#ai-error').evaluate((node) => !node.hidden);
