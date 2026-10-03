@@ -1,0 +1,65 @@
+name: Sparkle WebKit production diagnostic
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sparkle-webkit-diagnostic.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  webkit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Playwright WebKit
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps webkit
+      - name: Press live Sparkle button in WebKit
+        run: |
+          node <<'NODE'
+          const { webkit } = require('playwright');
+          (async () => {
+            const browser = await webkit.launch({ headless: true });
+            const context = await browser.newContext({
+              viewport: { width: 390, height: 844 },
+              userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 26_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.6 Mobile/15E148 Safari/604.1'
+            });
+            const page = await context.newPage();
+            const errors = [];
+            page.on('console', m => {
+              if (m.type() === 'error') errors.push('console: ' + m.text());
+            });
+            page.on('pageerror', e => errors.push('pageerror: ' + e.message));
+            await page.goto('https://thesheemaedit.com/what-do-i-say/?webkit_diag=' + Date.now(), { waitUntil: 'domcontentloaded', timeout: 60000 });
+            await page.waitForFunction(() => !!window.Sparkle?.generate, null, { timeout: 30000 });
+            await page.locator('#prompt').fill('Tell Jordan I cannot meet Friday at 3 PM. Ask if Saturday at 11 AM works instead.');
+            await page.locator('#generate').click();
+            try {
+              await page.waitForFunction(() => {
+                const out = document.querySelector('#result')?.textContent?.trim() || '';
+                const err = document.querySelector('#ai-error');
+                return (out && !out.includes('Sparkle message will appear here')) || (err && !err.hidden);
+              }, null, { timeout: 180000 });
+            } catch (_) {}
+            const state = await page.evaluate(() => ({
+              output: document.querySelector('#result')?.textContent?.trim() || '',
+              status: document.querySelector('#sparkle-status-text')?.textContent?.trim() || '',
+              errorVisible: !document.querySelector('#ai-error')?.hidden,
+              error: document.querySelector('#ai-error-message')?.textContent?.trim() || '',
+              busy: document.querySelector('#message-form')?.getAttribute('aria-busy') || ''
+            }));
+            console.log('WEBKIT_STATE', JSON.stringify(state));
+            console.log('WEBKIT_ERRORS', JSON.stringify(errors));
+            await browser.close();
+            const placeholderOnly = !state.output || state.output.includes('Sparkle message will appear here');
+            if (placeholderOnly || state.errorVisible || errors.some(x => /content security|refused|wasm|worker|script/i.test(x))) process.exit(1);
+          })().catch(err => { console.error(err); process.exit(1); });
+          NODE
