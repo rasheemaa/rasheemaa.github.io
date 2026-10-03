@@ -1,5 +1,6 @@
 name: Sparkle WebKit production diagnostic
 
+# one-shot iPhone/WebKit regression check
 on:
   push:
     branches: [main]
@@ -34,9 +35,7 @@ jobs:
             });
             const page = await context.newPage();
             const errors = [];
-            page.on('console', m => {
-              if (m.type() === 'error') errors.push('console: ' + m.text());
-            });
+            page.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
             page.on('pageerror', e => errors.push('pageerror: ' + e.message));
             await page.goto('https://thesheemaedit.com/what-do-i-say/?webkit_diag=' + Date.now(), { waitUntil: 'domcontentloaded', timeout: 60000 });
             await page.waitForFunction(() => !!window.Sparkle?.generate, null, { timeout: 30000 });
