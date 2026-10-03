@@ -165,10 +165,8 @@ permalink: /what-do-i-say/
 <footer><a href="/">The Sheema Edit</a><span>·</span><a href="/shop/">Shop</a><span>·</span><a href="https://www.tiktok.com/@_rasheemaa" target="_blank" rel="noopener noreferrer">TikTok</a></footer>
 <script>
 (() => {
-  const trialKey = 'wdis_trial_started_at_v2';
   const pendingFounderKey = 'wdis_pending_founder_session_v1';
   try {
-    localStorage.removeItem(trialKey);
     const params = new URLSearchParams(window.location.search);
     const checkout = params.get('checkout');
     const sessionId = String(params.get('session_id') || '').trim();
