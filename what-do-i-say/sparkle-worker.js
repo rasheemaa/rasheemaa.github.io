@@ -242,7 +242,8 @@ function outputProblem(text, payload) {
   if (!payload.refine && payload.mode !== 'fix' && /^(?:tell|ask|write|reply should|my reply should)\b/i.test(text)) return 'Speak directly to the recipient. Do not repeat my instructions.';
   const reference = payload.refine ? payload.currentMessage : payload.mode === 'reply' ? replyIntent(payload.text) : payload.text;
   const negative = /\b(?:cannot|can't|won't|don't|dont|not|no|unable|unavailable|decline)\b/i;
-  if ((payload.refine || payload.mode === 'fix' || payload.mode === 'reply') && negative.test(reference) && !negative.test(text)) return 'Preserve my refusal or negative statement explicitly.';
+  const writeRefusal = payload.mode === 'write' && /\b(?:cannot|can't|can’t|won't|won’t|will not|unable|unavailable|decline)\b/i.test(reference);
+  if ((payload.refine || payload.mode === 'fix' || payload.mode === 'reply' || writeRefusal) && negative.test(reference) && !negative.test(text)) return 'Preserve my refusal or negative statement explicitly.';
   if (payload.refine !== 'firmer' && (payload.refine || payload.mode === 'fix' || payload.mode === 'reply') && String(reference).includes('?') && !/[?]|\b(?:please|let me know|confirm)\b/i.test(text)) return 'Keep my question or request for confirmation.';
   const normalized = normalizeTimes(text).toLowerCase().replace(/\s/g, '');
   const missing = anchors(reference).filter(value => !normalized.includes(value.toLowerCase().replace(/\s/g, '')));
