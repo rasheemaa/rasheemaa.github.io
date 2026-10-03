@@ -1,7 +1,7 @@
 import { chromium } from 'playwright';
 import { readFile } from 'node:fs/promises';
 
-// Targeted live check for horizontal overflow on the production mobile layout.
+// Targeted live check retained for future mobile overflow regressions.
 async function waitForProductionAssets() {
   const paths = ['what-do-i-say/styles.css', 'what-do-i-say/sparkle.css'];
   const expected = await Promise.all(paths.map((path) => readFile(path, 'utf8')));
