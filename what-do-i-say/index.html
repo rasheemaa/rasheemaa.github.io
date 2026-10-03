@@ -7,6 +7,8 @@ permalink: /what-do-i-say/
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://www.googletagmanager.com https://cdn.jsdelivr.net; worker-src 'self' blob:; connect-src 'self' https://*.thesheemaedit.com https://huggingface.co https://*.huggingface.co https://*.hf.co https://cdn.jsdelivr.net https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com; img-src 'self' data: https://*.google-analytics.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
+<meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#21172c">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -24,8 +26,8 @@ permalink: /what-do-i-say/
 <meta property="og:url" content="https://thesheemaedit.com/what-do-i-say/">
 <meta property="og:image" content="https://thesheemaedit.com/assets/images/social-card.png">
 <meta name="twitter:card" content="summary_large_image">
+<script src="/what-do-i-say/bootstrap.js?v=1"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-C7XV3YJCZE"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-C7XV3YJCZE');</script>
 <link rel="stylesheet" href="/what-do-i-say/styles.css?v=7">
 <link rel="stylesheet" href="/what-do-i-say/sparkle.css?v=2">
 </head>
@@ -163,22 +165,6 @@ permalink: /what-do-i-say/
 </div>
 
 <footer><a href="/">The Sheema Edit</a><span>·</span><a href="/shop/">Shop</a><span>·</span><a href="https://www.tiktok.com/@_rasheemaa" target="_blank" rel="noopener noreferrer">TikTok</a></footer>
-<script>
-(() => {
-  const pendingFounderKey = 'wdis_pending_founder_session_v1';
-  try {
-    const params = new URLSearchParams(window.location.search);
-    const checkout = params.get('checkout');
-    const sessionId = String(params.get('session_id') || '').trim();
-    if (checkout === 'success' && /^cs_(?:live|test)_[A-Za-z0-9]+$/.test(sessionId)) {
-      localStorage.setItem(pendingFounderKey, sessionId);
-      document.querySelectorAll('[data-founder-status]').forEach((item) => {
-        item.textContent = 'Stripe checkout return received. Launch access stays open while secure Founding verification reconnects.';
-      });
-    }
-  } catch (_) {}
-})();
-</script>
 <script src="/what-do-i-say/config.js?v=7"></script>
 <script src="/what-do-i-say/sparkle.js?v=15"></script>
 <script src="/what-do-i-say/app.js?v=8" defer></script>
