@@ -35,9 +35,6 @@
   function devicePrefersLite() {
     const saved = readProfilePreference();
     if (saved?.backend === 'wasm' || saved?.profile === 'Sparkle Lite') return true;
-
-    // WASM downloads a larger model and is slower: a slow connection or
-    // low deviceMemory is not evidence that an available GPU is unusable.
     return false;
   }
 
@@ -63,7 +60,7 @@
 
   function ensureWorker() {
     if (worker) return worker;
-    worker = new Worker('/what-do-i-say/sparkle-worker.js?v=5', { type: 'module' });
+    worker = new Worker('/what-do-i-say/sparkle-worker.js?v=6', { type: 'module' });
 
     worker.addEventListener('message', (event) => {
       const data = event.data || {};
