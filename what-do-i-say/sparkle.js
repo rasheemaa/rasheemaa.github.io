@@ -38,6 +38,46 @@
     return false;
   }
 
+  function replyIntent(text) {
+    const source = String(text || '').trim();
+    const marker = /\b(?:i want to say|i want my reply to (?:say|communicate)|i want to tell (?:them|him|her)|i need to say|i need my reply to (?:say|communicate)|my reply should (?:say|communicate)|reply that|respond that)\b\s*[:,-]?\s*/ig;
+    let match;
+    let last = null;
+    while ((match = marker.exec(source))) last = match;
+    if (!last) return source;
+    const intent = source.slice(last.index + last[0].length).trim();
+    return intent.length >= 4 ? intent : source;
+  }
+
+  function repairReplyPerspective(message, payload) {
+    let output = String(message || '').trim();
+    if (!output || payload?.refine || payload?.mode !== 'reply') return output;
+
+    const intent = replyIntent(payload.text);
+    if (/^\s*I\s+(?:am|['’]m)\b/i.test(intent) && /^\s*you(?:'re| are)\b/i.test(output)) {
+      output = output.replace(/^\s*you(?:'re| are)\b/i, "I'm");
+    }
+
+    const feeling = intent.match(/\bI\s+(?:am|['’]m)\s+not\s+(mad|angry|upset)\s+(at|with)\s+(?:them|him|her)\b/i);
+    if (feeling) {
+      output = output.replace(
+        new RegExp(`\\bI\\s+(?:am|['’]m)\\s+not\\s+${feeling[1]}\\s+${feeling[2]}\\s+(?:them|him|her)\\b`, 'i'),
+        `I'm not ${feeling[1].toLowerCase()} ${feeling[2].toLowerCase()} you`
+      );
+    }
+
+    const followUp = intent.match(/\bI\s+(?:will|['’]ll)\s+(text|call|message|contact|reply to|respond to)\s+(them|him|her)\b/i);
+    if (followUp) {
+      const verbPattern = followUp[1].replace(/\s+/g, '\\s+');
+      output = output.replace(
+        new RegExp(`\\bI\\s+(?:will|['’]ll)\\s+(${verbPattern})\\s+(?:them|him|her)\\b`, 'i'),
+        (_match, verb) => `I will ${verb} you`
+      );
+    }
+
+    return output.replace(/\s{2,}/g, ' ').trim();
+  }
+
   function stop(message = 'Sparkle stopped. Your draft is still here.', code = 'sparkle_cancelled') {
     worker?.terminate();
     worker = null;
@@ -78,7 +118,8 @@
       if (data.type === 'result') {
         clearTimeout(item.timer);
         pending.delete(data.id);
-        if (!String(data.message || '').trim()) {
+        const message = repairReplyPerspective(data.message, item.payload);
+        if (!message) {
           item.reject(new Error('Sparkle returned an empty message. Please try again.'));
           return;
         }
@@ -90,7 +131,7 @@
           profile: data.profile || 'Sparkle',
           backend: data.backend || ''
         });
-        item.resolve(String(data.message || '').trim());
+        item.resolve(message);
         return;
       }
 
@@ -117,7 +158,7 @@
     const activeWorker = ensureWorker();
 
     return new Promise((resolve, reject) => {
-      const item = { resolve, reject, onStatus, timer: null };
+      const item = { resolve, reject, onStatus, timer: null, payload };
       pending.set(id, item);
       armTimeout(item, SETUP_TIMEOUT_MS);
       onStatus?.({
