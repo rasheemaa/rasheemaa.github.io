@@ -3,7 +3,6 @@ import { readFile } from 'node:fs/promises';
 
 async function waitForProductionAssets() {
   const paths = [
-    'what-do-i-say/index.html',
     'what-do-i-say/app.js',
     'what-do-i-say/sparkle.js',
     'what-do-i-say/sparkle-worker.js'
