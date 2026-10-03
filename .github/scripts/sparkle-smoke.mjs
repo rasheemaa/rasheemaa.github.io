@@ -96,6 +96,15 @@ async function resultOrError(previous = '') {
   return value;
 }
 
+async function waitForIdle() {
+  await page.waitForFunction(() => document.querySelector('#message-form')?.getAttribute('aria-busy') !== 'true', null, { timeout: 30_000 });
+}
+
+async function assertOutputPreserved(before, label) {
+  const current = (await page.locator('#result').textContent())?.trim() || '';
+  assert(current === before, `${label} replaced the previous output before a new result was ready`);
+}
+
 async function generateMode(mode, text, { name = '', situation = 'general' } = {}) {
   await page.locator(`[data-mode="${mode}"]`).click();
   await page.locator('#person-name').fill(name);
@@ -103,6 +112,7 @@ async function generateMode(mode, text, { name = '', situation = 'general' } = {
   await page.locator('#prompt').fill(text);
   const before = (await page.locator('#result').textContent())?.trim() || '';
   await page.locator('#generate').click();
+  await assertOutputPreserved(before, `${mode} generation`);
   const value = await resultOrError(before);
   assertSendable(value.output, mode);
   console.log(`PASS ${mode.toUpperCase()} | ${value.status}`);
@@ -113,10 +123,77 @@ async function generateMode(mode, text, { name = '', situation = 'general' } = {
 async function refine(action) {
   const before = (await page.locator('#result').textContent())?.trim() || '';
   await page.locator(`[data-refine="${action}"]`).click();
+  await assertOutputPreserved(before, `refine ${action}`);
   const value = await resultOrError(before);
   assertSendable(value.output, `refine ${action}`);
   console.log(`PASS REFINE ${action.toUpperCase()} | ${value.status}`);
   console.log(`OUTPUT REFINE ${action.toUpperCase()}: ${value.output.replace(/\s+/g, ' ').slice(0, 500)}`);
+  return value.output;
+}
+
+async function cancelBeforeFirstSuccess() {
+  const draft = 'I need Friday off for a personal matter. I do not want to explain why. Ask Priya to confirm she received the message.';
+  await page.locator('[data-mode="write"]').click();
+  await page.locator('#person-name').fill('Priya');
+  await page.locator('#situation').selectOption('work');
+  await page.locator('#prompt').fill(draft);
+  const before = (await page.locator('#result').textContent())?.trim() || '';
+  await page.locator('#generate').click();
+  await page.locator('#sparkle-cancel').waitFor({ state: 'visible', timeout: 10_000 });
+  await assertOutputPreserved(before, 'cancelled generation');
+  await page.locator('#sparkle-cancel').click();
+  await waitForIdle();
+
+  assert((await page.locator('#prompt').inputValue()) === draft, 'Cancellation changed or cleared the user draft');
+  await assertOutputPreserved(before, 'cancellation');
+  const trial = await page.evaluate(() => localStorage.getItem('wdis_trial_started_at_v2'));
+  assert(!trial, 'Cancellation started the free trial before a successful Sparkle response');
+  const errorVisible = await page.locator('#ai-error').evaluate((node) => !node.hidden);
+  assert(!errorVisible, 'Cancellation showed an AI error instead of a stopped state');
+  console.log('PASS CANCEL | draft and output preserved; trial not started');
+}
+
+async function retryAfterTransientFailure(previousOutput) {
+  const draft = 'I cannot make the 3 PM meeting Tuesday. Ask Priya if 4 PM works instead.';
+  await page.locator('[data-mode="write"]').click();
+  await page.locator('#person-name').fill('Priya');
+  await page.locator('#situation').selectOption('work');
+  await page.locator('#prompt').fill(draft);
+
+  await page.evaluate(() => {
+    window.__sparkleRealForSmoke = window.Sparkle;
+    const real = window.Sparkle;
+    window.Sparkle = Object.freeze({
+      ...real,
+      generate: () => {
+        const error = new Error('Forced transient Sparkle smoke failure.');
+        error.code = 'sparkle_smoke_retry';
+        return Promise.reject(error);
+      }
+    });
+  });
+
+  await page.locator('#generate').click();
+  await page.locator('#ai-error').waitFor({ state: 'visible', timeout: 10_000 });
+  await waitForIdle();
+  await assertOutputPreserved(previousOutput, 'failed generation');
+  assert((await page.locator('#prompt').inputValue()) === draft, 'Failed generation changed or cleared the user draft');
+
+  await page.evaluate(() => {
+    window.Sparkle = window.__sparkleRealForSmoke;
+    delete window.__sparkleRealForSmoke;
+  });
+
+  await page.locator('#ai-retry').click();
+  await assertOutputPreserved(previousOutput, 'retry');
+  const value = await resultOrError(previousOutput);
+  assertSendable(value.output, 'retry');
+  assert(has(value.output, /\bTuesday\b/i), 'Retry lost Tuesday');
+  assert(has(value.output, /\b3\s*PM\b/i), 'Retry lost 3 PM');
+  assert(has(value.output, /\b4\s*PM\b/i), 'Retry lost 4 PM');
+  assert(has(value.output, /\b(?:work|works|okay|ok|available)\b/i), 'Retry lost the request to check whether 4 PM works');
+  console.log(`PASS RETRY | ${value.status}`);
+  console.log(`OUTPUT RETRY: ${value.output.replace(/\s+/g, ' ').slice(0, 500)}`);
   return value.output;
 }
 
@@ -134,6 +211,8 @@ try {
 
   const trialBefore = await page.evaluate(() => localStorage.getItem('wdis_trial_started_at_v2'));
   assert(!trialBefore, 'Local usage state was present before the first successful Sparkle response');
+
+  await cancelBeforeFirstSuccess();
 
   const write = await generateMode(
     'write',
@@ -157,6 +236,8 @@ try {
   assert(profile?.profile === 'Sparkle Compatible', `Expected Sparkle Compatible profile, received ${JSON.stringify(profile)}`);
   assert(profile?.backend === 'wasm', `Expected WASM backend, received ${JSON.stringify(profile)}`);
   console.log(`PASS model initialized | ${profile.profile} / ${profile.backend}`);
+
+  await retryAfterTransientFailure(write);
 
   const reply = await generateMode(
     'reply',
