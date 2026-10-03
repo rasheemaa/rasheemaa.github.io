@@ -273,6 +273,10 @@ self.addEventListener('message', (event) => {
   if (data.type !== 'generate' || !data.id) return;
   generate(data.id, data.payload || {}, Boolean(data.preferLite)).catch((error) => {
     const failure = classifyFailure(error);
+    // Temporary diagnostic for the synthetic release smoke test only.
+    if (data.payload?.text === 'Tell Maya I cannot attend dinner on Friday. I can meet Saturday at 2 PM instead. Ask if that works for her.') {
+      failure.message += ` Test diagnostic: ${String(error?.name || 'Error')}: ${String(error?.message || error).slice(0, 500)}`;
+    }
     post(data.id, 'error', failure);
   });
 });
