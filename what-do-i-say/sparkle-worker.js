@@ -159,7 +159,9 @@ function recipientPerspectiveHint(source, recipient) {
 }
 
 function buildPrompt(payload) {
-  const source = compact(payload.text, 3500);
+  const source = payload.mode === 'write' && !payload.refine
+    ? directAddressGuard(compact(payload.text, 3500), payload)
+    : compact(payload.text, 3500);
   const current = compact(payload.currentMessage, 5000);
   const name = compact(payload.personName, 60);
   const refine = String(payload.refine || '');
