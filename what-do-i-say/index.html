@@ -40,10 +40,10 @@ permalink: /what-do-i-say/
 </header>
 <main id="app" class="shell">
   <section class="hero">
-    <p class="kicker">Powered by Sparkle ✦ · 3 days free</p>
+    <p class="kicker">Powered by Sparkle ✦ · launch access open</p>
     <h1>You know what you mean.<br><span>You just need the words.</span></h1>
     <p class="lede">Tell Sparkle what happened, paste what they sent, or drop in your draft. Sparkle writes a custom response around your exact situation and tone right on your device.</p>
-    <div class="trial-pill" aria-live="polite"><strong id="trial-status">3-day free trial</strong><span id="trial-detail"> · starts with your first Sparkle message · no card required</span></div>
+    <div class="trial-pill" aria-live="polite"><strong>Launch access open</strong><span> · Founding Member checkout is live</span></div>
   </section>
 
   <section class="workspace" aria-label="Sparkle message generator">
@@ -96,7 +96,7 @@ permalink: /what-do-i-say/
 
       <button class="primary" id="generate" type="submit">Give me the words</button>
       <button class="text-button" id="sparkle-cancel" type="button" hidden>Stop Sparkle</button>
-      <p class="privacy-note">Your 3-day trial begins after your first successful Sparkle response. Sparkle runs an open-weight language model locally in your browser, so the message you enter is not sent to OpenAI, Claude, Cloudflare AI, or Google Analytics. The first use downloads the model to your device and later uses are cached. Don’t enter passwords, card numbers, or other highly sensitive information.</p>
+      <p class="privacy-note">Launch access is currently open while secure Founding Member verification is being reconnected. Sparkle runs an open-weight language model locally in your browser, so the message you enter is not sent to OpenAI, Claude, Cloudflare AI, or Google Analytics. The first use downloads the model to your device and later uses are cached. Don’t enter passwords, card numbers, or other highly sensitive information.</p>
     </form>
 
     <div id="ai-error" class="ai-error" hidden role="alert" aria-live="assertive">
@@ -126,13 +126,13 @@ permalink: /what-do-i-say/
   <section class="founder-card" id="founder">
     <div>
       <p class="kicker">Launch plan</p>
-      <h2>Try Sparkle free for 3 days. Then choose Founding Member access.</h2>
-      <p><strong>Free trial:</strong> 3 full days, no card required. <strong>Founding Member:</strong> $19.99 once for the first 100 members, with core platform access for life. After the founding launch, the regular plan is intended to be $9.99/month.</p>
+      <h2>Use Sparkle now. Lock in Founding Member access while it is available.</h2>
+      <p><strong>Launch access:</strong> currently open while secure payment verification is being reconnected. <strong>Founding Member:</strong> $19.99 once for the first 100 members, with core platform access for life. After the founding launch, the regular plan is intended to be $9.99/month.</p>
     </div>
     <div class="founder-actions">
-      <span class="founder-button" role="status" aria-live="polite">Founding checkout is being updated</span>
-      <p>Stripe checkout is temporarily paused while automatic payment verification is moved to the new secure backend.</p>
-      <p class="paywall-note" data-founder-status aria-live="polite">We’ll reopen checkout only after payment and access verification pass end to end.</p>
+      <a class="founder-button" href="https://buy.stripe.com/eVq28s3Pf2mZ0sUcicgjC09">Become a Founding Member · $19.99 once</a>
+      <p>Secure checkout is handled by Stripe. The Founding Member link is limited to the first 100 completed purchases.</p>
+      <p class="paywall-note" data-founder-status aria-live="polite">After checkout, Stripe returns you here automatically. Sparkle remains available during launch access while automatic Founding verification reconnects.</p>
     </div>
   </section>
 
@@ -154,16 +154,34 @@ permalink: /what-do-i-say/
 <div class="paywall" id="paywall" hidden>
   <section class="paywall-card" role="dialog" aria-modal="true" aria-labelledby="paywall-title">
     <button class="paywall-close" type="button" aria-label="Close">×</button>
-    <p class="kicker">Your 3-day trial has ended</p>
+    <p class="kicker">Founding access</p>
     <h2 id="paywall-title">Keep the words coming.</h2>
-    <p>Founding Member access is <strong>$19.99 once</strong> for the first 100 people. Checkout is temporarily paused while secure payment verification is being updated.</p>
-    <span class="founder-button" role="status" aria-live="polite">Checkout temporarily unavailable</span>
-    <p class="paywall-note" data-founder-status aria-live="polite">Stripe checkout will reopen after automatic access verification passes end to end.</p>
+    <p>Founding Member access is <strong>$19.99 once</strong> for the first 100 people. Secure checkout is live through Stripe.</p>
+    <a class="founder-button" href="https://buy.stripe.com/eVq28s3Pf2mZ0sUcicgjC09">Become a Founding Member · $19.99 once</a>
+    <p class="paywall-note" data-founder-status aria-live="polite">Sparkle remains available during launch access while automatic Founding verification reconnects.</p>
   </section>
 </div>
 
 <footer><a href="/">The Sheema Edit</a><span>·</span><a href="/shop/">Shop</a><span>·</span><a href="https://www.tiktok.com/@_rasheemaa" target="_blank" rel="noopener noreferrer">TikTok</a></footer>
-<script src="/what-do-i-say/config.js?v=6"></script>
+<script>
+(() => {
+  const trialKey = 'wdis_trial_started_at_v2';
+  const pendingFounderKey = 'wdis_pending_founder_session_v1';
+  try {
+    localStorage.removeItem(trialKey);
+    const params = new URLSearchParams(window.location.search);
+    const checkout = params.get('checkout');
+    const sessionId = String(params.get('session_id') || '').trim();
+    if (checkout === 'success' && /^cs_(?:live|test)_[A-Za-z0-9]+$/.test(sessionId)) {
+      localStorage.setItem(pendingFounderKey, sessionId);
+      document.querySelectorAll('[data-founder-status]').forEach((item) => {
+        item.textContent = 'Stripe checkout return received. Launch access stays open while secure Founding verification reconnects.';
+      });
+    }
+  } catch (_) {}
+})();
+</script>
+<script src="/what-do-i-say/config.js?v=7"></script>
 <script src="/what-do-i-say/sparkle.js?v=5"></script>
 <script src="/what-do-i-say/app.js?v=8" defer></script>
 </body>
