@@ -170,12 +170,12 @@ function buildPrompt(payload) {
     ? 'Correct my draft spelling and grammar. Preserve my point of view and requests. Do not answer the draft.'
     : payload.mode === 'reply'
       ? 'Write my reply using my stated intent. Address the sender directly as “you” when my intent refers to that person as them, him, or her. Do not speak for the other person or repeat their question unless necessary.'
-      : 'Turn my notes into a message I can send directly to the person.');
+      : 'Turn my notes into a message I can send directly to the recipient. When my notes refer to that recipient by name or as she, he, they, her, him, or them, address the recipient directly by name or as “you” instead.');
   const replyIntentText = payload.mode === 'reply' ? replyIntent(source) : '';
   return [
     task,
     instruction ? '' : `Style: ${toneText(payload.tone)}.`,
-    name ? `Recipient: ${name}.` : '',
+    name ? `Recipient: ${name}. Address ${name} directly.` : '',
     'Preserve the user’s facts, important people and relationships, names, dates, times including AM/PM, amounts, requests, and refusals. Do not invent promises, reasons, people, dates, or events.',
     payload.mode === 'reply' && replyIntentText !== source ? `Conversation and incoming message:\n${source}\n\nMy reply intent:\n${replyIntentText}` : '',
     instruction ? `My message to edit:\n${current}` : payload.mode === 'reply' && replyIntentText !== source ? '' : `My ${payload.mode === 'fix' ? 'draft' : 'notes'}:\n${source}`,
@@ -215,7 +215,7 @@ function buildMessages(payload) {
 
   const system = payload.mode === 'reply'
     ? 'Write a direct reply as the user to the sender. Use first person for the user and address the sender directly as “you” when appropriate. Preserve only the user’s facts and intent. Output only the sendable reply.'
-    : 'Write a direct message as the user to the recipient. Preserve only the user’s facts, intent, important people, dates, and requests. Output only the sendable message.';
+    : 'Write a direct message as the user to the recipient. Convert third-person references to that recipient into direct address. Preserve only the user’s facts, intent, important people, dates, and requests. Output only the sendable message.';
 
   return [
     { role: 'system', content: system },
