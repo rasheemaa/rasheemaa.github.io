@@ -6,6 +6,7 @@
   const keys = {
     trialStart: 'wdis_trial_started_at_v2',
     founderSession: 'wdis_founder_session_v1',
+    pendingFounderSession: 'wdis_pending_founder_session_v1',
     history: 'wdis_history_v1'
   };
 
@@ -318,7 +319,14 @@
 
   async function verifyFounderSession(sessionId, { persist = true, quiet = false } = {}) {
     const cleanSessionId = String(sessionId || '').trim();
-    if (!VERIFY_PAYMENT_ENDPOINT || !cleanSessionId) return false;
+    if (!/^cs_live_[A-Za-z0-9]+$/.test(cleanSessionId)) {
+      if (!quiet) setFounderStatus('No verified payment was found. Founding Member access stays locked.');
+      return false;
+    }
+    if (!VERIFY_PAYMENT_ENDPOINT) {
+      if (!quiet) setFounderStatus('Payment verification is temporarily unavailable. Your checkout reference is saved for verification when service returns. Paid access has not been unlocked.');
+      return false;
+    }
 
     if (!quiet) setFounderStatus('Verifying your Stripe payment…');
 
@@ -341,6 +349,7 @@
 
       state.founderVerified = true;
       if (persist) safeSet(keys.founderSession, cleanSessionId);
+      safeRemove(keys.pendingFounderSession);
       updateTrial();
       hidePaywall();
       setFounderStatus('Payment verified by Stripe. Founding Member access is unlocked. 💗');
@@ -509,7 +518,10 @@
       history.replaceState({}, '', `${location.pathname}${location.hash || ''}`);
     }
 
-    if (checkout === 'success' && returnedSession) {
+    if (checkout === 'success') {
+      if (/^cs_live_[A-Za-z0-9]+$/.test(String(returnedSession || ''))) {
+        safeSet(keys.pendingFounderSession, returnedSession);
+      }
       const verified = await verifyFounderSession(returnedSession, { persist: true, quiet: false });
       track(verified ? 'wdis_payment_verified' : 'wdis_payment_verification_failed', {
         offer: '19.99_lifetime_beta'
@@ -518,12 +530,11 @@
       return;
     }
 
-    if (savedSession) {
-      const verified = await verifyFounderSession(savedSession, { persist: false, quiet: true });
-      if (!verified) {
-        safeRemove(keys.founderSession);
-        state.founderVerified = false;
-      }
+    const recoverySession = savedSession || safeGet(keys.pendingFounderSession);
+    if (recoverySession) {
+      // A network failure must not erase the reference needed to recover a purchase.
+      // This reference never grants access: each visit still requires server verification.
+      await verifyFounderSession(recoverySession, { persist: true, quiet: true });
     }
   }
 
