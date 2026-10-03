@@ -1,5 +1,6 @@
 name: Sparkle live smoke test
 
+# Manual full-suite retrigger after the Another live hotfix.
 on:
   push:
     paths:
