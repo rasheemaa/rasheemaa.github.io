@@ -1,4 +1,26 @@
 import { chromium } from 'playwright';
+import { readFile } from 'node:fs/promises';
+
+// A push can start this job before Pages finishes deploying. Test this revision.
+async function waitForProductionAssets() {
+  const paths = ['what-do-i-say/app.js', 'what-do-i-say/sparkle.js', 'what-do-i-say/sparkle-worker.js'];
+  const expected = await Promise.all(paths.map(path => readFile(path, 'utf8')));
+  for (let attempt = 0; attempt < 24; attempt++) {
+    const matches = await Promise.all(paths.map(async (path, index) => {
+      try {
+        const response = await fetch(`https://thesheemaedit.com/${path}?verify=${Date.now()}`, { cache: 'no-store' });
+        return response.ok && (await response.text()).trim() === expected[index].trim();
+      } catch (_) { return false; }
+    }));
+    if (matches.every(Boolean)) {
+      console.log('PASS production assets match the tested revision');
+      return;
+    }
+    await new Promise(resolve => setTimeout(resolve, 10_000));
+  }
+  throw new Error('Pages has not deployed the revision under test');
+}
+await waitForProductionAssets();
 
 const SITE = `https://thesheemaedit.com/what-do-i-say/?sparkle_smoke=${Date.now()}`;
 const RESULT_TIMEOUT = 12 * 60 * 1000;
@@ -216,6 +238,7 @@ async function retryAfterTransientFailure(previousOutput) {
   assert(has(value.output, /\b3\s*PM\b/i), 'Retry lost 3 PM');
   assert(has(value.output, /\b4\s*PM\b/i), 'Retry lost 4 PM');
   assert(has(value.output, /\b(?:work|works|okay|ok|available)\b/i), 'Retry lost the request to check whether 4 PM works');
+  assert(!/\bAsk\s+Priya\b/i.test(value.output), 'Retry repeated a note-taking instruction instead of addressing Priya');
   console.log(`PASS RETRY | ${value.status}`);
   console.log(`OUTPUT RETRY: ${value.output.replace(/\s+/g, ' ').slice(0, 500)}`);
   return value.output;
@@ -235,6 +258,7 @@ try {
 
   const trialBefore = await page.evaluate(() => localStorage.getItem('wdis_trial_started_at_v2'));
   assert(!trialBefore, 'Local usage state was present before the first successful Sparkle response');
+  assert((await page.locator('#trial-status').textContent()).includes('3-day free trial'), 'First-use trial status is not visible');
 
   await cancelBeforeFirstSuccess();
 
@@ -263,6 +287,13 @@ try {
 
   await retryAfterTransientFailure(write);
 
+  const schedule = await generateMode('write',
+    'Tell Jordan I cannot meet Friday at 3 pm. I can meet Saturday at 11 am instead. Ask if that works.');
+  assert(has(schedule, /Friday/i) && has(schedule, /Saturday/i), 'Scheduling Write lost a day');
+  assert(has(schedule, /3\s*(?:p\.?m\.?)/i) && has(schedule, /11\s*(?:a\.?m\.?)/i), 'Scheduling Write lost a time');
+  assert(!/\b(?:Tell Jordan|Ask if)\b/i.test(schedule), 'Scheduling Write repeated instructions');
+  assert(has(schedule, /cannot|can't/i), 'Scheduling Write lost refusal');
+
   const reply = await generateMode(
     'reply',
     'They said: “Are you mad at me because I cancelled dinner?” I want to say I am overwhelmed and need a little space, but I am not angry at them and I will text them tomorrow.',
@@ -286,6 +317,9 @@ try {
     const output = await refine(action);
     assertFixFacts(output, `Refine ${action}`);
   }
+
+  assert((await page.evaluate(() => localStorage.getItem('wdis_trial_started_at_v2'))) === trialAfter, 'Later actions restarted the trial');
+  assert((await page.locator('#trial-status').textContent()).includes('days left'), 'Active trial status is not visible');
 
   const uiErrorVisible = await page.locator('#ai-error').evaluate((node) => !node.hidden);
   assert(!uiErrorVisible, 'AI error box is visible after the smoke suite');
