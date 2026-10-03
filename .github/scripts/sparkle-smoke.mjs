@@ -108,7 +108,7 @@ try {
   await page.waitForFunction(() => Boolean(window.Sparkle?.generate), null, { timeout: 30_000 });
 
   const sparkleSrc = await page.locator('script[src*="sparkle.js"]').getAttribute('src');
-  assert(sparkleSrc?.includes('sparkle.js?v=5'), `Unexpected Sparkle runtime asset: ${sparkleSrc}`);
+  assert(sparkleSrc?.includes('sparkle.js?v=6'), `Unexpected Sparkle runtime asset: ${sparkleSrc}`);
 
   const founderLinks = page.locator(`#founder a.founder-button[href="${FOUNDER_CHECKOUT}"]`);
   assert(await founderLinks.count() === 1, 'Active $19.99 Founding Member Stripe checkout link is missing or incorrect');
