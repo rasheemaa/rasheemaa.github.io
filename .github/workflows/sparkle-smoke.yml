@@ -5,6 +5,12 @@ on:
     paths:
       - '.github/workflows/sparkle-smoke.yml'
       - '.github/scripts/sparkle-smoke.mjs'
+      - 'what-do-i-say/index.html'
+      - 'what-do-i-say/config.js'
+      - 'what-do-i-say/app.js'
+      - 'what-do-i-say/sparkle.js'
+      - 'what-do-i-say/sparkle-worker.js'
+      - 'what-do-i-say/service-worker.js'
   workflow_dispatch:
 
 permissions:
