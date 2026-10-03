@@ -1,9 +1,4 @@
 (() => {
-  window.dataLayer = window.dataLayer || [];
-  window.gtag = window.gtag || function gtag() { window.dataLayer.push(arguments); };
-  window.gtag('js', new Date());
-  window.gtag('config', 'G-C7XV3YJCZE');
-
   const markFounderReturn = () => {
     const pendingFounderKey = 'wdis_pending_founder_session_v1';
     try {
