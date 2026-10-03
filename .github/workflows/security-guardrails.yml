@@ -1,0 +1,76 @@
+name: What Do I Say security guardrails
+
+on:
+  push:
+    paths:
+      - '.github/workflows/**'
+      - 'what-do-i-say/**'
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - 'what-do-i-say/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  security-guardrails:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact repository revision
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+
+      - name: Reject obvious committed credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -R -I -n -E --exclude-dir=.git '(sk_(live|test)_[A-Za-z0-9]{16,}|gh[pousr]_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16})' .; then
+            echo 'Potential high-risk credential committed to the repository.' >&2
+            exit 1
+          fi
+
+      - name: Require Sparkle browser security policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE='what-do-i-say/index.html'
+          grep -Fq "default-src 'self'" "$FILE"
+          grep -Fq "object-src 'none'" "$FILE"
+          grep -Fq "base-uri 'self'" "$FILE"
+          grep -Fq "frame-src 'none'" "$FILE"
+          grep -Fq 'upgrade-insecure-requests' "$FILE"
+          grep -Fq '<meta name="referrer" content="no-referrer">' "$FILE"
+
+      - name: Reject inline executable HTML and event handlers
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const html = fs.readFileSync('what-do-i-say/index.html', 'utf8');
+          if (/<script(?![^>]*\bsrc=)[^>]*>/i.test(html)) {
+            throw new Error('Inline script block detected in What Do I Say');
+          }
+          if (/\son(?:click|load|error|submit|focus|mouseover)\s*=/i.test(html)) {
+            throw new Error('Inline event handler detected in What Do I Say');
+          }
+          NODE
+
+      - name: Require pinned Sparkle runtime dependency
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1" what-do-i-say/sparkle-worker.js
+
+      - name: Reject floating GitHub Action tags
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -R -nE 'uses:[[:space:]]+[^[:space:]]+@v[0-9]+' .github/workflows; then
+            echo 'Floating GitHub Action tag detected. Pin actions to a full commit SHA.' >&2
+            exit 1
+          fi
