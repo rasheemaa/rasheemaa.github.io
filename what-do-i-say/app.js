@@ -12,6 +12,7 @@
   const state = {
     mode: 'write',
     last: '',
+    lastContext: null,
     pending: false,
     lastAction: null,
     installPrompt: null,
@@ -188,10 +189,16 @@
     $$('.mode').forEach((button) => { button.disabled = active; });
   }
 
-  function saveHistory(message) {
-    let history = [];
-    try { history = JSON.parse(safeGet(keys.history) || '[]'); } catch (_) {}
-    history.unshift({ text: message, at: Date.now() });
+  function readHistory() {
+    try {
+      const history = JSON.parse(safeGet(keys.history) || '[]');
+      return Array.isArray(history) ? history.filter(item => item && typeof item.text === 'string').slice(0, 12) : [];
+    } catch (_) { return []; }
+  }
+
+  function saveHistory(message, context) {
+    let history = readHistory();
+    history.unshift({ text: message, context, at: Date.now() });
     history = history.slice(0, 12);
     safeSet(keys.history, JSON.stringify(history));
     renderHistory();
@@ -206,8 +213,7 @@
   function renderHistory() {
     const wrap = $('#history');
     if (!wrap) return;
-    let history = [];
-    try { history = JSON.parse(safeGet(keys.history) || '[]'); } catch (_) {}
+    const history = readHistory();
 
     if (!history.length) {
       wrap.innerHTML = '<p class="empty">Nothing saved yet.</p>';
@@ -222,7 +228,9 @@
     $$('[data-history-index]').forEach((button) => button.addEventListener('click', () => {
       const item = history[Number(button.dataset.historyIndex)];
       if (!item) return;
+      if (state.pending) return;
       state.last = item.text;
+      state.lastContext = item.context || { mode: 'fix', text: item.text, tone: currentTone(), situation: 'general', personName: '' };
       result.textContent = item.text;
       resultPanel.hidden = false;
       resultPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -230,6 +238,7 @@
   }
 
   function requestPayload(refine = '') {
+    if (refine && state.lastContext) return { ...state.lastContext, refine, currentMessage: state.last };
     return {
       mode: state.mode,
       tone: currentTone(),
@@ -315,7 +324,7 @@
     if (!canUseTool()) return;
 
     const originalText = prompt.value.trim();
-    if (!originalText) {
+    if (!refine && !originalText) {
       showError(state.mode === 'reply' ? 'Paste the message you need to reply to first.' : 'Tell me what you want to say first.');
       prompt.focus();
       return;
@@ -326,22 +335,24 @@
     state.lastAction = { refine };
     setLoading(true, refine ? 'Sparkle is reworking it…' : 'Sparkle is finding the words…');
     const started = performance.now();
+    const payload = requestPayload(refine);
 
     try {
-      const message = await callAI(requestPayload(refine));
+      const message = await callAI(payload);
       if (!message) throw new Error('Sparkle came back empty. Please try again.');
       state.last = message;
+      state.lastContext = { ...payload, refine: '', currentMessage: '' };
       result.textContent = message;
       resultPanel.hidden = false;
       startTrialIfNeeded();
       updateTrial();
-      saveHistory(message);
+      saveHistory(message, state.lastContext);
 
       const metadata = {
         engine: 'sparkle_on_device',
-        mode: state.mode,
-        situation: situation.value,
-        tone: currentTone(),
+        mode: payload.mode,
+        situation: payload.situation,
+        tone: payload.tone,
         latency_bucket: latencyBucket(performance.now() - started)
       };
       if (refine) {
@@ -487,3 +498,4 @@
   state.accessReady = initializeAccess().finally(updateTrial);
   window.setInterval(updateTrial, 60 * 1000);
 })();
+

@@ -1,0 +1,31 @@
+<!doctype html><meta charset="utf-8"><title>Sparkle release smoke test</title>
+<style>body{font:16px system-ui;max-width:900px;margin:2em auto;padding:1em}article{border-bottom:1px solid #ccc;padding:1em 0}pre{white-space:pre-wrap}button{padding:1em}</style>
+<h1>Sparkle live release test</h1><p>Synthetic messages only. Uses the deployed Sparkle worker. Does not change trial or payment state.</p>
+<button id="run">Run all eight actions</button> <button id="stop">Stop</button><p id="status">Ready</p><main id="results"></main>
+<script src="/what-do-i-say/sparkle.js?v=5"></script>
+<script>
+const fixtures = [
+  {label:'Write',mode:'write',tone:'warm',text:'Tell Maya I cannot attend dinner on Friday. I can meet Saturday at 2 PM instead. Ask if that works for her.',checks:['Maya','Friday','Saturday','2 PM']},
+  {label:'Reply',mode:'reply',tone:'warm',text:'Maya asked: Can you cover my shift on Sunday? My reply should say I cannot cover Sunday, but I can cover Monday after 3 PM.',checks:['Sunday','Monday','3 PM']},
+  {label:'Fix',mode:'fix',tone:'warm',text:'hi Jordan i paid $48 for order 731 on September 12 but the blue mug arrived cracked. please refund the $48, i dont want a replacement.',checks:['Jordan','$48','731','September','12','blue','cracked','refund','replacement']}
+];
+const base='Hi Maya, I cannot attend dinner on Friday. I can meet Saturday at 2 PM instead. Would that work for you?';
+for(const refine of ['shorter','softer','firmer','professional','another']) fixtures.push({label:refine,mode:'write',tone:'warm',text:fixtures[0].text,refine,currentMessage:base,checks:fixtures[0].checks});
+let stopped=false;
+document.querySelector('#stop').onclick=()=>{stopped=true;Sparkle.cancel();};
+document.querySelector('#run').onclick=async()=>{
+  stopped=false;document.querySelector('#run').disabled=true;document.querySelector('#results').replaceChildren();
+  for(const fixture of fixtures){
+    if(stopped)break;
+    const article=document.createElement('article'); const heading=document.createElement('h2');heading.textContent=fixture.label;article.append(heading);
+    const pre=document.createElement('pre');pre.textContent='Running…';article.append(pre);document.querySelector('#results').append(article);
+    const start=performance.now();
+    try{
+      const output=await Sparkle.generate({...fixture,situation:'general',personName:''},{onStatus:d=>{document.querySelector('#status').textContent=fixture.label+': '+(d.message||d.status||'working');}});
+      const missing=fixture.checks.filter(x=>!output.toLowerCase().includes(x.toLowerCase()));
+      pre.textContent=JSON.stringify({seconds:Number(((performance.now()-start)/1000).toFixed(2)),output,missing,shorter:fixture.refine==='shorter'?output.length<base.length:undefined},null,2);
+    }catch(error){pre.textContent=JSON.stringify({seconds:Number(((performance.now()-start)/1000).toFixed(2)),error:error.message,code:error.code},null,2);}
+  }
+  document.querySelector('#status').textContent=stopped?'Stopped':'Complete: review meaning, perspective, and sendability for every output.';document.querySelector('#run').disabled=false;
+};
+</script>

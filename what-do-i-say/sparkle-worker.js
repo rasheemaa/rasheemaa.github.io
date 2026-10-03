@@ -131,80 +131,65 @@ function toneText(tone) {
 }
 
 function buildPrompt(payload) {
-  const mode = String(payload.mode || 'write');
-  const tone = toneText(payload.tone);
   const source = compact(payload.text, 3500);
   const current = compact(payload.currentMessage, 5000);
   const name = compact(payload.personName, 60);
   const refine = String(payload.refine || '');
-
-  if (refine && current) {
-    const instruction = ({
-      shorter: 'Make it noticeably shorter. Keep every fact and the same request.',
-      softer: 'Make it gentler and more considerate. Keep every fact and the same request.',
-      firmer: 'Make it firmer and clearer without hostility. Keep every fact and the same request.',
-      professional: 'Make it polished and professional but still human. Keep every fact and the same request.',
-      another: 'Write a genuinely different natural version. Keep every fact and the same request.'
-    })[refine] || 'Rewrite it naturally without changing any facts.';
-
-    return [
-      'Rewrite the ORIGINAL message below.',
-      `Instruction: ${instruction}`,
-      `Tone: ${tone}.`,
-      'Do not explain. Do not add a subject line. Output only the rewritten message.',
-      '',
-      'ORIGINAL:',
-      current,
-      '',
-      'REWRITE:'
-    ].join('\n');
-  }
-
-  if (mode === 'reply') {
-    return [
-      'Write MY reply to the situation below.',
-      'The situation includes what the other person said and what I want to communicate back.',
-      'Speak in first person as me. Do not answer as an AI assistant.',
-      'Keep every fact exactly. Do not invent, remove, or change the meaning.',
-      `Tone: ${tone}.`,
-      name ? `Their name is ${name}. Use it only if natural.` : '',
-      'Do not explain. Do not add a subject line. Output only my reply.',
-      '',
-      'SITUATION:',
-      source,
-      '',
-      'MY REPLY:'
-    ].filter(Boolean).join('\n');
-  }
-
-  if (mode === 'fix') {
-    return [
-      'Polish the DRAFT below into a ready-to-send message.',
-      'Keep every fact, date, request, and meaning exactly the same.',
-      `Tone: ${tone}.`,
-      name ? `Their name is ${name}. Use it only if natural.` : '',
-      'Do not explain. Do not add a subject line. Output only the polished message.',
-      '',
-      'DRAFT:',
-      source,
-      '',
-      'MESSAGE:'
-    ].filter(Boolean).join('\n');
-  }
-
+  const instruction = ({
+    shorter: 'Shorten this message without losing any details or requests.',
+    softer: 'Make this message gentler. Keep the same decision and boundaries.',
+    firmer: 'Make this message firm and respectful. Keep the same decision.',
+    professional: 'Make this message professional and natural.',
+    another: 'Rephrase this message with different wording and the same meaning.'
+  })[refine];
+  const task = instruction || (payload.mode === 'fix'
+    ? 'Edit my draft. I am the writer, NOT its recipient. Keep my perspective.'
+    : payload.mode === 'reply'
+      ? 'Write my reply, using my stated intent. Do not speak for the other person.'
+      : 'Turn my notes into a message I can send directly to the person.');
   return [
-    'Write a ready-to-send message using ONLY the facts below.',
-    'Keep every fact, date, and request exactly as given.',
-    'Do not turn the request into a different event or task.',
-    `Tone: ${tone}.`,
-    name ? `Their name is ${name}. Use it only if natural.` : '',
-    'Do not explain. Do not add a subject line. Output only the message.',
-    '',
-    'FACTS:',
-    source,
-    '',
-    'MESSAGE:'
-  ].filter(Boolean).join('\n');
+    task,
+    instruction ? '' : `Style: ${toneText(payload.tone)}.`,
+    name ? `Recipient: ${name}.` : '',
+    'Preserve names, dates, times including AM/PM, amounts, and refusals. Do not add promises or reasons.',
+    instruction ? `My original context: ${source}` : '',
+    instruction ? `My message to edit:\n${current}` : `My ${payload.mode === 'fix' ? 'draft' : 'notes'}:\n${source}`,
+    'Output only my complete message, with no explanation or instructions.'
+  ].filter(Boolean).join('\n\n');
+}
+
+function buildMessages(payload) {
+  const example = payload.mode === 'fix'
+    ? ["Edit my draft: hi Sam i paid $20 for order 42. it arrived broken. i want a refund not a replacement.",
+       "Hi Sam, I paid $20 for order 42, but it arrived broken. I'd like a refund, not a replacement."]
+    : payload.mode === 'reply'
+      ? ["Write my reply. Lee asked if I can help Tuesday. I cannot help Tuesday, but I can help Thursday at 10 AM.",
+         "I can't help on Tuesday, but I can help on Thursday at 10 AM."]
+      : ["Write a message from my notes: Tell Alex I cannot come to lunch tomorrow. Ask if we can meet next week instead.",
+         "Hi Alex, I can't come to lunch tomorrow. Could we meet next week instead?"];
+  return [
+    { role: 'system', content: 'You edit and write messages on behalf of the user. Speak as the user directly to the recipient. Keep their facts and intent. Output just the message.' },
+    { role: 'user', content: example[0] },
+    { role: 'assistant', content: example[1] },
+    { role: 'user', content: buildPrompt(payload) }
+  ];
+}
+
+function anchors(text) {
+  return [...new Set(String(text).match(/\$?\d+(?:[.,:/-]\d+)*(?:\s*(?:AM|PM|a\.m\.|p\.m\.|%))?|\b(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|January|February|March|April|May|June|July|August|September|October|November|December)\b/gi) || [])];
+}
+
+function outputProblem(text, payload) {
+  if (!text || /<\/?think>|<\|/i.test(text)) return 'The message was empty or contained model markup.';
+  if (!/[.!?…]["”')]*$/.test(text)) return 'Finish the last sentence.';
+  if (!payload.refine && payload.mode !== 'fix' && /^(?:tell|ask|write|reply should|my reply should)\b/i.test(text)) return 'Speak directly to the recipient. Do not repeat my instructions.';
+  const reference = payload.refine ? payload.currentMessage : payload.text;
+  const normalized = text.toLowerCase().replace(/\s/g, '');
+  const missing = anchors(reference).filter(value => !normalized.includes(value.toLowerCase().replace(/\s/g, '')));
+  if (missing.length) return `Keep these exact details: ${missing.join(', ')}.`;
+  const referenceNumbers = new Set(anchors(`${payload.text} ${payload.currentMessage || ''} ${payload.personName || ''}`).filter(v => /\d/.test(v)).map(v => v.toLowerCase().replace(/\s/g, '')));
+  if (anchors(text).filter(v => /\d/.test(v)).some(v => !referenceNumbers.has(v.toLowerCase().replace(/\s/g, '')))) return 'Do not introduce or change numbers, dates, amounts or times.';
+  return '';
 }
 
 function cleanOutput(value) {
@@ -222,6 +207,7 @@ function cleanOutput(value) {
 }
 
 function classifyFailure(error) {
+  if (error?.code === 'sparkle_quality') return { code: error.code, message: error.message };
   const text = `${error?.name || ''} ${error?.message || ''}`.toLowerCase();
   if (self.navigator?.onLine === false) return { code: 'sparkle_offline', message: 'Sparkle could not finish offline on this device. Connect to the internet once so any missing setup files can download, then try again.' };
   if (/quota|storage|disk|space|cache/.test(text)) return { code: 'sparkle_storage', message: 'Sparkle needs a little more browser storage for its on-device model. Free up some device space or browser storage, then try again.' };
@@ -239,27 +225,35 @@ async function generate(id, payload, preferLite) {
     backend: activeProfile?.device || ''
   });
 
-  const messages = [{ role: 'user', content: buildPrompt(payload || {}) }];
-  const chatPrompt = generator.tokenizer.apply_chat_template(messages, {
-    tokenize: false,
-    add_generation_prompt: true,
-    enable_thinking: false
-  });
+  const messages = buildMessages(payload || {});
   const another = payload?.refine === 'another';
-  const shorter = payload?.refine === 'shorter';
-  const output = await generator(chatPrompt, {
-    max_new_tokens: shorter ? 72 : 120,
-    do_sample: true,
-    temperature: another ? 0.8 : 0.7,
-    top_p: 0.8,
-    top_k: 20,
-    repetition_penalty: 1.08,
-    return_full_text: false
-  });
-
-  const generated = output?.[0]?.generated_text;
-  const text = cleanOutput(generated || '');
-  if (!text) throw new Error('Sparkle did not produce a sendable message.');
+  const wordCount = String(payload?.refine ? payload.currentMessage : payload?.text || '').split(/\s+/).length;
+  const tokenLimit = Math.min(512, Math.max(160, Math.ceil(wordCount * 2.2)));
+  let text = '';
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const chatPrompt = generator.tokenizer.apply_chat_template(messages, {
+      tokenize: false,
+      add_generation_prompt: true,
+      enable_thinking: false
+    });
+    const output = await generator(chatPrompt, {
+      max_new_tokens: tokenLimit,
+      do_sample: another,
+      ...(another ? { temperature: 0.7, top_p: 0.8, top_k: 20 } : {}),
+      repetition_penalty: 1.0,
+      return_full_text: false
+    });
+    text = cleanOutput(output?.[0]?.generated_text || '');
+    const problem = outputProblem(text, payload || {});
+    if (!problem) break;
+    if (attempt === 1) {
+      const error = new Error('Sparkle could not keep all the details reliably. Try a shorter draft with the key facts. Your previous message has not been replaced.');
+      error.code = 'sparkle_quality';
+      throw error;
+    }
+    messages[messages.length - 1].content += `\n\nImportant: ${problem}`;
+    post(id, 'status', { phase: 'checking', message: 'Sparkle is checking the details before showing your message…' });
+  }
 
   post(id, 'result', {
     message: text,
@@ -273,10 +267,7 @@ self.addEventListener('message', (event) => {
   if (data.type !== 'generate' || !data.id) return;
   generate(data.id, data.payload || {}, Boolean(data.preferLite)).catch((error) => {
     const failure = classifyFailure(error);
-    // Temporary diagnostic for the synthetic release smoke test only.
-    if (data.payload?.text === 'Tell Maya I cannot attend dinner on Friday. I can meet Saturday at 2 PM instead. Ask if that works for her.') {
-      failure.message += ` Test diagnostic: ${String(error?.name || 'Error')}: ${String(error?.message || error).slice(0, 500)}`;
-    }
     post(data.id, 'error', failure);
   });
 });
+

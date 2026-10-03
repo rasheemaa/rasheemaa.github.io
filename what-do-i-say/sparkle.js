@@ -36,13 +36,9 @@
     const saved = readProfilePreference();
     if (saved?.backend === 'wasm' || saved?.profile === 'Sparkle Lite') return true;
 
-    const memory = Number(navigator.deviceMemory || 0);
-    if (memory > 0 && memory <= 4) return true;
-
-    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    if (!connection) return false;
-    if (connection.saveData) return true;
-    return /(^|-)2g|3g/.test(String(connection.effectiveType || '').toLowerCase());
+    // WASM downloads a larger model and is slower: a slow connection or
+    // low deviceMemory is not evidence that an available GPU is unusable.
+    return false;
   }
 
   function stop(message = 'Sparkle stopped. Your draft is still here.', code = 'sparkle_cancelled') {
@@ -67,7 +63,7 @@
 
   function ensureWorker() {
     if (worker) return worker;
-    worker = new Worker('/what-do-i-say/sparkle-worker.js?v=4', { type: 'module' });
+    worker = new Worker('/what-do-i-say/sparkle-worker.js?v=5', { type: 'module' });
 
     worker.addEventListener('message', (event) => {
       const data = event.data || {};
