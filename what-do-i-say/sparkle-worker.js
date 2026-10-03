@@ -148,7 +148,6 @@ function buildPrompt(payload) {
     })[refine] || 'Rewrite it naturally without changing any facts.';
 
     return [
-      '/no_think',
       'Rewrite the ORIGINAL message below.',
       `Instruction: ${instruction}`,
       `Tone: ${tone}.`,
@@ -163,7 +162,6 @@ function buildPrompt(payload) {
 
   if (mode === 'reply') {
     return [
-      '/no_think',
       'Write MY reply to the situation below.',
       'The situation includes what the other person said and what I want to communicate back.',
       'Speak in first person as me. Do not answer as an AI assistant.',
@@ -181,7 +179,6 @@ function buildPrompt(payload) {
 
   if (mode === 'fix') {
     return [
-      '/no_think',
       'Polish the DRAFT below into a ready-to-send message.',
       'Keep every fact, date, request, and meaning exactly the same.',
       `Tone: ${tone}.`,
@@ -196,7 +193,6 @@ function buildPrompt(payload) {
   }
 
   return [
-    '/no_think',
     'Write a ready-to-send message using ONLY the facts below.',
     'Keep every fact, date, and request exactly as given.',
     'Do not turn the request into a different event or task.',
@@ -214,6 +210,7 @@ function buildPrompt(payload) {
 function cleanOutput(value) {
   let output = String(value || '').trim();
   output = output.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+  if (/^<think>/i.test(output)) return '';
   output = output.replace(/^```(?:text)?\s*/i, '').replace(/\s*```$/i, '').trim();
   output = output.replace(/^(?:assistant|sparkle|final message|message|rewritten message|revised message|reply|response|rewrite)\s*:\s*/i, '').trim();
   output = output.replace(/^subject\s*:[^\n]*\n+/i, '').trim();
@@ -251,7 +248,8 @@ async function generate(id, payload, preferLite) {
     temperature: another ? 0.8 : 0.7,
     top_p: 0.8,
     top_k: 20,
-    repetition_penalty: 1.08
+    repetition_penalty: 1.08,
+    tokenizer_encode_kwargs: { enable_thinking: false }
   });
 
   const generated = output?.[0]?.generated_text;
@@ -260,7 +258,7 @@ async function generate(id, payload, preferLite) {
   else text = generated || '';
 
   text = cleanOutput(text);
-  if (!text) throw new Error('Sparkle returned an empty message.');
+  if (!text) throw new Error('Sparkle did not produce a sendable message.');
 
   post(id, 'result', {
     message: text,
