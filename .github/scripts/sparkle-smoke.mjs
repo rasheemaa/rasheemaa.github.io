@@ -124,7 +124,7 @@ try {
   await page.waitForFunction(() => Boolean(window.Sparkle?.generate), null, { timeout: 30_000 });
 
   const sparkleSrc = await page.locator('script[src*="sparkle.js"]').getAttribute('src');
-  assert(sparkleSrc?.includes('sparkle.js?v=10'), `Unexpected Sparkle runtime asset: ${sparkleSrc}`);
+  assert(sparkleSrc?.includes('sparkle.js?v=11'), `Unexpected Sparkle runtime asset: ${sparkleSrc}`);
 
   const resultVisible = await page.locator('#result-panel').evaluate((node) => !node.hidden);
   assert(resultVisible, 'Sparkle output panel is not visible before generation');
