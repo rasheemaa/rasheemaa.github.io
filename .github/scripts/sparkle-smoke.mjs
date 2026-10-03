@@ -52,6 +52,7 @@ function assertSendable(output, label) {
   assert(!/output only the final message|do not invent facts|tone:\s*(?:warm|direct|professional|casual|firm|short)/i.test(text), `${label} echoed prompt instructions`);
   assert(!/\bImportant:\s*(?:Keep these exact details:|Do not introduce or change numbers|Preserve my refusal|Keep my question|Use different wording|Make the message meaningfully shorter)/i.test(text), `${label} leaked an internal Sparkle quality check: ${text}`);
   assert(!/\bAlex\b|\blunch\b|next week/i.test(text), `${label} leaked a training/example fact: ${text}`);
+  assert(!/\b(?:you're|you are) welcome for your understanding\b/i.test(text), `${label} reversed the courtesy wording: ${text}`);
 }
 
 function schedulePolarityByAnchor(output) {
