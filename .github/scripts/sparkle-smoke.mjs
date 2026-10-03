@@ -124,7 +124,7 @@ try {
   await page.waitForFunction(() => Boolean(window.Sparkle?.generate), null, { timeout: 30_000 });
 
   const sparkleSrc = await page.locator('script[src*="sparkle.js"]').getAttribute('src');
-  assert(sparkleSrc?.includes('sparkle.js?v=8'), `Unexpected Sparkle runtime asset: ${sparkleSrc}`);
+  assert(sparkleSrc?.includes('sparkle.js?v=9'), `Unexpected Sparkle runtime asset: ${sparkleSrc}`);
 
   const resultVisible = await page.locator('#result-panel').evaluate((node) => !node.hidden);
   assert(resultVisible, 'Sparkle output panel is not visible before generation');
@@ -139,11 +139,12 @@ try {
     'I need Friday off for a personal matter. I do not want to explain why. Ask Priya to confirm she received the message.',
     { name: 'Priya', situation: 'work' }
   );
-  assert(has(write, /\bPriya\b/i), 'Write lost the recipient name Priya');
   assert(has(write, /\bFriday\b/i), 'Write lost Friday');
   assert(has(write, /personal/i), 'Write lost the personal-matter context');
   assert(has(write, /\b(?:off|unavailable|away)\b/i), 'Write lost the time-off request');
   assert(has(write, /\b(?:confirm|received|got (?:this|the message)|let me know)\b/i), 'Write lost the confirmation request');
+  assert(has(write, /\bPriya\b|\byou\b/i), 'Write did not address Priya directly');
+  assert(!has(write, /\bshe\b/i), 'Write still refers to Priya in third person instead of addressing her');
   assert(!has(write, /\bAlex\b|\blunch\b|next week/i), 'Write copied the removed example instead of the user facts');
 
   const trialAfter = await page.evaluate(() => localStorage.getItem('wdis_trial_started_at_v2'));
