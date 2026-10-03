@@ -247,6 +247,14 @@
         let message = repairReplyPerspective(data.message, item.payload);
         message = repairRefinementPolarity(message, item.payload);
         message = repairCourtesy(message);
+        if (item.payload?.refine === 'another') {
+          const normalized = message.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+          const previous = String(item.payload.currentMessage || '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+          if (normalized === previous) {
+            const fallback = alternateWordingFallback(item.payload.currentMessage, item.payload);
+            if (fallback) message = fallback;
+          }
+        }
         if (!message) {
           item.reject(new Error('Sparkle returned an empty message. Please try again.'));
           return;
