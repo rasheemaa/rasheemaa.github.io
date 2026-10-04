@@ -255,7 +255,7 @@ function restoreExplicitFirstPersonBoundary(text, payload) {
 
 function directAddressAction(value) {
   return String(value || '')
-    .replace(/\b(?:he|she|they)\b/gi, 'you')
+    .replace(/\b(?:he|she|they|them|him)\b/gi, 'you')
     .replace(/\b(?:his|her|their)\b/gi, 'your')
     .trim();
 }
@@ -288,8 +288,48 @@ function sourcePreservingWriteFallback(payload) {
   return cleanOutput(inferredRecipient ? `Hi ${inferredRecipient}, ${body}` : body);
 }
 
+function sourcePreservingReplyFallback(payload) {
+  const intent = compact(replyIntent(payload?.text), 3200);
+  const name = compact(payload?.personName, 60);
+  if (!intent) return '';
+  const body = directAddressAction(intent)
+    .replace(/\bI\s+will\s+text\s+your\b/gi, 'I will text you')
+    .trim();
+  return cleanOutput(name ? `Hi ${name}, ${body}` : body);
+}
+
+function sourcePreservingFixFallback(payload) {
+  let source = compact(payload?.text, 3200);
+  if (!source) return '';
+  source = normalizeTimes(source)
+    .replace(/\bcant\b/gi, "can't")
+    .replace(/\bwont\b/gi, "won't")
+    .replace(/\bdont\b/gi, "don't")
+    .replace(/\bdidnt\b/gi, "didn't")
+    .replace(/\bim\b/gi, "I'm")
+    .replace(/\bive\b/gi, "I've")
+    .replace(/\bill\b/gi, "I'll")
+    .replace(/\bi\b/g, 'I')
+    .replace(/\s+/g, ' ')
+    .trim();
+  source = source.charAt(0).toUpperCase() + source.slice(1);
+  if (!/[.!?]$/.test(source)) source += '.';
+  return cleanOutput(source);
+}
+
+function sourcePreservingFallback(payload) {
+  if (payload?.refine) return '';
+  if (payload?.mode === 'write') return sourcePreservingWriteFallback(payload);
+  if (payload?.mode === 'reply') return sourcePreservingReplyFallback(payload);
+  if (payload?.mode === 'fix') return sourcePreservingFixFallback(payload);
+  return '';
+}
+
 function qualityIssue(text, payload) {
   if (!text || /<\/?think>|<\|/i.test(text)) return 'Return one complete message with no model markup.';
+  if (/^(?:your (?:response|reply|message|draft) should\b|here(?:'s| is) (?:a |the )?(?:rewritten|revised|polished)\b|i would say\b|the (?:message|reply|response) should\b)/i.test(text)) {
+    return 'Return only the sendable message with no explanation or drafting notes.';
+  }
   const reference = referenceText(payload);
   const normalized = normalizeTimes(text).toLowerCase().replace(/\s/g, '');
   const missing = anchors(reference).filter((value) => !normalized.includes(value.toLowerCase().replace(/\s/g, '')));
@@ -360,8 +400,8 @@ async function generate(id, payload) {
         text = repaired;
         break;
       }
-      if (payload?.mode === 'write') {
-        const fallback = sourcePreservingWriteFallback(payload || {});
+      const fallback = sourcePreservingFallback(payload || {});
+      if (fallback) {
         const fallbackIssue = qualityIssue(fallback, payload || {});
         if (!fallbackIssue) {
           text = fallback;
