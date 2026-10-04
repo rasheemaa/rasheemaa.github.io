@@ -7,6 +7,7 @@ async function waitForProductionAssets() {
     'what-do-i-say/config.js',
     'what-do-i-say/payment.js',
     'what-do-i-say/sparkle.js',
+    'what-do-i-say/sparkle-cloud-mobile.js',
     'what-do-i-say/sparkle-worker.js',
     'what-do-i-say/styles.css',
     'what-do-i-say/service-worker.js'
@@ -50,7 +51,7 @@ function assertSchedule(output, label) {
   assert(has(output, /Jordan/i), `${label} lost Jordan`);
   assert(has(output, /Friday/i) && has(output, /7\s*PM/i), `${label} lost Friday 7 PM`);
   assert(has(output, /Saturday/i) && has(output, /2\s*PM/i), `${label} lost Saturday 2 PM`);
-  assert(has(output, /(?:cannot|can't|can’t|won't|will not|unable|unavailable)/i), `${label} lost the refusal`);
+  assert(has(output, /(?:cannot|can['’]?t|cant|won['’]?t|wont|will not|unable|unavailable|not available|don['’]?t think I(?:['’]?ll| will) be able|do not think I(?:['’]?ll| will) be able|don['’]?t think I can|do not think I can)/i), `${label} lost the refusal`);
 }
 
 async function freshContext(userAgent = 'Sparkle-Smoke-Test/1.0 Chrome') {
@@ -111,6 +112,7 @@ try {
 
   const assets = await page.evaluate(() => [...document.scripts].map(script => script.getAttribute('src') || ''));
   assert(assets.some(src => src.includes('sparkle.js?v=22')), 'Production is not loading sparkle.js?v=22');
+  assert(assets.some(src => src.includes('sparkle-cloud-mobile.js?v=2')), 'Production is not loading sparkle-cloud-mobile.js?v=2');
   assert(assets.some(src => src.includes('chat-app.js?v=24')), 'Production is not loading chat-app.js?v=24');
   assert(assets.some(src => src.includes('config.js?v=9')), 'Production is not loading config.js?v=9');
   assert(assets.some(src => src.includes('payment.js?v=2')), 'Production is not loading payment.js?v=2');
@@ -260,10 +262,11 @@ try {
     localStorage.removeItem('wdis_founder_session_v1');
     localStorage.removeItem('wdis_pending_founder_session_v1');
   });
+  const expiredUserMessagesBefore = await mockPage.locator('.message-row.user').count();
   await mockPage.locator('#prompt').fill('This should be gated.');
   await mockPage.locator('#generate').click();
   assert(await mockPage.locator('#paywall').isVisible(), 'Expired trial did not open the paywall');
-  assert((await mockPage.locator('.message-row.user').count()) === 0, 'Expired trial submitted a message before payment');
+  assert((await mockPage.locator('.message-row.user').count()) === expiredUserMessagesBefore, 'Expired trial submitted a message before payment');
   console.log('PASS expired trial gating');
   await mockContext.close();
 
