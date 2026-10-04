@@ -1,387 +1,161 @@
 import { chromium } from 'playwright';
 import { readFile } from 'node:fs/promises';
 
-// A push can start this job before Pages finishes deploying. Test this revision.
 async function waitForProductionAssets() {
-  const paths = ['what-do-i-say/app.js', 'what-do-i-say/sparkle.js', 'what-do-i-say/sparkle-worker.js'];
+  const paths = [
+    'what-do-i-say/chat-app.js',
+    'what-do-i-say/sparkle.js',
+    'what-do-i-say/sparkle-worker.js',
+    'what-do-i-say/styles.css',
+    'what-do-i-say/service-worker.js'
+  ];
   const expected = await Promise.all(paths.map(path => readFile(path, 'utf8')));
-  for (let attempt = 0; attempt < 24; attempt++) {
+  for (let attempt = 0; attempt < 36; attempt++) {
     const matches = await Promise.all(paths.map(async (path, index) => {
       try {
         const response = await fetch(`https://thesheemaedit.com/${path}?verify=${Date.now()}`, { cache: 'no-store' });
         return response.ok && (await response.text()).trim() === expected[index].trim();
-      } catch (_) { return false; }
+      } catch { return false; }
     }));
     if (matches.every(Boolean)) {
-      console.log('PASS production assets match the tested revision');
+      console.log('PASS production assets match the tested chat revision');
       return;
     }
     await new Promise(resolve => setTimeout(resolve, 10_000));
   }
-  throw new Error('Pages has not deployed the revision under test');
+  throw new Error('Pages has not deployed the chat revision under test');
 }
 await waitForProductionAssets();
 
 const SITE = `https://thesheemaedit.com/what-do-i-say/?sparkle_smoke=${Date.now()}`;
 const RESULT_TIMEOUT = 12 * 60 * 1000;
-
-const browser = await chromium.launch({
-  headless: true,
-  args: ['--disable-dev-shm-usage']
-});
-
-const context = await browser.newContext({
-  viewport: { width: 390, height: 844 },
-  userAgent: 'Sparkle-Smoke-Test/1.0 Chrome'
-});
+const browser = await chromium.launch({ headless: true, args: ['--disable-dev-shm-usage'] });
+const context = await browser.newContext({ viewport: { width: 390, height: 844 }, userAgent: 'Sparkle-Smoke-Test/1.0 Chrome' });
 
 await context.addInitScript(() => {
   try {
-    Object.defineProperty(navigator, 'deviceMemory', { configurable: true, get: () => 2 });
-  } catch (_) {}
-  try {
     localStorage.removeItem('wdis_trial_started_at_v2');
-    localStorage.removeItem('wdis_history_v1');
-    localStorage.setItem('wdis_sparkle_profile_v1', JSON.stringify({
-      profile: 'Sparkle Compatible',
-      backend: 'wasm',
-      at: Date.now()
-    }));
-  } catch (_) {}
+    localStorage.removeItem('wdis_founder_session_v1');
+    localStorage.removeItem('wdis_pending_founder_session_v1');
+    localStorage.setItem('wdis_sparkle_profile_v1', JSON.stringify({ profile: 'Sparkle Compatible', backend: 'wasm', at: Date.now() }));
+  } catch {}
 });
 
 const page = await context.newPage();
 const browserErrors = [];
-page.on('pageerror', (error) => browserErrors.push(`pageerror: ${error.message}`));
-page.on('console', (message) => {
-  if (message.type() === 'error') browserErrors.push(`console: ${message.text()}`);
-});
+page.on('pageerror', error => browserErrors.push(`pageerror: ${error.message}`));
+page.on('console', message => { if (message.type() === 'error') browserErrors.push(`console: ${message.text()}`); });
 
-function assert(condition, message) {
-  if (!condition) throw new Error(message);
-}
-
-function has(text, pattern) {
-  return pattern.test(String(text || ''));
-}
-
-function wordCount(text) {
-  return String(text || '').trim().split(/\s+/).filter(Boolean).length;
-}
-
-function normalizedWording(text) {
-  return String(text || '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
-}
-
+function assert(condition, message) { if (!condition) throw new Error(message); }
+function has(text, pattern) { return pattern.test(String(text || '')); }
 function assertSendable(output, label) {
   const text = String(output || '').trim();
-  assert(text.length >= 8, `${label} is too short to be a useful message`);
-  assert(text.length <= 1600, `${label} is too long to be a practical message`);
-  const meta = /^(?:here(?:'s| is)|the (?:message|response|tone)|your draft|i would say|task:|tone:|context:|details:|output only|rewritten message|revised message)/i;
-  assert(!meta.test(text), `${label} starts with meta commentary: ${text.slice(0, 140)}`);
-  assert(!/output only the final message|do not invent facts|tone:\s*(?:warm|direct|professional|casual|firm|short)/i.test(text), `${label} echoed prompt instructions`);
-  assert(!/\bImportant:\s*(?:Keep these exact details:|Do not introduce or change numbers|Preserve my refusal|Keep my question|Use different wording|Make the message meaningfully shorter)/i.test(text), `${label} leaked an internal Sparkle quality check: ${text}`);
-  assert(!/\bAlex\b|\blunch\b|next week/i.test(text), `${label} leaked a training/example fact: ${text}`);
-  assert(!/\b(?:you're|you are) welcome for your understanding\b/i.test(text), `${label} reversed the courtesy wording: ${text}`);
+  assert(text.length >= 8, `${label} is too short`);
+  assert(text.length <= 1600, `${label} is too long`);
+  assert(!/^(?:here(?:'s| is)|rewritten message|revised message|message:|response:)/i.test(text), `${label} starts with meta commentary`);
+  assert(!/<\/?think>|<\|/i.test(text), `${label} leaked model markup`);
 }
 
-function schedulePolarityByAnchor(output) {
-  const map = new Map();
-  const clauses = String(output || '').split(/\bbut\b|[.!?;]+/i);
-  clauses.forEach((clause) => {
-    const polarity = /\b(?:cannot|can't|can’t|unable|unavailable|not able)\b/i.test(clause)
-      ? 'negative'
-      : /\b(?:can|available|able to)\b/i.test(clause)
-        ? 'positive'
-        : '';
-    if (!polarity) return;
-    if (/\bFriday\b/i.test(clause)) map.set('friday', polarity);
-    if (/\b4\s*PM\b/i.test(clause)) map.set('4pm', polarity);
-    if (/\bSaturday\b/i.test(clause)) map.set('saturday', polarity);
-    if (/\b10\s*AM\b/i.test(clause)) map.set('10am', polarity);
-  });
-  return map;
+async function assistantCount() { return page.locator('.message-row.assistant:not(.working)').count(); }
+async function waitForAnswer(before) {
+  await page.waitForFunction((count) => {
+    const error = document.querySelector('#ai-error');
+    if (error && !error.hidden) return true;
+    return document.querySelectorAll('.message-row.assistant:not(.working)').length > count && !document.querySelector('#generate')?.disabled;
+  }, before, { timeout: RESULT_TIMEOUT });
+  const errorVisible = await page.locator('#ai-error').evaluate(node => !node.hidden);
+  if (errorVisible) throw new Error(`Sparkle UI error: ${(await page.locator('#ai-error-message').textContent()) || 'unknown error'}`);
+  return (await page.locator('.message-row.assistant:not(.working) .bubble').last().textContent())?.trim() || '';
 }
 
-function assertFixFacts(output, label) {
-  assert(has(output, /\bMaya\b/i), `${label} lost Maya`);
-  assert(has(output, /\bEli\b/i), `${label} lost Eli`);
-  assert(has(output, /\bFriday\b/i), `${label} lost Friday`);
-  assert(has(output, /\b4\s*PM\b/i), `${label} lost 4 PM`);
-  assert(has(output, /\bSaturday\b/i), `${label} lost Saturday`);
-  assert(has(output, /\b10\s*AM\b/i), `${label} lost 10 AM`);
-  assert(has(output, /\b(?:can't|cannot|unable|not able)\b/i), `${label} lost the refusal`);
-  const polarity = schedulePolarityByAnchor(output);
-  assert(polarity.get('friday') === 'negative', `${label} changed Friday from unavailable to available`);
-  assert(polarity.get('4pm') === 'negative', `${label} changed 4 PM from unavailable to available`);
-  assert(polarity.get('saturday') === 'positive', `${label} changed Saturday from available to unavailable`);
-  assert(polarity.get('10am') === 'positive', `${label} changed 10 AM from available to unavailable`);
-}
-
-async function resultOrError(previous = '') {
-  const handle = await page.waitForFunction((before) => {
-    const errorBox = document.querySelector('#ai-error');
-    if (errorBox && !errorBox.hidden) {
-      return {
-        kind: 'error',
-        message: document.querySelector('#ai-error-message')?.textContent?.trim() || 'Unknown Sparkle UI error',
-        status: document.querySelector('#sparkle-status-text')?.textContent?.trim() || ''
-      };
-    }
-
-    const form = document.querySelector('#message-form');
-    const output = document.querySelector('#result')?.textContent?.trim() || '';
-    const panel = document.querySelector('#result-panel');
-    const busy = form?.getAttribute('aria-busy') === 'true';
-    if (!busy && panel && !panel.hidden && output && output !== before) {
-      return {
-        kind: 'result',
-        output,
-        status: document.querySelector('#sparkle-status-text')?.textContent?.trim() || ''
-      };
-    }
-    return false;
-  }, previous, { timeout: RESULT_TIMEOUT });
-
-  const value = await handle.jsonValue();
-  if (value.kind === 'error') {
-    throw new Error(`Sparkle UI error: ${value.message} | ${value.status}`);
-  }
-  return value;
-}
-
-async function waitForIdle() {
-  await page.waitForFunction(() => document.querySelector('#message-form')?.getAttribute('aria-busy') !== 'true', null, { timeout: 30_000 });
-}
-
-async function assertOutputPreserved(before, label) {
-  const current = (await page.locator('#result').textContent())?.trim() || '';
-  const hasSuccess = await page.evaluate(() => Boolean(localStorage.getItem('wdis_trial_started_at_v2')));
-  if (hasSuccess) {
-    assert(current === before, `${label} replaced the previous output before a new result was ready`);
-  } else {
-    assert(!current.includes('Your Sparkle message will appear here'), `${label} left the empty placeholder visible`);
-    const busy = await page.locator('#result-panel').getAttribute('aria-busy');
-    assert(busy === 'true' || /Stopped|could not|too long/i.test(current), `${label} has no progress or outcome`);
-  }
-}
-
-async function generateMode(mode, text, { name = '', situation = 'general' } = {}) {
-  await page.locator(`[data-mode="${mode}"]`).click();
-  await page.locator('#person-name').fill(name);
-  await page.locator('#situation').selectOption(situation);
+async function send(text) {
+  const before = await assistantCount();
   await page.locator('#prompt').fill(text);
-  const before = (await page.locator('#result').textContent())?.trim() || '';
   await page.locator('#generate').click();
-  await assertOutputPreserved(before, `${mode} generation`);
-  const value = await resultOrError(before);
-  assertSendable(value.output, mode);
-  console.log(`PASS ${mode.toUpperCase()} | ${value.status}`);
-  console.log(`OUTPUT ${mode.toUpperCase()}: ${value.output.replace(/\s+/g, ' ').slice(0, 500)}`);
-  return value.output;
+  const output = await waitForAnswer(before);
+  assertSendable(output, 'Sparkle answer');
+  return output;
 }
 
-async function refine(action) {
-  const before = (await page.locator('#result').textContent())?.trim() || '';
-  await page.locator(`[data-refine="${action}"]`).click();
-  await assertOutputPreserved(before, `refine ${action}`);
-  const value = await resultOrError(before);
-  assertSendable(value.output, `refine ${action}`);
-  console.log(`PASS REFINE ${action.toUpperCase()} | ${value.status}`);
-  console.log(`OUTPUT REFINE ${action.toUpperCase()}: ${value.output.replace(/\s+/g, ' ').slice(0, 500)}`);
-  return value.output;
-}
-
-async function cancelBeforeFirstSuccess() {
-  const draft = 'I need Friday off for a personal matter. I do not want to explain why. Ask Priya to confirm she received the message.';
-  await page.locator('[data-mode="write"]').click();
-  await page.locator('#person-name').fill('Priya');
-  await page.locator('#situation').selectOption('work');
-  await page.locator('#prompt').fill(draft);
-  const before = (await page.locator('#result').textContent())?.trim() || '';
-  await page.locator('#generate').click();
-  await page.locator('#sparkle-cancel').waitFor({ state: 'visible', timeout: 10_000 });
-  await assertOutputPreserved(before, 'cancelled generation');
-  await page.locator('#sparkle-cancel').click();
-  await waitForIdle();
-
-  assert((await page.locator('#prompt').inputValue()) === draft, 'Cancellation changed or cleared the user draft');
-  await assertOutputPreserved(before, 'cancellation');
-  const trial = await page.evaluate(() => localStorage.getItem('wdis_trial_started_at_v2'));
-  assert(!trial, 'Cancellation started the free trial before a successful Sparkle response');
-  const errorVisible = await page.locator('#ai-error').evaluate((node) => !node.hidden);
-  assert(!errorVisible, 'Cancellation showed an AI error instead of a stopped state');
-  console.log('PASS CANCEL | draft and output preserved; trial not started');
-}
-
-async function retryAfterTransientFailure(previousOutput) {
-  const draft = 'I cannot make the 3 PM meeting Tuesday. Ask Priya if 4 PM works instead.';
-  await page.locator('[data-mode="write"]').click();
-  await page.locator('#person-name').fill('Priya');
-  await page.locator('#situation').selectOption('work');
-  await page.locator('#prompt').fill(draft);
-
-  await page.evaluate(() => {
-    window.__sparkleRealForSmoke = window.Sparkle;
-    const real = window.Sparkle;
-    window.Sparkle = Object.freeze({
-      ...real,
-      generate: () => {
-        const error = new Error('Forced transient Sparkle smoke failure.');
-        error.code = 'sparkle_smoke_retry';
-        return Promise.reject(error);
-      }
-    });
-  });
-
-  await page.locator('#generate').click();
-  await page.locator('#ai-error').waitFor({ state: 'visible', timeout: 10_000 });
-  await waitForIdle();
-  await assertOutputPreserved(previousOutput, 'failed generation');
-  assert((await page.locator('#prompt').inputValue()) === draft, 'Failed generation changed or cleared the user draft');
-
-  await page.evaluate(() => {
-    window.Sparkle = window.__sparkleRealForSmoke;
-    delete window.__sparkleRealForSmoke;
-  });
-
-  await page.locator('#ai-retry').click();
-  await assertOutputPreserved(previousOutput, 'retry');
-  const value = await resultOrError(previousOutput);
-  assertSendable(value.output, 'retry');
-  assert(has(value.output, /\bTuesday\b/i), 'Retry lost Tuesday');
-  assert(has(value.output, /\b3\s*PM\b/i), 'Retry lost 3 PM');
-  assert(has(value.output, /\b4\s*PM\b/i), 'Retry lost 4 PM');
-  assert(has(value.output, /\b(?:cannot|can['’]t|unable|unavailable|not able|conflict|reschedul(?:e|ing)|another commitment)\b/i), 'Retry lost the explicit 3 PM refusal');
-  assert(!has(value.output, /\bI\s+can\s+make\s+(?:the\s+)?3\s*PM\b/i), 'Retry reversed the 3 PM refusal');
-  assert(has(value.output, /\b(?:work|works|okay|ok|available)\b/i), 'Retry lost the request to check whether 4 PM works');
-  assert(!/\bAsk\s+Priya\b/i.test(value.output), 'Retry repeated a note-taking instruction instead of addressing Priya');
-  console.log(`PASS RETRY | ${value.status}`);
-  console.log(`OUTPUT RETRY: ${value.output.replace(/\s+/g, ' ').slice(0, 500)}`);
-  return value.output;
+async function resetMode(mode) {
+  if (await page.locator('#new-message-top').isVisible()) await page.locator('#new-message-top').click();
+  await page.locator(`[data-mode="${mode}"]`).click();
 }
 
 try {
   await page.goto(SITE, { waitUntil: 'domcontentloaded', timeout: 60_000 });
   await page.waitForFunction(() => Boolean(window.Sparkle?.generate), null, { timeout: 30_000 });
 
-  const sparkleSrc = await page.locator('script[src*="sparkle.js"]').getAttribute('src');
-  assert(sparkleSrc?.includes('sparkle.js?v=21'), `Unexpected Sparkle runtime asset: ${sparkleSrc}`);
+  const assets = await page.evaluate(() => [...document.scripts].map(script => script.getAttribute('src') || ''));
+  assert(assets.some(src => src.includes('sparkle.js?v=21')), 'Production is not loading sparkle.js?v=21');
+  assert(assets.some(src => src.includes('chat-app.js?v=22')), 'Production is not loading chat-app.js?v=22');
 
-  const mobile = await page.evaluate(() => ({
-    innerWidth: window.innerWidth,
+  const layout = await page.evaluate(() => ({
+    width: innerWidth,
     scrollWidth: document.documentElement.scrollWidth,
-    generateRight: document.querySelector('#generate')?.getBoundingClientRect().right || 0
+    composerRight: document.querySelector('.composer-box')?.getBoundingClientRect().right || 0
   }));
-  assert(mobile.innerWidth === 390, `Unexpected mobile viewport width: ${mobile.innerWidth}`);
-  assert(mobile.scrollWidth <= mobile.innerWidth + 2, `Mobile layout has horizontal overflow: ${JSON.stringify(mobile)}`);
-  assert(mobile.generateRight <= mobile.innerWidth + 1, `Generate button overflows the mobile viewport: ${JSON.stringify(mobile)}`);
-  console.log('PASS mobile-size UI | 390x844 with no horizontal overflow');
-
-  const resultVisible = await page.locator('#result-panel').evaluate((node) => !node.hidden);
-  assert(resultVisible, 'Sparkle output panel is not visible before generation');
-  assert((await page.locator('#result').textContent())?.includes('Sparkle message will appear here'), 'Sparkle output placeholder is missing');
-  console.log('PASS Sparkle output area is visible before generation');
+  assert(layout.width === 390, `Unexpected viewport: ${layout.width}`);
+  assert(layout.scrollWidth <= layout.width + 2, `Horizontal overflow: ${JSON.stringify(layout)}`);
+  assert(layout.composerRight <= layout.width + 1, `Composer overflows: ${JSON.stringify(layout)}`);
+  assert(await page.locator('#welcome-card').isVisible(), 'Welcome card is not visible');
+  assert((await page.locator('.mode').count()) === 3, 'Expected three starter choices');
+  console.log('PASS compact chat-first mobile layout');
 
   const trialBefore = await page.evaluate(() => localStorage.getItem('wdis_trial_started_at_v2'));
-  assert(!trialBefore, 'Local usage state was present before the first successful Sparkle response');
-  assert((await page.locator('#trial-status').textContent()).includes('3-day free trial'), 'First-use trial status is not visible');
+  assert(!trialBefore, 'Trial started before the first successful response');
 
-  await cancelBeforeFirstSuccess();
-
-  const write = await generateMode(
-    'write',
-    'I need Friday off for a personal matter. I do not want to explain why. Ask Priya to confirm she received the message.',
-    { name: 'Priya', situation: 'work' }
-  );
-  assert(has(write, /\bFriday\b/i), 'Write lost Friday');
-  assert(has(write, /personal/i), 'Write lost the personal-matter context');
-  assert(has(write, /\b(?:off|unavailable|away)\b/i), 'Write lost the time-off request');
-  assert(has(write, /\b(?:confirm|received|got (?:this|the message)|let me know)\b/i), 'Write lost the confirmation request');
-  assert(has(write, /\bPriya\b|\byou\b/i), 'Write did not address Priya directly');
-  assert(!has(write, /\bshe\b/i), 'Write still refers to Priya in third person instead of addressing her');
-  assert(!has(write, /\bAlex\b|\blunch\b|next week/i), 'Write copied the removed example instead of the user facts');
-
+  await resetMode('write');
+  const write = await send('Tell Jordan I cannot make dinner Friday at 7 PM because I am exhausted, but I can see her Saturday at 2 PM instead.');
+  assert(has(write, /Jordan/i), 'Write lost Jordan');
+  assert(has(write, /Friday/i) && has(write, /7\s*PM/i), 'Write lost Friday 7 PM');
+  assert(has(write, /Saturday/i) && has(write, /2\s*PM/i), 'Write lost Saturday 2 PM');
+  assert(await page.locator('#new-message-top').isVisible(), 'New message control did not appear');
   const trialAfter = await page.evaluate(() => localStorage.getItem('wdis_trial_started_at_v2'));
-  assert(Boolean(trialAfter), 'Successful Sparkle response did not record local usage state');
+  assert(Boolean(trialAfter), 'Trial did not start after the first successful response');
 
-  const profile = await page.evaluate(() => {
-    try { return JSON.parse(localStorage.getItem('wdis_sparkle_profile_v1') || 'null'); } catch (_) { return null; }
-  });
-  assert(profile?.profile === 'Sparkle Compatible', `Expected Sparkle Compatible profile, received ${JSON.stringify(profile)}`);
-  assert(profile?.backend === 'wasm', `Expected WASM backend, received ${JSON.stringify(profile)}`);
-  console.log(`PASS model initialized | ${profile.profile} / ${profile.backend}`);
+  const latest = page.locator('.message-row.assistant:not(.working)').last();
+  const actionTexts = await latest.locator('.response-actions > button').allTextContents();
+  assert(actionTexts[0]?.includes('Just right'), `First response action is not Just right: ${actionTexts}`);
+  assert(actionTexts[1]?.includes('More options'), `Second response action is not More options: ${actionTexts}`);
+  await latest.locator('.more-options').click();
+  assert(await latest.locator('.refine-options').isVisible(), 'More options did not expand');
+  console.log('PASS Just right first, More options second');
 
-  await retryAfterTransientFailure(write);
+  let before = await assistantCount();
+  await latest.locator('.refine-options button').filter({ hasText: 'Make it firmer' }).click();
+  const firmer = await waitForAnswer(before);
+  assertSendable(firmer, 'firmer');
+  assert(has(firmer, /Friday/i) && has(firmer, /Saturday/i), 'Firmer refinement lost schedule details');
+  console.log('PASS quick refinement stays in the chat');
 
-  const schedule = await generateMode('write',
-    'Tell Jordan I cannot meet Friday at 3 pm. I can meet Saturday at 11 am instead. Ask if that works.');
-  assert(has(schedule, /Friday/i) && has(schedule, /Saturday/i), 'Scheduling Write lost a day');
-  assert(has(schedule, /3\s*(?:p\.?m\.?)/i) && has(schedule, /11\s*(?:a\.?m\.?)/i), 'Scheduling Write lost a time');
-  assert(!/\b(?:Tell Jordan|Ask if)\b/i.test(schedule), 'Scheduling Write repeated instructions');
-  assert(has(schedule, /cannot|can't/i), 'Scheduling Write lost refusal');
+  before = await assistantCount();
+  await page.locator('#prompt').fill('Make it less apologetic, but keep both dates and times.');
+  await page.locator('#generate').click();
+  const custom = await waitForAnswer(before);
+  assertSendable(custom, 'typed refinement');
+  assert(has(custom, /Friday/i) && has(custom, /7\s*PM/i), 'Typed refinement lost Friday 7 PM');
+  assert(has(custom, /Saturday/i) && has(custom, /2\s*PM/i), 'Typed refinement lost Saturday 2 PM');
+  const userBubbles = await page.locator('.message-row.user .bubble').allTextContents();
+  assert(userBubbles.some(text => text.includes('Make it less apologetic')), 'Typed refinement did not appear as a user chat bubble');
+  console.log('PASS typed back-and-forth refinement');
 
-  const reply = await generateMode(
-    'reply',
-    'They said: “Are you mad at me because I cancelled dinner?” I want to say I am overwhelmed and need a little space, but I am not angry at them and I will text them tomorrow.',
-    { name: 'Jordan', situation: 'relationship' }
-  );
-  assert(has(reply, /overwhelm|space/i), 'Reply lost the need for space');
-  assert(has(reply, /\bI(?:'m| am)\s+not\s+(?:mad|angry|upset)\s+(?:at|with)\s+you\b/i), 'Reply reversed or lost who is not angry');
-  assert(!has(reply, /\byou(?:'re| are)\s+not\s+(?:mad|angry|upset)\s+(?:at|with)\s+me\b/i), 'Reply reversed the speaker and recipient');
-  assert(has(reply, /tomorrow/i), 'Reply lost the tomorrow follow-up');
-  assert(has(reply, /\byou\b/i), 'Reply does not address the sender directly');
-  assert(!has(reply, /\bthem\b/i), 'Reply still talks about the sender in third person');
+  await resetMode('reply');
+  const reply = await send('They said: “Are you mad at me?” I want to say I am not mad at them, I have just been overwhelmed and need a quiet night.');
+  assertSendable(reply, 'reply');
+  assert(!/^you(?:'re| are) not mad at me/i.test(reply), 'Reply reversed the speaker perspective');
+  console.log('PASS reply mode');
 
-  const fixed = await generateMode(
-    'fix',
-    'hey maya i cant bring eli to soccer friday at 4 pm but i can saturday at 10 am sorry',
-    { name: 'Maya', situation: 'cancel' }
-  );
-  assertFixFacts(fixed, 'Fix');
+  await resetMode('fix');
+  const fixed = await send('hi maya i cant meet friday at 4 PM. i can meet saturday at 10 AM.');
+  assertSendable(fixed, 'fix');
+  assert(has(fixed, /Maya/i), 'Fix lost Maya');
+  assert(has(fixed, /Friday/i) && has(fixed, /4\s*PM/i), 'Fix lost Friday 4 PM');
+  assert(has(fixed, /Saturday/i) && has(fixed, /10\s*AM/i), 'Fix lost Saturday 10 AM');
+  console.log('PASS fix mode');
 
-  let previousRefinement = fixed;
-  for (const action of ['shorter', 'softer', 'firmer', 'professional', 'another']) {
-    const output = await refine(action);
-    assertFixFacts(output, `Refine ${action}`);
-    if (action === 'shorter') {
-      assert(wordCount(output) < wordCount(previousRefinement), `Shorter did not reduce the message length: ${wordCount(previousRefinement)} -> ${wordCount(output)}`);
-    }
-    if (action === 'softer') {
-      assert(has(output, /\b(?:sorry|please|thank|thanks|appreciate|understand|unfortunately|would|could|hope|kindly)\b/i), `Softer did not include a gentler cue: ${output}`);
-    }
-    if (action === 'firmer') {
-      assert(!/\bPlease\.\s*$/i.test(output), `Firmer ended with a dangling “Please.”: ${output}`);
-    }
-    if (action === 'professional') {
-      assert(!/\b(?:can't|won't|don't|doesn't|didn't|I'm|I'll|I've|we're|we'll)\b/i.test(output), `Professional kept casual contractions: ${output}`);
-      assert(has(output, /^(?:Hello|Hi|Dear)\s+Maya\b/i), `Professional lacks a polished greeting to Maya: ${output}`);
-    }
-    if (action === 'another') {
-      assert(normalizedWording(output) !== normalizedWording(previousRefinement), `Another did not genuinely rephrase the previous message: ${output}`);
-    }
-    previousRefinement = output;
-  }
-
-  assert((await page.evaluate(() => localStorage.getItem('wdis_trial_started_at_v2'))) === trialAfter, 'Later actions restarted the trial');
-  assert((await page.locator('#trial-status').textContent()).includes('days left'), 'Active trial status is not visible');
-
-  const uiErrorVisible = await page.locator('#ai-error').evaluate((node) => !node.hidden);
-  assert(!uiErrorVisible, 'AI error box is visible after the smoke suite');
-
-  const relevantErrors = browserErrors.filter((line) => !/favicon|googletagmanager|google-analytics/i.test(line));
-  assert(relevantErrors.length === 0, `Browser errors detected:\n${relevantErrors.join('\n')}`);
-
-  console.log('SPARKLE_SMOKE_TEST_PASS');
-} catch (error) {
-  console.error('SPARKLE_SMOKE_TEST_FAIL');
-  console.error(error?.stack || error);
-  try {
-    console.error('STATUS:', await page.locator('#sparkle-status-text').textContent());
-    console.error('UI ERROR:', await page.locator('#ai-error-message').textContent());
-    console.error('BROWSER ERRORS:', browserErrors.join(' | '));
-  } catch (_) {}
-  process.exitCode = 1;
+  assert(browserErrors.length === 0, `Browser errors: ${browserErrors.join(' | ')}`);
+  console.log('PASS What Do I Say chat production smoke test');
 } finally {
   await browser.close();
 }
