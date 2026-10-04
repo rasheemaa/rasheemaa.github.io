@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 async function waitForProductionAssets() {
   const paths = [
     'what-do-i-say/bootstrap.js',
-    'what-do-i-say/sparkle-mobile-worker.js'
+    'what-do-i-say/sparkle-mobile-safe-worker.js'
   ];
   const expected = await Promise.all(paths.map((path) => readFile(path, 'utf8')));
 
@@ -39,9 +39,14 @@ const page = await browser.newPage({
 });
 
 const browserErrors = [];
+const modelRequests = [];
 page.on('pageerror', (error) => browserErrors.push(`pageerror: ${error.message}`));
 page.on('console', (message) => {
   if (message.type() === 'error') browserErrors.push(`console: ${message.text()}`);
+});
+page.on('request', (request) => {
+  const url = request.url();
+  if (/huggingface\.co|hf\.co|cdn-lfs\.huggingface\.co/i.test(url)) modelRequests.push(url);
 });
 
 async function generateAndAssert(promptText, availableTime, unavailableTime) {
@@ -51,7 +56,7 @@ async function generateAndAssert(promptText, availableTime, unavailableTime) {
     const text = document.querySelector('#result')?.textContent?.trim() || '';
     const busy = document.querySelector('#message-form')?.getAttribute('aria-busy') === 'true';
     return !busy && text && text !== 'Your Sparkle message will appear here.';
-  }, null, { timeout: 12 * 60 * 1000 });
+  }, null, { timeout: 30_000 });
 
   const output = (await page.locator('#result').textContent() || '').trim();
   const errorVisible = await page.locator('#ai-error').isVisible();
@@ -73,9 +78,13 @@ try {
     timeout: 60_000
   });
 
-  const routedToMobile = await page.evaluate(() => window.__WDIS_MOBILE_SPARKLE === true);
-  assert(routedToMobile, 'iPad Safari identity was not routed to Sparkle Mobile');
-  console.log('PASS iPad Safari identity routes to Sparkle Mobile');
+  const mobileState = await page.evaluate(() => ({
+    routed: window.__WDIS_MOBILE_SPARKLE === true,
+    safe: window.__WDIS_MOBILE_SAFE_MODE === true
+  }));
+  assert(mobileState.routed, 'iPad Safari identity was not routed to Sparkle Mobile');
+  assert(mobileState.safe, 'iPad Safari crash-safe mode was not enabled');
+  console.log('PASS iPad Safari identity routes to crash-safe Sparkle Mobile');
 
   await generateAndAssert('Tell Brandon I can meet tomorrow at 3 PM but I cannot make 2 PM', '3 PM', '2 PM');
   const afterFirst = await page.evaluate(() => ({
@@ -86,8 +95,9 @@ try {
   assert(afterFirst.recycling, 'iPad Safari worker recycling was not enabled after generation began');
   assert(afterFirst.starts >= 1, `Expected a mobile worker start, got ${afterFirst.starts}`);
   assert(afterFirst.recycles >= 1, `Expected the first mobile worker to be recycled, got ${afterFirst.recycles}`);
-  console.log(`PASS first iPad worker recycled ${JSON.stringify(afterFirst)}`);
+  console.log(`PASS first iPad safe worker recycled ${JSON.stringify(afterFirst)}`);
 
+  await page.waitForTimeout(3_000);
   await generateAndAssert('Tell Brandon I can meet tomorrow at 4 PM but I cannot make 1 PM', '4 PM', '1 PM');
   const afterSecond = await page.evaluate(() => ({
     starts: Number(window.__WDIS_MOBILE_WORKER_STARTS || 0),
@@ -95,7 +105,10 @@ try {
   }));
   assert(afterSecond.starts >= 2, `Expected a fresh worker for the second request, got ${afterSecond.starts}`);
   assert(afterSecond.recycles >= 2, `Expected the second worker to be recycled, got ${afterSecond.recycles}`);
-  console.log(`PASS second iPad worker recycled ${JSON.stringify(afterSecond)}`);
+  console.log(`PASS second iPad safe worker recycled ${JSON.stringify(afterSecond)}`);
+
+  assert(modelRequests.length === 0, `iPad safe mode unexpectedly requested an AI model: ${modelRequests.join(', ')}`);
+  console.log('PASS iPad safe mode does not download or load the crashing browser model');
 
   const relevantErrors = browserErrors.filter((line) => !/favicon|googletagmanager|google-analytics/i.test(line));
   assert(relevantErrors.length === 0, `Browser errors detected:\n${relevantErrors.join('\n')}`);
