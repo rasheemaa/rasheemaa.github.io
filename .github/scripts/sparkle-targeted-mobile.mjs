@@ -44,19 +44,10 @@ page.on('console', (message) => {
   if (message.type() === 'error') browserErrors.push(`console: ${message.text()}`);
 });
 
-try {
-  await page.goto(`https://thesheemaedit.com/what-do-i-say/?sparkle_mobile=${Date.now()}`, {
-    waitUntil: 'domcontentloaded',
-    timeout: 60_000
-  });
-
-  const routedToMobile = await page.evaluate(() => window.__WDIS_MOBILE_SPARKLE === true);
-  assert(routedToMobile, 'iPad Safari identity was not routed to Sparkle Mobile');
-  console.log('PASS iPad Safari identity routes to Sparkle Mobile');
-
-  await page.locator('#prompt').fill('Tell Brandon I can meet tomorrow at 3 PM but I cannot make 2 PM');
+async function generateAndAssert(promptText, availableTime, unavailableTime) {
+  await page.locator('#prompt').fill(promptText);
   await page.locator('#generate').click();
-
+  await page.waitForFunction(() => document.querySelector('#message-form')?.getAttribute('aria-busy') === 'true', null, { timeout: 10_000 });
   await page.waitForFunction(() => {
     const text = document.querySelector('#result')?.textContent?.trim() || '';
     const busy = document.querySelector('#message-form')?.getAttribute('aria-busy') === 'true';
@@ -70,10 +61,44 @@ try {
   if (errorText) console.log(`SPARKLE_MOBILE_ERROR ${JSON.stringify(errorText)}`);
 
   assert(!errorVisible, `Sparkle Mobile showed an error: ${errorText}`);
-  assert(/3\s*PM/i.test(output), `Sparkle Mobile lost the available time: ${output}`);
-  assert(/2\s*PM/i.test(output), `Sparkle Mobile lost the unavailable time: ${output}`);
+  assert(new RegExp(availableTime.replace(' ', '\\s*'), 'i').test(output), `Sparkle Mobile lost the available time: ${output}`);
+  assert(new RegExp(unavailableTime.replace(' ', '\\s*'), 'i').test(output), `Sparkle Mobile lost the unavailable time: ${output}`);
   assert(/(?:cannot|can't|can’t|not|unable|unavailable)/i.test(output), `Sparkle Mobile lost the refusal: ${output}`);
   assert(/Brandon/i.test(output), `Sparkle Mobile lost the recipient: ${output}`);
+  return output;
+}
+
+try {
+  await page.goto(`https://thesheemaedit.com/what-do-i-say/?sparkle_mobile=${Date.now()}`, {
+    waitUntil: 'domcontentloaded',
+    timeout: 60_000
+  });
+
+  const mobileState = await page.evaluate(() => ({
+    routed: window.__WDIS_MOBILE_SPARKLE === true,
+    recycling: window.__WDIS_MOBILE_WORKER_RECYCLE_ENABLED === true
+  }));
+  assert(mobileState.routed, 'iPad Safari identity was not routed to Sparkle Mobile');
+  assert(mobileState.recycling, 'iPad Safari worker recycling was not enabled');
+  console.log('PASS iPad Safari identity routes to recycling Sparkle Mobile');
+
+  await generateAndAssert('Tell Brandon I can meet tomorrow at 3 PM but I cannot make 2 PM', '3 PM', '2 PM');
+  const afterFirst = await page.evaluate(() => ({
+    starts: Number(window.__WDIS_MOBILE_WORKER_STARTS || 0),
+    recycles: Number(window.__WDIS_MOBILE_WORKER_RECYCLES || 0)
+  }));
+  assert(afterFirst.starts >= 1, `Expected a mobile worker start, got ${afterFirst.starts}`);
+  assert(afterFirst.recycles >= 1, `Expected the first mobile worker to be recycled, got ${afterFirst.recycles}`);
+  console.log(`PASS first iPad worker recycled ${JSON.stringify(afterFirst)}`);
+
+  await generateAndAssert('Tell Brandon I can meet tomorrow at 4 PM but I cannot make 1 PM', '4 PM', '1 PM');
+  const afterSecond = await page.evaluate(() => ({
+    starts: Number(window.__WDIS_MOBILE_WORKER_STARTS || 0),
+    recycles: Number(window.__WDIS_MOBILE_WORKER_RECYCLES || 0)
+  }));
+  assert(afterSecond.starts >= 2, `Expected a fresh worker for the second request, got ${afterSecond.starts}`);
+  assert(afterSecond.recycles >= 2, `Expected the second worker to be recycled, got ${afterSecond.recycles}`);
+  console.log(`PASS second iPad worker recycled ${JSON.stringify(afterSecond)}`);
 
   const relevantErrors = browserErrors.filter((line) => !/favicon|googletagmanager|google-analytics/i.test(line));
   assert(relevantErrors.length === 0, `Browser errors detected:\n${relevantErrors.join('\n')}`);
