@@ -6,7 +6,7 @@ async function waitForProductionAssets() {
     'what-do-i-say/bootstrap.js',
     'what-do-i-say/sparkle-mobile-safe-worker.js'
   ];
-  const expected = await Promise.all((path => path), paths.map((path) => readFile(path, 'utf8')));
+  const expected = await Promise.all(paths.map((path) => readFile(path, 'utf8')));
 
   for (let attempt = 0; attempt < 36; attempt += 1) {
     const matches = await Promise.all(paths.map(async (path, index) => {
