@@ -1,0 +1,68 @@
+name: Sparkle WebKit production verification
+
+on:
+  push:
+    paths:
+      - '.github/workflows/sparkle-webkit-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  webkit-production-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout exact repository revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+
+      - name: Verify production v21 assets and service worker
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFile } from 'node:fs/promises';
+          const base = 'https://thesheemaedit.com/what-do-i-say/';
+          const files = ['app.js', 'sparkle.js', 'sparkle-worker.js', 'service-worker.js'];
+          for (const file of files) {
+            const expected = (await readFile(`what-do-i-say/${file}`, 'utf8')).trim();
+            const response = await fetch(`${base}${file}?webkit_verify=${Date.now()}`, { cache: 'no-store' });
+            if (!response.ok) throw new Error(`${file} returned ${response.status}`);
+            const actual = (await response.text()).trim();
+            if (actual !== expected) throw new Error(`${file} does not match the checked out revision`);
+            console.log(`PASS production ${file} matches repository`);
+          }
+          const page = await fetch(`${base}?webkit_verify=${Date.now()}`, { cache: 'no-store' });
+          const html = await page.text();
+          if (!/sparkle\.js\?v=21/.test(html)) throw new Error('Production HTML is not loading sparkle.js?v=21');
+          if (!/app\.js\?v=21/.test(html)) throw new Error('Production HTML is not loading app.js?v=21');
+          if (!/config\.js\?v=8/.test(html)) throw new Error('Production HTML is not loading config.js?v=8');
+          if (/vercel/i.test(html)) throw new Error('Production What Do I Say HTML still references Vercel');
+          console.log('PASS production HTML loads Sparkle/app v21 and contains no Vercel reference');
+          NODE
+
+      - name: Verify compatibility recovery logic
+        run: node .github/scripts/sparkle-compatibility-test.mjs
+
+      - name: Install Playwright WebKit
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.55.0
+          npx playwright install --with-deps webkit
+
+      - name: Run live smoke test through WebKit with iPad Safari identity
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFile, writeFile } from 'node:fs/promises';
+          let code = await readFile('.github/scripts/sparkle-smoke.mjs', 'utf8');
+          code = code.replace("import { chromium } from 'playwright';", "import { webkit as chromium } from 'playwright';");
+          code = code.replace("  args: ['--disable-dev-shm-usage']\n", '');
+          code = code.replace("userAgent: 'Sparkle-Smoke-Test/1.0 Chrome'", "userAgent: 'Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1'");
+          await writeFile('.github/scripts/.sparkle-webkit-runtime.mjs', code);
+          NODE
+          node .github/scripts/.sparkle-webkit-runtime.mjs
