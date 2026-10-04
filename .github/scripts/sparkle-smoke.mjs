@@ -260,7 +260,6 @@ try {
     localStorage.removeItem('wdis_founder_session_v1');
     localStorage.removeItem('wdis_pending_founder_session_v1');
   });
-  await mockPage.reload({ waitUntil: 'domcontentloaded' });
   await mockPage.locator('#prompt').fill('This should be gated.');
   await mockPage.locator('#generate').click();
   assert(await mockPage.locator('#paywall').isVisible(), 'Expired trial did not open the paywall');
