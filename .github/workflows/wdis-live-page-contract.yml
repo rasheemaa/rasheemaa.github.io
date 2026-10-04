@@ -1,0 +1,47 @@
+name: What Do I Say live page contract
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'what-do-i-say/**'
+      - '.github/workflows/wdis-live-page-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-page:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Wait for Pages and verify live mobile Cloudflare contract
+        run: |
+          set -euo pipefail
+          ok=0
+          for attempt in {1..18}; do
+            stamp=$(date +%s)
+            curl --fail --silent --show-error \
+              -H 'Cache-Control: no-cache' \
+              "https://thesheemaedit.com/what-do-i-say/?contract=$stamp" \
+              -o /tmp/wdis.html || true
+            if grep -q 'sparkle-cloud-mobile.js?v=1' /tmp/wdis.html \
+              && grep -q 'On iPhone and iPad, your message is sent securely to Sparkle’s Cloudflare AI service for generation.' /tmp/wdis.html \
+              && ! grep -q 'Your message stays on your device' /tmp/wdis.html; then
+              ok=1
+              break
+            fi
+            echo "Live page is not current yet, attempt $attempt"
+            sleep 10
+          done
+          test "$ok" = "1"
+
+          curl --fail --silent --show-error \
+            -H 'Cache-Control: no-cache' \
+            "https://thesheemaedit.com/what-do-i-say/sparkle-cloud-mobile.js?v=1&contract=$(date +%s)" \
+            -o /tmp/mobile.js
+          grep -q 'cloudflare-mobile' /tmp/mobile.js
+          grep -q '/api/generate' /tmp/mobile.js
+
+          echo 'WDIS_LIVE_MOBILE_CONTRACT_PASS'
