@@ -4,6 +4,14 @@ on:
   push:
     paths:
       - '.github/workflows/sparkle-webkit-verify.yml'
+      - '.github/scripts/sparkle-smoke.mjs'
+      - 'what-do-i-say/index.html'
+      - 'what-do-i-say/bootstrap.js'
+      - 'what-do-i-say/app.js'
+      - 'what-do-i-say/sparkle.js'
+      - 'what-do-i-say/sparkle-worker.js'
+      - 'what-do-i-say/sparkle-mobile-worker-v2.js'
+      - 'what-do-i-say/service-worker.js'
   workflow_dispatch:
 
 permissions:
@@ -24,12 +32,19 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Verify production v21 assets and service worker
+      - name: Verify production WebKit assets and service worker
         run: |
           node --input-type=module <<'NODE'
           import { readFile } from 'node:fs/promises';
           const base = 'https://thesheemaedit.com/what-do-i-say/';
-          const files = ['app.js', 'sparkle.js', 'sparkle-worker.js', 'service-worker.js'];
+          const files = [
+            'bootstrap.js',
+            'app.js',
+            'sparkle.js',
+            'sparkle-worker.js',
+            'sparkle-mobile-worker-v2.js',
+            'service-worker.js'
+          ];
           for (const file of files) {
             const expected = (await readFile(`what-do-i-say/${file}`, 'utf8')).trim();
             const response = await fetch(`${base}${file}?webkit_verify=${Date.now()}`, { cache: 'no-store' });
@@ -40,11 +55,12 @@ jobs:
           }
           const page = await fetch(`${base}?webkit_verify=${Date.now()}`, { cache: 'no-store' });
           const html = await page.text();
+          if (!/bootstrap\.js\?v=2/.test(html)) throw new Error('Production HTML is not loading bootstrap.js?v=2');
           if (!/sparkle\.js\?v=21/.test(html)) throw new Error('Production HTML is not loading sparkle.js?v=21');
           if (!/app\.js\?v=21/.test(html)) throw new Error('Production HTML is not loading app.js?v=21');
           if (!/config\.js\?v=8/.test(html)) throw new Error('Production HTML is not loading config.js?v=8');
           if (/vercel/i.test(html)) throw new Error('Production What Do I Say HTML still references Vercel');
-          console.log('PASS production HTML loads Sparkle/app v21 and contains no Vercel reference');
+          console.log('PASS production HTML loads current Sparkle mobile bootstrap/app assets and contains no Vercel reference');
           NODE
 
       - name: Verify compatibility recovery logic
