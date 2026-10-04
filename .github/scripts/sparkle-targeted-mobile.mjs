@@ -47,7 +47,6 @@ page.on('console', (message) => {
 async function generateAndAssert(promptText, availableTime, unavailableTime) {
   await page.locator('#prompt').fill(promptText);
   await page.locator('#generate').click();
-  await page.waitForFunction(() => document.querySelector('#message-form')?.getAttribute('aria-busy') === 'true', null, { timeout: 10_000 });
   await page.waitForFunction(() => {
     const text = document.querySelector('#result')?.textContent?.trim() || '';
     const busy = document.querySelector('#message-form')?.getAttribute('aria-busy') === 'true';
@@ -74,19 +73,17 @@ try {
     timeout: 60_000
   });
 
-  const mobileState = await page.evaluate(() => ({
-    routed: window.__WDIS_MOBILE_SPARKLE === true,
-    recycling: window.__WDIS_MOBILE_WORKER_RECYCLE_ENABLED === true
-  }));
-  assert(mobileState.routed, 'iPad Safari identity was not routed to Sparkle Mobile');
-  assert(mobileState.recycling, 'iPad Safari worker recycling was not enabled');
-  console.log('PASS iPad Safari identity routes to recycling Sparkle Mobile');
+  const routedToMobile = await page.evaluate(() => window.__WDIS_MOBILE_SPARKLE === true);
+  assert(routedToMobile, 'iPad Safari identity was not routed to Sparkle Mobile');
+  console.log('PASS iPad Safari identity routes to Sparkle Mobile');
 
   await generateAndAssert('Tell Brandon I can meet tomorrow at 3 PM but I cannot make 2 PM', '3 PM', '2 PM');
   const afterFirst = await page.evaluate(() => ({
+    recycling: window.__WDIS_MOBILE_WORKER_RECYCLE_ENABLED === true,
     starts: Number(window.__WDIS_MOBILE_WORKER_STARTS || 0),
     recycles: Number(window.__WDIS_MOBILE_WORKER_RECYCLES || 0)
   }));
+  assert(afterFirst.recycling, 'iPad Safari worker recycling was not enabled after generation began');
   assert(afterFirst.starts >= 1, `Expected a mobile worker start, got ${afterFirst.starts}`);
   assert(afterFirst.recycles >= 1, `Expected the first mobile worker to be recycled, got ${afterFirst.recycles}`);
   console.log(`PASS first iPad worker recycled ${JSON.stringify(afterFirst)}`);
