@@ -118,9 +118,8 @@ jobs:
           import { readFile, writeFile } from 'node:fs/promises';
           let code = await readFile('.github/scripts/sparkle-smoke.mjs', 'utf8');
           code = code.replace("import { chromium } from 'playwright';", "import { webkit as chromium } from 'playwright';");
-          code = code.replace("  args: ['--disable-dev-shm-usage']\n", '');
+          code = code.replace("const browser = await chromium.launch({ headless: true, args: ['--disable-dev-shm-usage'] });", "const browser = await chromium.launch({ headless: true });");
           code = code.replace("userAgent: 'Sparkle-Smoke-Test/1.0 Chrome'", "userAgent: 'Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1'");
-          code = code.replace("assert(profile?.profile === 'Sparkle Compatible', `Expected Sparkle Compatible profile, received ${JSON.stringify(profile)}`);", "assert(profile?.profile === 'Sparkle Mobile', `Expected Sparkle Mobile profile, received ${JSON.stringify(profile)}`);");
           await writeFile('.github/scripts/.sparkle-webkit-runtime.mjs', code);
           NODE
           node .github/scripts/.sparkle-webkit-runtime.mjs
