@@ -1,6 +1,6 @@
-window.WDIS_API_BASE = '';
+window.WDIS_API_BASE = 'https://what-do-i-say-payments.rasheema-abdullah.workers.dev';
 window.WDIS_AI_ENDPOINT = '';
-window.WDIS_PAYMENT_VERIFY_PAUSED = true;
+window.WDIS_PAYMENT_VERIFY_PAUSED = false;
 
 (() => {
   const blockCheckoutWhileVerificationIsPaused = () => {
