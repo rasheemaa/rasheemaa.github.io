@@ -11,7 +11,7 @@ on:
       - 'what-do-i-say/index.html'
       - 'what-do-i-say/bootstrap.js'
       - 'what-do-i-say/config.js'
-      - 'what-do-i-say/app.js'
+      - 'what-do-i-say/chat-app.js'
       - 'what-do-i-say/sparkle.js'
       - 'what-do-i-say/sparkle-worker.js'
       - 'what-do-i-say/sparkle-mobile-worker.js'
