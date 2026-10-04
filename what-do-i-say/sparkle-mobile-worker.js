@@ -201,6 +201,28 @@ function missingFirstPersonFactClauses(text, reference) {
   });
 }
 
+function askDirectives(value) {
+  return sentenceClauses(value).flatMap((sentence) => {
+    const askIf = sentence.match(/^ask(?:\s+.+?)?\s+(?:if|whether)\s+(.+?)[.!?]?$/i);
+    if (askIf) return [{ kind: 'question', detail: askIf[1].trim(), clause: sentence }];
+    const askTo = sentence.match(/^ask\s+.+?\s+to\s+(.+?)[.!?]?$/i);
+    if (askTo) return [{ kind: 'action', detail: askTo[1].trim(), clause: sentence }];
+    return [];
+  }).slice(0, 3);
+}
+
+function missingAskDirectives(text, reference) {
+  const outputTokens = new Set(contentTokens(text));
+  const explicitQuestion = /\?|\b(?:let me know|tell me|can you|could you|would you|please confirm|please let me know)\b/i;
+  return askDirectives(reference).filter((request) => {
+    const tokens = [...new Set(contentTokens(request.detail))];
+    const present = tokens.filter((token) => outputTokens.has(token)).length;
+    const hasDetail = present >= Math.max(1, Math.ceil(tokens.length * 0.6));
+    if (!hasDetail) return true;
+    return request.kind === 'question' && !explicitQuestion.test(text);
+  });
+}
+
 function referenceText(payload) {
   return payload.refine
     ? String(payload.currentMessage || '')
@@ -230,11 +252,17 @@ function sourcePreservingWriteFallback(payload) {
   const name = compact(payload?.personName, 60);
   if (!source) return '';
   const sentences = sentenceClauses(source).map((sentence) => {
-    const ask = sentence.match(/^ask\s+(.+?)\s+to\s+(.+?)([.!?]?)$/i);
-    if (!ask) return sentence;
-    const action = directAddressAction(ask[2]);
-    const punctuation = ask[3] || '.';
-    return `Please ${action}${punctuation}`;
+    const askIf = sentence.match(/^ask(?:\s+.+?)?\s+(?:if|whether)\s+(.+?)([.!?]?)$/i);
+    if (askIf) {
+      const condition = directAddressAction(askIf[1]).replace(/[.!?]+$/, '');
+      return `Please let me know if ${condition}.`;
+    }
+    const askTo = sentence.match(/^ask\s+(.+?)\s+to\s+(.+?)([.!?]?)$/i);
+    if (askTo) {
+      const action = directAddressAction(askTo[2]).replace(/[.!?]+$/, '');
+      return `Please ${action}.`;
+    }
+    return sentence;
   });
   const body = sentences.join(' ').trim();
   return cleanOutput(name ? `Hi ${name}, ${body}` : body);
@@ -248,6 +276,8 @@ function qualityIssue(text, payload) {
   if (missing.length) return `Keep these exact details: ${missing.join(', ')}.`;
   const missingFacts = missingFirstPersonFactClauses(text, reference);
   if (missingFacts.length) return `Keep this first-person fact or request: ${missingFacts.map((clause) => `“${clause}”`).join(' ')}`;
+  const missingRequests = missingAskDirectives(text, reference);
+  if (missingRequests.length) return `Carry out this request explicitly instead of dropping it: ${missingRequests.map((request) => `“${request.clause}”`).join(' ')}`;
   const negative = /\b(?:cannot|can['’]t|won['’]t|will not|do not|don['’]t|not|no|unable|unavailable|decline)\b/i;
   if (negative.test(reference) && !negative.test(text)) {
     const clauses = negativeClauses(reference);
