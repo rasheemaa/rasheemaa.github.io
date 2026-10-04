@@ -40,6 +40,7 @@ const page = await browser.newPage({
 
 const browserErrors = [];
 const modelRequests = [];
+const safeWorkerRequests = [];
 page.on('pageerror', (error) => browserErrors.push(`pageerror: ${error.message}`));
 page.on('console', (message) => {
   if (message.type() === 'error') browserErrors.push(`console: ${message.text()}`);
@@ -47,6 +48,7 @@ page.on('console', (message) => {
 page.on('request', (request) => {
   const url = request.url();
   if (/huggingface\.co|hf\.co|cdn-lfs\.huggingface\.co/i.test(url)) modelRequests.push(url);
+  if (/sparkle-mobile-safe-worker\.js/i.test(url)) safeWorkerRequests.push(url);
 });
 
 async function assistantCount() {
@@ -88,35 +90,24 @@ try {
 
   const mobileState = await page.evaluate(() => ({
     routed: window.__WDIS_MOBILE_SPARKLE === true,
-    safe: window.__WDIS_MOBILE_SAFE_MODE === true
+    safe: window.__WDIS_MOBILE_SAFE_MODE === true,
+    nativeWorker: window.__WDIS_MOBILE_NATIVE_WORKER === true
   }));
   assert(mobileState.routed, 'iPad Safari identity was not routed to Sparkle Mobile');
   assert(mobileState.safe, 'iPad Safari crash-safe mode was not enabled');
-  console.log('PASS iPad Safari identity routes to crash-safe Sparkle Mobile');
+  assert(mobileState.nativeWorker, 'iPad Safari native safe worker mode was not enabled');
+  console.log('PASS iPad Safari identity routes to native crash-safe Sparkle Mobile');
 
   await generateAndAssert('Tell Brandon I can meet tomorrow at 3 PM but I cannot make 2 PM', '3 PM', '2 PM');
-  const afterFirst = await page.evaluate(() => ({
-    recycling: window.__WDIS_MOBILE_WORKER_RECYCLE_ENABLED === true,
-    starts: Number(window.__WDIS_MOBILE_WORKER_STARTS || 0),
-    recycles: Number(window.__WDIS_MOBILE_WORKER_RECYCLES || 0)
-  }));
-  assert(afterFirst.recycling, 'iPad Safari worker recycling was not enabled after generation began');
-  assert(afterFirst.starts >= 1, `Expected a mobile worker start, got ${afterFirst.starts}`);
-  assert(afterFirst.recycles >= 1, `Expected the first mobile worker to be recycled, got ${afterFirst.recycles}`);
-  console.log(`PASS first iPad safe worker recycled ${JSON.stringify(afterFirst)}`);
-
   await page.waitForTimeout(3_000);
   await generateAndAssert('Tell Brandon I can meet tomorrow at 4 PM but I cannot make 1 PM', '4 PM', '1 PM');
-  const afterSecond = await page.evaluate(() => ({
-    starts: Number(window.__WDIS_MOBILE_WORKER_STARTS || 0),
-    recycles: Number(window.__WDIS_MOBILE_WORKER_RECYCLES || 0)
-  }));
-  assert(afterSecond.starts >= 2, `Expected a fresh worker for the second request, got ${afterSecond.starts}`);
-  assert(afterSecond.recycles >= 2, `Expected the second worker to be recycled, got ${afterSecond.recycles}`);
-  console.log(`PASS second iPad safe worker recycled ${JSON.stringify(afterSecond)}`);
 
+  assert(safeWorkerRequests.length >= 1, 'iPad safe worker was never requested');
   assert(modelRequests.length === 0, `iPad safe mode unexpectedly requested an AI model: ${modelRequests.join(', ')}`);
-  console.log('PASS iPad safe mode does not download or load the crashing browser model');
+  console.log('PASS iPad safe mode stays on the tiny local worker and does not load the crashing browser model');
+
+  await page.waitForTimeout(10_000);
+  assert(!page.isClosed(), 'WebKit page closed after generation');
 
   const relevantErrors = browserErrors.filter((line) => !/favicon|googletagmanager|google-analytics/i.test(line));
   assert(relevantErrors.length === 0, `Browser errors detected:\n${relevantErrors.join('\n')}`);
