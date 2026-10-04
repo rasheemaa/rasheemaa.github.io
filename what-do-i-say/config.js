@@ -6,12 +6,13 @@ window.WDIS_PAYMENT_VERIFY_PAUSED = false;
   const blockCheckoutWhileVerificationIsPaused = () => {
     if (window.WDIS_PAYMENT_VERIFY_PAUSED !== true) return;
 
-    document.querySelectorAll('a[href*="buy.stripe.com"]').forEach((link) => {
-      link.dataset.paymentHref = link.getAttribute('href') || '';
-      link.removeAttribute('href');
-      link.setAttribute('aria-disabled', 'true');
-      link.setAttribute('title', 'Secure payment verification is temporarily unavailable.');
-      link.addEventListener('click', (event) => event.preventDefault());
+    document.querySelectorAll('[data-founder-checkout], a[href*="buy.stripe.com"]').forEach((control) => {
+      control.dataset.paymentHref = control.getAttribute?.('href') || '';
+      control.removeAttribute?.('href');
+      control.setAttribute('aria-disabled', 'true');
+      control.setAttribute('title', 'Secure payment verification is temporarily unavailable.');
+      if ('disabled' in control) control.disabled = true;
+      control.addEventListener('click', (event) => event.preventDefault());
     });
   };
 
