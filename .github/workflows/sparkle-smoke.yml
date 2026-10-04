@@ -19,8 +19,12 @@ on:
       - 'what-do-i-say/sparkle-mobile-worker-v2.js'
       - 'what-do-i-say/styles.css'
       - 'what-do-i-say/sparkle.css'
+      - 'what-do-i-say/trust.css'
       - 'what-do-i-say/service-worker.js'
       - 'what-do-i-say/manifest.webmanifest'
+      - 'what-do-i-say/privacy/**'
+      - 'what-do-i-say/terms/**'
+      - 'what-do-i-say/refunds/**'
   workflow_dispatch:
 
 permissions:
