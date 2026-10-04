@@ -10,6 +10,7 @@ on:
       - 'what-do-i-say/app.js'
       - 'what-do-i-say/sparkle.js'
       - 'what-do-i-say/sparkle-worker.js'
+      - 'what-do-i-say/sparkle-mobile-worker.js'
       - 'what-do-i-say/sparkle-mobile-worker-v2.js'
       - 'what-do-i-say/service-worker.js'
   workflow_dispatch:
@@ -32,7 +33,7 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Verify production WebKit assets and service worker
+      - name: Wait for exact WebKit production revision
         run: |
           node --input-type=module <<'NODE'
           import { readFile } from 'node:fs/promises';
@@ -42,25 +43,62 @@ jobs:
             'app.js',
             'sparkle.js',
             'sparkle-worker.js',
+            'sparkle-mobile-worker.js',
             'sparkle-mobile-worker-v2.js',
             'service-worker.js'
           ];
+          const expected = new Map();
           for (const file of files) {
-            const expected = (await readFile(`what-do-i-say/${file}`, 'utf8')).trim();
-            const response = await fetch(`${base}${file}?webkit_verify=${Date.now()}`, { cache: 'no-store' });
-            if (!response.ok) throw new Error(`${file} returned ${response.status}`);
-            const actual = (await response.text()).trim();
-            if (actual !== expected) throw new Error(`${file} does not match the checked out revision`);
-            console.log(`PASS production ${file} matches repository`);
+            expected.set(file, (await readFile(`what-do-i-say/${file}`, 'utf8')).trim());
           }
-          const page = await fetch(`${base}?webkit_verify=${Date.now()}`, { cache: 'no-store' });
-          const html = await page.text();
-          if (!/bootstrap\.js\?v=2/.test(html)) throw new Error('Production HTML is not loading bootstrap.js?v=2');
-          if (!/sparkle\.js\?v=21/.test(html)) throw new Error('Production HTML is not loading sparkle.js?v=21');
-          if (!/app\.js\?v=21/.test(html)) throw new Error('Production HTML is not loading app.js?v=21');
-          if (!/config\.js\?v=8/.test(html)) throw new Error('Production HTML is not loading config.js?v=8');
-          if (/vercel/i.test(html)) throw new Error('Production What Do I Say HTML still references Vercel');
-          console.log('PASS production HTML loads current Sparkle mobile bootstrap/app assets and contains no Vercel reference');
+
+          const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+          let lastMismatch = 'production revision is not ready yet';
+
+          for (let attempt = 1; attempt <= 36; attempt += 1) {
+            try {
+              let mismatch = '';
+              for (const file of files) {
+                const response = await fetch(`${base}${file}?webkit_verify=${Date.now()}`, { cache: 'no-store' });
+                if (!response.ok) {
+                  mismatch = `${file} returned ${response.status}`;
+                  break;
+                }
+                const actual = (await response.text()).trim();
+                if (actual !== expected.get(file)) {
+                  mismatch = `${file} does not match the checked out revision`;
+                  break;
+                }
+              }
+
+              if (!mismatch) {
+                const page = await fetch(`${base}?webkit_verify=${Date.now()}`, { cache: 'no-store' });
+                if (!page.ok) mismatch = `What Do I Say page returned ${page.status}`;
+                else {
+                  const html = await page.text();
+                  if (!/bootstrap\.js\?v=2/.test(html)) mismatch = 'Production HTML is not loading bootstrap.js?v=2';
+                  else if (!/sparkle\.js\?v=21/.test(html)) mismatch = 'Production HTML is not loading sparkle.js?v=21';
+                  else if (!/app\.js\?v=21/.test(html)) mismatch = 'Production HTML is not loading app.js?v=21';
+                  else if (!/config\.js\?v=8/.test(html)) mismatch = 'Production HTML is not loading config.js?v=8';
+                  else if (/vercel/i.test(html)) mismatch = 'Production What Do I Say HTML still references Vercel';
+                }
+              }
+
+              if (!mismatch) {
+                for (const file of files) console.log(`PASS production ${file} matches repository`);
+                console.log('PASS production HTML loads current Sparkle mobile bootstrap/app assets and contains no Vercel reference');
+                process.exit(0);
+              }
+              lastMismatch = mismatch;
+            } catch (error) {
+              lastMismatch = String(error?.message || error);
+            }
+
+            console.log(`Production check ${attempt}/36: ${lastMismatch}`);
+            if (attempt < 36) await sleep(10_000);
+          }
+
+          throw new Error(`Pages did not deploy the exact WebKit revision: ${lastMismatch}`);
           NODE
 
       - name: Verify compatibility recovery logic
