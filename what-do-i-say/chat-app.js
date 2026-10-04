@@ -7,14 +7,15 @@
     founder: 'wdis_founder_session_v1',
     pending: 'wdis_pending_founder_session_v1'
   };
-  const S = { mode: 'write', last: '', base: null, pending: false, founder: false, working: null, retry: null };
+  const S = { mode: 'write', last: '', base: null, pending: false, founder: false, working: null, retry: null, installPrompt: null };
   const $ = s => document.querySelector(s);
   const $$ = s => [...document.querySelectorAll(s)];
   const el = {
     form: $('#message-form'), prompt: $('#prompt'), label: $('#prompt-label'), conversation: $('#conversation'),
     thread: $('#chat-thread'), welcome: $('#welcome-card'), send: $('#generate'), stop: $('#sparkle-cancel'),
     status: $('#sparkle-status'), statusText: $('#sparkle-status-text'), error: $('#ai-error'), errorText: $('#ai-error-message'),
-    retry: $('#ai-retry'), newTop: $('#new-message-top'), paywall: $('#paywall'), trial: $('#trial-status'), trialDetail: $('#trial-detail')
+    retry: $('#ai-retry'), newTop: $('#new-message-top'), paywall: $('#paywall'), trial: $('#trial-status'), trialDetail: $('#trial-detail'),
+    install: $('.install-button')
   };
   const labels = { shorter: 'Make it shorter', softer: 'Make it softer', firmer: 'Make it firmer', professional: 'Make it professional', another: 'Try another version' };
   const get = k => { try { return localStorage.getItem(k); } catch { return null; } };
@@ -114,8 +115,9 @@
     return { mode:S.mode, tone:'warm', situation:'general', personName:S.mode === 'write' ? inferRecipient(text) : '', text, refine:'', currentMessage:'' };
   }
   function refinePayload(kind, instruction='') {
-    if (kind === 'custom') return { mode:'write', tone:'warm', situation:'general', personName:S.base?.personName || '', text:`Edit request: ${instruction}\n\nMessage to edit:\n${S.last}`, refine:'custom', currentMessage:S.last };
-    return { ...(S.base || initialPayload(S.last)), refine:kind, currentMessage:S.last };
+    const base = S.base || initialPayload(S.last);
+    if (kind === 'custom') return { ...base, text:`Edit request: ${instruction}\n\nMessage to edit:\n${S.last}`, refine:'custom', currentMessage:S.last };
+    return { ...base, refine:kind, currentMessage:S.last };
   }
 
   async function generate(payload, kind='') {
@@ -173,7 +175,11 @@
       const c=new AbortController(); const t=setTimeout(()=>c.abort(),16000);
       const r=await fetch(VERIFY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:session}),signal:c.signal,cache:'no-store',credentials:'omit',mode:'cors'}); clearTimeout(t);
       let d={}; try{d=await r.json();}catch{}
-      if(!r.ok || d.paid!==true){ if(!quiet)setFounderStatus(d.error || 'Stripe has not marked this checkout as paid. Founding access stays locked.'); return false; }
+      if(!r.ok || d.paid!==true){
+        if (r.ok || r.status === 400) { del(K.founder); del(K.pending); S.founder=false; updateTrial(); }
+        if(!quiet)setFounderStatus(d.error || 'Stripe has not marked this checkout as paid. Founding access stays locked.');
+        return false;
+      }
       S.founder=true; set(K.founder,session); del(K.pending); updateTrial(); el.paywall.hidden=true; document.body.style.overflow=''; setFounderStatus('Payment verified by Stripe. Founding Member access is unlocked. 💗'); return true;
     } catch { if(!quiet)setFounderStatus('We could not verify your payment right now. Refresh this page to try again.'); return false; }
   }
@@ -184,6 +190,18 @@
     if(checkout==='success'){if(/^cs_live_[A-Za-z0-9]+$/.test(String(session||'')))set(K.pending,session);await verify(session,false);history.replaceState({},'',location.pathname);return;}
     const saved=get(K.founder)||get(K.pending); if(saved)await verify(saved,true);
   }
+
+  window.addEventListener('beforeinstallprompt', event => {
+    event.preventDefault(); S.installPrompt = event;
+    if (el.install) el.install.hidden = false;
+  });
+  el.install?.addEventListener('click', async () => {
+    if (!S.installPrompt) return;
+    el.install.disabled = true;
+    try { await S.installPrompt.prompt(); await S.installPrompt.userChoice; } catch (_) {}
+    S.installPrompt = null; el.install.hidden = true; el.install.disabled = false;
+  });
+  window.addEventListener('appinstalled', () => { S.installPrompt = null; if (el.install) el.install.hidden = true; });
 
   if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('/what-do-i-say/service-worker.js',{scope:'/what-do-i-say/',updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}));
   updateTrial(); resize(); initAccess().finally(updateTrial); setInterval(updateTrial,60000);
