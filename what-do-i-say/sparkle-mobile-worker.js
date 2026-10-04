@@ -153,20 +153,52 @@ function cleanOutput(value) {
   return output.replace(/\s{2,}/g, ' ').trim();
 }
 
-function negativeClauses(value) {
-  const negative = /\b(?:cannot|can['’]t|won['’]t|will not|do not|don['’]t|not|no|unable|unavailable|decline)\b/i;
+function sentenceClauses(value) {
   return (String(value || '').match(/[^.!?\n]+[.!?]?/g) || [])
     .map((sentence) => sentence.trim())
-    .filter((sentence) => sentence && negative.test(sentence))
+    .filter(Boolean);
+}
+
+function negativeClauses(value) {
+  const negative = /\b(?:cannot|can['’]t|won['’]t|will not|do not|don['’]t|not|no|unable|unavailable|decline)\b/i;
+  return sentenceClauses(value)
+    .filter((sentence) => negative.test(sentence))
     .slice(0, 2);
 }
 
 function explicitFirstPersonBoundaries(value) {
   const firstPersonBoundary = /\bi\s+(?:do not|don['’]t|cannot|can['’]t|won['’]t|will not|am not|never)\b/i;
-  return (String(value || '').match(/[^.!?\n]+[.!?]?/g) || [])
-    .map((sentence) => sentence.trim())
+  return sentenceClauses(value)
     .filter((sentence) => sentence && firstPersonBoundary.test(sentence))
     .slice(0, 2);
+}
+
+const CONTENT_STOPWORDS = new Set([
+  'i', 'me', 'my', 'mine', 'we', 'us', 'our', 'ours', 'you', 'your', 'yours',
+  'a', 'an', 'the', 'and', 'or', 'but', 'to', 'for', 'of', 'in', 'on', 'at',
+  'with', 'from', 'by', 'as', 'that', 'this', 'it', 'is', 'am', 'are', 'was',
+  'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did'
+]);
+
+function contentTokens(value) {
+  return (String(value || '').toLowerCase().match(/[\p{L}\p{N}]+/gu) || [])
+    .filter((token) => token.length > 1 && !CONTENT_STOPWORDS.has(token));
+}
+
+function firstPersonFactClauses(value) {
+  return sentenceClauses(value)
+    .filter((sentence) => /^i\b/i.test(sentence))
+    .filter((sentence) => contentTokens(sentence).length >= 2)
+    .slice(0, 4);
+}
+
+function missingFirstPersonFactClauses(text, reference) {
+  const outputTokens = new Set(contentTokens(text));
+  return firstPersonFactClauses(reference).filter((clause) => {
+    const tokens = [...new Set(contentTokens(clause))];
+    const present = tokens.filter((token) => outputTokens.has(token)).length;
+    return present < Math.max(1, Math.ceil(tokens.length * 0.6));
+  });
 }
 
 function referenceText(payload) {
@@ -186,12 +218,36 @@ function restoreExplicitFirstPersonBoundary(text, payload) {
   return cleanOutput(`${output} ${boundaries.join(' ')}`);
 }
 
+function directAddressAction(value) {
+  return String(value || '')
+    .replace(/\b(?:he|she|they)\b/gi, 'you')
+    .replace(/\b(?:his|her|their)\b/gi, 'your')
+    .trim();
+}
+
+function sourcePreservingWriteFallback(payload) {
+  const source = compact(payload?.text, 3200);
+  const name = compact(payload?.personName, 60);
+  if (!source) return '';
+  const sentences = sentenceClauses(source).map((sentence) => {
+    const ask = sentence.match(/^ask\s+(.+?)\s+to\s+(.+?)([.!?]?)$/i);
+    if (!ask) return sentence;
+    const action = directAddressAction(ask[2]);
+    const punctuation = ask[3] || '.';
+    return `Please ${action}${punctuation}`;
+  });
+  const body = sentences.join(' ').trim();
+  return cleanOutput(name ? `Hi ${name}, ${body}` : body);
+}
+
 function qualityIssue(text, payload) {
   if (!text || /<\/?think>|<\|/i.test(text)) return 'Return one complete message with no model markup.';
   const reference = referenceText(payload);
   const normalized = normalizeTimes(text).toLowerCase().replace(/\s/g, '');
   const missing = anchors(reference).filter((value) => !normalized.includes(value.toLowerCase().replace(/\s/g, '')));
   if (missing.length) return `Keep these exact details: ${missing.join(', ')}.`;
+  const missingFacts = missingFirstPersonFactClauses(text, reference);
+  if (missingFacts.length) return `Keep this first-person fact or request: ${missingFacts.map((clause) => `“${clause}”`).join(' ')}`;
   const negative = /\b(?:cannot|can['’]t|won['’]t|will not|do not|don['’]t|not|no|unable|unavailable|decline)\b/i;
   if (negative.test(reference) && !negative.test(text)) {
     const clauses = negativeClauses(reference);
@@ -251,6 +307,14 @@ async function generate(id, payload) {
       if (!repairedIssue) {
         text = repaired;
         break;
+      }
+      if (payload?.mode === 'write') {
+        const fallback = sourcePreservingWriteFallback(payload || {});
+        const fallbackIssue = qualityIssue(fallback, payload || {});
+        if (!fallbackIssue) {
+          text = fallback;
+          break;
+        }
       }
       issue = repairedIssue;
       const error = new Error(`Sparkle could not keep all the details reliably. ${issue} Your previous message has not been replaced. Please try again.`);
