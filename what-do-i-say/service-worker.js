@@ -1,9 +1,10 @@
-const CACHE = 'wdis-v25';
+const CACHE = 'wdis-v26';
 const SHELL = [
   '/what-do-i-say/',
   '/what-do-i-say/index.html',
-  '/what-do-i-say/styles.css?v=9',
+  '/what-do-i-say/styles.css?v=10',
   '/what-do-i-say/sparkle.css?v=2',
+  '/what-do-i-say/trust.css?v=1',
   '/what-do-i-say/bootstrap.js?v=2',
   '/what-do-i-say/config.js?v=9',
   '/what-do-i-say/chat-app.js?v=24',
