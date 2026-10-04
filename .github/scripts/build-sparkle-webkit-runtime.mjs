@@ -37,6 +37,22 @@ replaceOnce(
   'schedule refusal assertion'
 );
 
+replaceOnce(
+`  await mockPage.evaluate(() => {
+    localStorage.setItem('wdis_trial_started_at_v2', String(Date.now() - (4 * 86400000)));
+    localStorage.removeItem('wdis_founder_session_v1');
+    localStorage.removeItem('wdis_pending_founder_session_v1');
+  });
+  await mockPage.reload({ waitUntil: 'domcontentloaded' });`,
+`  await mockPage.reload({ waitUntil: 'domcontentloaded' });
+  await mockPage.evaluate(() => {
+    localStorage.setItem('wdis_trial_started_at_v2', String(Date.now() - (4 * 86400000)));
+    localStorage.removeItem('wdis_founder_session_v1');
+    localStorage.removeItem('wdis_pending_founder_session_v1');
+  });`,
+  'expired trial setup after reload'
+);
+
 const cancellationPattern = /  await resetMode\('write'\);\n  await page\.locator\('#prompt'\)\.fill\('Tell Alex I cannot make tonight\.'\);\n  await page\.locator\('#generate'\)\.click\(\);\n  await page\.locator\('#sparkle-cancel'\)\.waitFor\(\{ state: 'visible', timeout: 10_000 \}\);\n  await page\.locator\('#sparkle-cancel'\)\.click\(\);\n  await page\.waitForFunction\(\(\) => !document\.querySelector\('#generate'\)\?\.disabled, null, \{ timeout: 20_000 \}\);\n  assert\(!\(await page\.evaluate\(\(\) => localStorage\.getItem\('wdis_trial_started_at_v2'\)\)\), 'Cancellation started the trial'\);\n  assert\(\(await page\.locator\('\.message-row\.user \.bubble'\)\.last\(\)\.textContent\(\)\)\?\.includes\('Alex'\), 'Canceled user message disappeared'\);\n  await page\.locator\('#new-message-top'\)\.click\(\);\n  console\.log\('PASS cancellation preserves the user message and does not start the trial'\);/;
 
 if (!cancellationPattern.test(code)) {
