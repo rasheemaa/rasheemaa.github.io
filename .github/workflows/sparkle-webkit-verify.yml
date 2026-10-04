@@ -16,6 +16,7 @@ on:
       - 'what-do-i-say/sparkle.css'
       - 'what-do-i-say/trust.css'
       - 'what-do-i-say/sparkle.js'
+      - 'what-do-i-say/sparkle-cloud-mobile.js'
       - 'what-do-i-say/sparkle-quality-hotfix.js'
       - 'what-do-i-say/sparkle-worker.js'
       - 'what-do-i-say/sparkle-mobile-worker.js'
@@ -64,6 +65,7 @@ jobs:
             'sparkle.css',
             'trust.css',
             'sparkle.js',
+            'sparkle-cloud-mobile.js',
             'sparkle-quality-hotfix.js',
             'sparkle-worker.js',
             'sparkle-mobile-worker.js',
@@ -103,6 +105,7 @@ jobs:
                   const html = await page.text();
                   if (!/bootstrap\.js\?v=2/.test(html)) mismatch = 'Production HTML is not loading bootstrap.js?v=2';
                   else if (!/sparkle\.js\?v=22/.test(html)) mismatch = 'Production HTML is not loading sparkle.js?v=22';
+                  else if (!/sparkle-cloud-mobile\.js\?v=2/.test(html)) mismatch = 'Production HTML is not loading sparkle-cloud-mobile.js?v=2';
                   else if (!/sparkle-quality-hotfix\.js\?v=3/.test(html)) mismatch = 'Production HTML is not loading sparkle-quality-hotfix.js?v=3';
                   else if (!/chat-app\.js\?v=24/.test(html)) mismatch = 'Production HTML is not loading chat-app.js?v=24';
                   else if (!/styles\.css\?v=10/.test(html)) mismatch = 'Production HTML is not loading styles.css?v=10';
@@ -118,7 +121,7 @@ jobs:
 
               if (!mismatch) {
                 for (const file of files) console.log(`PASS production ${file} matches repository`);
-                console.log('PASS production HTML loads current chat, payment, trust, policy assets and contains no Vercel reference');
+                console.log('PASS production HTML loads current chat, mobile Cloudflare, payment, trust, policy assets and contains no Vercel reference');
                 process.exit(0);
               }
               lastMismatch = mismatch;
