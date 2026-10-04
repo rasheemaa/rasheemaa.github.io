@@ -31,11 +31,26 @@
     return [...expected].every((anchor) => actual.has(anchor));
   }
 
+  function softenInitial(value) {
+    const text = String(value || '');
+    return /^I\b/.test(text) ? text : `${text.charAt(0).toLowerCase()}${text.slice(1)}`;
+  }
+
   function withAddressInsertion(value, insertion) {
     const text = String(value || '').trim();
     const match = text.match(/^([A-Z][A-Za-z'’-]{1,30},\s*)([\s\S]+)$/);
-    if (match) return `${match[1]}${insertion}${match[2].charAt(0).toLowerCase()}${match[2].slice(1)}`;
-    return `${insertion}${text.charAt(0).toLowerCase()}${text.slice(1)}`;
+    if (match) return `${match[1]}${insertion}${softenInitial(match[2])}`;
+    return `${insertion}${softenInitial(text)}`;
+  }
+
+  function lessApologetic(value) {
+    return String(value || '')
+      .replace(/\b(?:I'?m|I am)\s+(?:really\s+)?sorry(?:,?\s+but)?\s*/i, '')
+      .replace(/\bSorry(?:,?\s+but)?\s*/i, '')
+      .replace(/\bI just wanted to\s+/i, '')
+      .replace(/\b(?:really|hopefully)\s+/gi, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
   }
 
   function shortenSafely(value) {
@@ -71,7 +86,7 @@
     return preservesAnchors(original, output) && wordCount(output) < wordCount(original) ? output : '';
   }
 
-  function fallbackRefinement(kind, value) {
+  function fallbackRefinement(kind, value, request = '') {
     const original = String(value || '').trim();
     if (!original) return '';
     let output = original;
@@ -83,12 +98,9 @@
         output = output.replace(/\bI can't\b/i, "I'm not able to").replace(/\bI cannot\b/i, "I'm not able to");
       }
     } else if (kind === 'firmer') {
-      output = output
-        .replace(/\b(?:I'?m|I am)\s+(?:really\s+)?sorry(?:,?\s+but)?\s*/i, '')
-        .replace(/\bI just wanted to\s+/i, '')
-        .replace(/\b(?:maybe|perhaps|hopefully|really)\s+/gi, '')
+      output = lessApologetic(output)
+        .replace(/\b(?:maybe|perhaps)\s+/gi, '')
         .replace(/,\s*but\s+/i, '. ')
-        .replace(/\s{2,}/g, ' ')
         .trim();
       if (output === original) output = withAddressInsertion(original, 'To be clear, ');
     } else if (kind === 'professional') {
@@ -115,6 +127,15 @@
           .replace(/\bI am\b/i, "I'm");
       }
       if (output === original) output = withAddressInsertion(original, 'Just to let you know, ');
+    } else if (kind === 'custom') {
+      if (/less\s+apologetic|less\s+sorry|more\s+direct|firmer/i.test(request)) {
+        output = lessApologetic(output);
+        if (output === original) output = output.replace(/,\s*but\s+/i, '. ');
+      } else if (/warmer|more\s+warm|gentler|friendlier/i.test(request)) {
+        if (!/\b(?:care|understand|hope|sorry)\b/i.test(output)) {
+          output = withAddressInsertion(output, 'I want you to know ');
+        }
+      }
     }
 
     output = output.replace(/\s+([,.!?])/g, '$1').replace(/\s{2,}/g, ' ').trim();
@@ -143,7 +164,7 @@
       return await sparkle.generate(safePayload, options);
     } catch (error) {
       if (error?.code === 'sparkle_cancelled') throw error;
-      const fallback = fallbackRefinement(safePayload.refine, safePayload.currentMessage);
+      const fallback = fallbackRefinement(safePayload.refine, safePayload.currentMessage, safePayload.text);
       if (!fallback) throw error;
       options.onStatus?.({ phase: 'generating', message: 'Sparkle is polishing the wording…' });
       options.onStatus?.({ phase: 'complete', message: 'Ready on this device.' });
