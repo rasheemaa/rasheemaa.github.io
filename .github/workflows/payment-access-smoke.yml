@@ -1,0 +1,42 @@
+name: What Do I Say payment access smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/payment-access-smoke.yml'
+      - '.github/scripts/payment-access-smoke.mjs'
+      - 'what-do-i-say/index.html'
+      - 'what-do-i-say/config.js'
+      - 'what-do-i-say/app.js'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: what-do-i-say-payment-access-smoke
+  cancel-in-progress: true
+
+jobs:
+  payment-access-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact repository revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+
+      - name: Install exact Playwright version without package lifecycle scripts
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Test live paid access boundaries
+        run: node .github/scripts/payment-access-smoke.mjs
