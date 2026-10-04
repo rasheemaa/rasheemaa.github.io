@@ -161,13 +161,34 @@ function negativeClauses(value) {
     .slice(0, 2);
 }
 
-function qualityIssue(text, payload) {
-  if (!text || /<\/?think>|<\|/i.test(text)) return 'Return one complete message with no model markup.';
-  const reference = payload.refine
+function explicitFirstPersonBoundaries(value) {
+  const firstPersonBoundary = /\bi\s+(?:do not|don['’]t|cannot|can['’]t|won['’]t|will not|am not|never)\b/i;
+  return (String(value || '').match(/[^.!?\n]+[.!?]?/g) || [])
+    .map((sentence) => sentence.trim())
+    .filter((sentence) => sentence && firstPersonBoundary.test(sentence))
+    .slice(0, 2);
+}
+
+function referenceText(payload) {
+  return payload.refine
     ? String(payload.currentMessage || '')
     : payload.mode === 'reply'
       ? replyIntent(payload.text)
       : String(payload.text || '');
+}
+
+function restoreExplicitFirstPersonBoundary(text, payload) {
+  const output = cleanOutput(text);
+  const outputNegative = /\b(?:cannot|can['’]t|won['’]t|will not|do not|don['’]t|not|no|unable|unavailable|decline)\b/i;
+  if (!output || outputNegative.test(output)) return output;
+  const boundaries = explicitFirstPersonBoundaries(referenceText(payload || {}));
+  if (!boundaries.length) return output;
+  return cleanOutput(`${output} ${boundaries.join(' ')}`);
+}
+
+function qualityIssue(text, payload) {
+  if (!text || /<\/?think>|<\|/i.test(text)) return 'Return one complete message with no model markup.';
+  const reference = referenceText(payload);
   const normalized = normalizeTimes(text).toLowerCase().replace(/\s/g, '');
   const missing = anchors(reference).filter((value) => !normalized.includes(value.toLowerCase().replace(/\s/g, '')));
   if (missing.length) return `Keep these exact details: ${missing.join(', ')}.`;
@@ -222,9 +243,16 @@ async function generate(id, payload) {
       return_full_text: false
     });
     text = cleanOutput(output?.[0]?.generated_text || '');
-    const issue = qualityIssue(text, payload || {});
+    let issue = qualityIssue(text, payload || {});
     if (!issue) break;
     if (attempt === 1) {
+      const repaired = restoreExplicitFirstPersonBoundary(text, payload || {});
+      const repairedIssue = qualityIssue(repaired, payload || {});
+      if (!repairedIssue) {
+        text = repaired;
+        break;
+      }
+      issue = repairedIssue;
       const error = new Error(`Sparkle could not keep all the details reliably. ${issue} Your previous message has not been replaced. Please try again.`);
       error.code = 'sparkle_quality';
       throw error;
