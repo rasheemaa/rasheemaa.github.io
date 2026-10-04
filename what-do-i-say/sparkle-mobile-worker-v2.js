@@ -18,6 +18,11 @@ function escapeRegExp(value) {
   return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+function looksLikeDraftingMeta(value) {
+  const output = normalizeSpace(value);
+  return /^(?:version of (?:the )?message|(?:here(?:'s| is)|this is) (?:a |an |the )?(?:rewritten|revised|alternative|different)|(?:rewritten|revised|alternative) (?:version|message)|(?:your|the) (?:response|reply|message) should\b|(?:in|with) different wording|different wording and sentence structure|sentence structure\s*:)/i.test(output);
+}
+
 function polishKnownCasing(value, payload) {
   let output = normalizeSpace(value);
   const name = normalizeSpace(payload?.personName);
@@ -117,7 +122,7 @@ function refinementNeedsFallback(message, payload) {
   const output = normalizeSpace(message);
   const source = normalizeSpace(payload?.currentMessage);
   const name = normalizeSpace(payload?.personName);
-  if (!output) return true;
+  if (!output || looksLikeDraftingMeta(output)) return true;
   if (action === 'shorter') return wordCount(output) >= wordCount(source);
   if (action === 'softer') return !/\b(?:sorry|please|thank|thanks|appreciate|understand|unfortunately|would|could|hope|kindly)\b/i.test(output);
   if (action === 'firmer') return /\bPlease\.\s*$/i.test(output);
