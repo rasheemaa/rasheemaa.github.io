@@ -17,7 +17,7 @@ async function waitForCurrentProduction(page) {
     await page.goto(`${BASE}?payment_smoke=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 30_000 });
     const current = await page.evaluate(() => {
       const csp = document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.content || '';
-      const config = Array.from(document.scripts).some((script) => String(script.src || '').includes('/what-do-i-say/config.js?v=8'));
+      const config = Array.from(document.scripts).some((script) => String(script.src || '').includes('/what-do-i-say/config.js?v=9'));
       const payment = Array.from(document.scripts).some((script) => String(script.src || '').includes('/what-do-i-say/payment.js?v=2'));
       const copy = document.body.innerText || '';
       const legacyPaymentLinks = Array.from(document.querySelectorAll('a[href]')).filter((link) => String(link.href || '').includes('buy.stripe.com')).length;
