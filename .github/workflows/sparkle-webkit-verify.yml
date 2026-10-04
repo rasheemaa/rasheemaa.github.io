@@ -15,6 +15,7 @@ on:
       - 'what-do-i-say/sparkle.css'
       - 'what-do-i-say/trust.css'
       - 'what-do-i-say/sparkle.js'
+      - 'what-do-i-say/sparkle-quality-hotfix.js'
       - 'what-do-i-say/sparkle-worker.js'
       - 'what-do-i-say/sparkle-mobile-worker.js'
       - 'what-do-i-say/sparkle-mobile-worker-v2.js'
@@ -61,6 +62,7 @@ jobs:
             'sparkle.css',
             'trust.css',
             'sparkle.js',
+            'sparkle-quality-hotfix.js',
             'sparkle-worker.js',
             'sparkle-mobile-worker.js',
             'sparkle-mobile-worker-v2.js',
@@ -98,6 +100,7 @@ jobs:
                   const html = await page.text();
                   if (!/bootstrap\.js\?v=2/.test(html)) mismatch = 'Production HTML is not loading bootstrap.js?v=2';
                   else if (!/sparkle\.js\?v=22/.test(html)) mismatch = 'Production HTML is not loading sparkle.js?v=22';
+                  else if (!/sparkle-quality-hotfix\.js\?v=2/.test(html)) mismatch = 'Production HTML is not loading sparkle-quality-hotfix.js?v=2';
                   else if (!/chat-app\.js\?v=24/.test(html)) mismatch = 'Production HTML is not loading chat-app.js?v=24';
                   else if (!/styles\.css\?v=10/.test(html)) mismatch = 'Production HTML is not loading styles.css?v=10';
                   else if (!/trust\.css\?v=1/.test(html)) mismatch = 'Production HTML is not loading trust.css?v=1';
