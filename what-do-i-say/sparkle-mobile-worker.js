@@ -223,6 +223,19 @@ function missingAskDirectives(text, reference) {
   });
 }
 
+function tellDirectives(value) {
+  return sentenceClauses(value).flatMap((sentence) => {
+    const match = sentence.match(/^tell\s+([^,.;!?]+?)\s+(.+?)[.!?]?$/i);
+    if (!match) return [];
+    return [{ target: match[1].trim(), detail: match[2].trim(), clause: sentence }];
+  }).slice(0, 3);
+}
+
+function repeatedTellDirectives(text, reference) {
+  const lower = String(text || '').toLowerCase();
+  return tellDirectives(reference).filter((request) => lower.includes(`tell ${request.target.toLowerCase()}`));
+}
+
 function referenceText(payload) {
   return payload.refine
     ? String(payload.currentMessage || '')
@@ -251,7 +264,14 @@ function sourcePreservingWriteFallback(payload) {
   const source = compact(payload?.text, 3200);
   const name = compact(payload?.personName, 60);
   if (!source) return '';
+  let inferredRecipient = name;
   const sentences = sentenceClauses(source).map((sentence) => {
+    const tell = sentence.match(/^tell\s+([^,.;!?]+?)\s+(.+?)([.!?]?)$/i);
+    if (tell) {
+      if (!inferredRecipient) inferredRecipient = tell[1].trim();
+      const detail = directAddressAction(tell[2]).replace(/[.!?]+$/, '');
+      return `${detail}${tell[3] || '.'}`;
+    }
     const askIf = sentence.match(/^ask(?:\s+.+?)?\s+(?:if|whether)\s+(.+?)([.!?]?)$/i);
     if (askIf) {
       const condition = directAddressAction(askIf[1]).replace(/[.!?]+$/, '');
@@ -265,7 +285,7 @@ function sourcePreservingWriteFallback(payload) {
     return sentence;
   });
   const body = sentences.join(' ').trim();
-  return cleanOutput(name ? `Hi ${name}, ${body}` : body);
+  return cleanOutput(inferredRecipient ? `Hi ${inferredRecipient}, ${body}` : body);
 }
 
 function qualityIssue(text, payload) {
@@ -278,6 +298,8 @@ function qualityIssue(text, payload) {
   if (missingFacts.length) return `Keep this first-person fact or request: ${missingFacts.map((clause) => `“${clause}”`).join(' ')}`;
   const missingRequests = missingAskDirectives(text, reference);
   if (missingRequests.length) return `Carry out this request explicitly instead of dropping it: ${missingRequests.map((request) => `“${request.clause}”`).join(' ')}`;
+  const repeatedTell = repeatedTellDirectives(text, reference);
+  if (repeatedTell.length) return `Address the recipient directly instead of repeating this instruction: ${repeatedTell.map((request) => `“${request.clause}”`).join(' ')}`;
   const negative = /\b(?:cannot|can['’]t|won['’]t|will not|do not|don['’]t|not|no|unable|unavailable|decline)\b/i;
   if (negative.test(reference) && !negative.test(text)) {
     const clauses = negativeClauses(reference);
