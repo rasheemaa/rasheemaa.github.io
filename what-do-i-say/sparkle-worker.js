@@ -3,6 +3,10 @@ import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transfo
 env.allowLocalModels = false;
 env.allowRemoteModels = true;
 env.useBrowserCache = true;
+// This page is not cross-origin isolated. Avoid unsupported threaded WASM
+// startup on Safari; inference already runs off the UI thread in this worker.
+env.backends.onnx.wasm.numThreads = 1;
+env.backends.onnx.wasm.proxy = false;
 
 const SPARKLE_MODEL = 'onnx-community/Qwen3-0.6B-ONNX';
 
@@ -51,7 +55,11 @@ async function createGenerator(id, preferLite = false) {
     let canTryWebGPU = false;
     if (!preferLite && self.navigator?.gpu) {
       try {
-        const adapter = await self.navigator.gpu.requestAdapter();
+        let timer;
+        const adapter = await Promise.race([
+          self.navigator.gpu.requestAdapter(),
+          new Promise(resolve => { timer = setTimeout(() => resolve(null), 3000); })
+        ]).finally(() => clearTimeout(timer));
         canTryWebGPU = Boolean(adapter?.features.has('shader-f16'));
       } catch (_) {}
     }

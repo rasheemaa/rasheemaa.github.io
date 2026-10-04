@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/sparkle-smoke.yml'
       - '.github/scripts/sparkle-smoke.mjs'
+      - '.github/scripts/sparkle-compatibility-test.mjs'
       - '.github/scripts/sparkle-targeted-retry.mjs'
       - '.github/scripts/sparkle-targeted-mobile.mjs'
       - 'what-do-i-say/index.html'
@@ -39,6 +40,9 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '20'
+
+      - name: Verify compatibility recovery without downloading a model
+        run: node .github/scripts/sparkle-compatibility-test.mjs
 
       - name: Cache Playwright browsers
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830

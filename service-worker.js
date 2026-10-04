@@ -1,4 +1,4 @@
-const CACHE_NAME = "sheema-edit-v25";
+const CACHE_NAME = "sheema-edit-v26";
 const CORE_SHELL = [
   "/",
   "/index.html",
@@ -42,6 +42,13 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
   if (request.method !== "GET" || url.origin !== self.location.origin) return;
+
+  // The private tool owns its cache. Do not serve older Sparkle scripts from
+  // the site-wide cache on visits before its scoped worker takes control.
+  if (url.pathname.startsWith("/what-do-i-say/")) {
+    event.respondWith(fetch(new Request(request, { cache: "no-store" })));
+    return;
+  }
 
   if (request.mode === "navigate") {
     event.respondWith(

@@ -35,7 +35,11 @@
   function devicePrefersLite() {
     const saved = readProfilePreference();
     if (saved?.backend === 'wasm' || saved?.profile === 'Sparkle Lite') return true;
-    return false;
+    // iPadOS can identify itself as macOS; touch support distinguishes it.
+    const ua = navigator.userAgent || '';
+    return /iPad|iPhone|iPod/.test(ua)
+      || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)
+      || (/Safari/.test(ua) && !/Chrome|Chromium|Edg|OPR/.test(ua));
   }
 
   function replyIntent(text) {
@@ -216,24 +220,48 @@
     pending.clear();
   }
 
+  function retryCompatible(id, item) {
+    if (item.retried || item.backend !== 'webgpu') return false;
+    item.retried = true;
+    item.backend = 'wasm';
+    worker?.terminate();
+    worker = null;
+    rememberProfile('Sparkle Compatible', 'wasm');
+    item.onStatus?.({ phase: 'fallback', message: 'Sparkle is adjusting to this device and trying again…' });
+    armTimeout(item, SETUP_TIMEOUT_MS);
+    try {
+      ensureWorker().postMessage({ type: 'generate', id, payload: item.payload, preferLite: true });
+    } catch (_) {
+      stop('Sparkle could not restart. Your draft is still here. Please try again.', 'sparkle_request_error');
+    }
+    return true;
+  }
+
   function armTimeout(item, ms) {
     clearTimeout(item.timer);
-    item.timer = setTimeout(() => stop(
-      'Sparkle took too long on this device. Your draft is saved in the form. Please try again.',
-      'sparkle_timeout'
-    ), ms);
+    item.timer = setTimeout(() => {
+      if (retryCompatible(item.id, item)) return;
+      stop('Sparkle took too long on this device. Your draft is still in the form. Please try again.', 'sparkle_timeout');
+    }, ms);
   }
 
   function ensureWorker() {
     if (worker) return worker;
-    worker = new Worker('/what-do-i-say/sparkle-worker.js?v=19', { type: 'module' });
+    worker = new Worker('/what-do-i-say/sparkle-worker.js?v=20', { type: 'module' });
 
+    const currentWorker = worker;
     worker.addEventListener('message', (event) => {
+      if (worker !== currentWorker) return;
       const data = event.data || {};
       const item = pending.get(data.id);
       if (!item) return;
 
       if (data.type === 'status' || data.type === 'progress') {
+        if (!item.started) {
+          item.started = true;
+          armTimeout(item, SETUP_TIMEOUT_MS);
+        }
+        if (data.backend) item.backend = data.backend;
         if (data.phase === 'generating') armTimeout(item, GENERATION_TIMEOUT_MS);
         if (data.phase === 'fallback') rememberProfile(data.profile || 'Sparkle Lite', data.backend || 'wasm');
         if (data.phase === 'ready' && data.backend) rememberProfile(data.profile, data.backend);
@@ -278,6 +306,7 @@
       }
 
       if (data.type === 'error') {
+        if (data.code !== 'sparkle_quality' && retryCompatible(data.id, item)) return;
         clearTimeout(item.timer);
         pending.delete(data.id);
         if (data.code === 'sparkle_quality') {
@@ -313,6 +342,10 @@
     });
 
     worker.addEventListener('error', () => {
+      if (worker !== currentWorker) return;
+      for (const [id, item] of pending) {
+        if (retryCompatible(id, item)) return;
+      }
       stop('Sparkle could not load on this browser. Please try again or use another device.', 'sparkle_load_error');
     });
     worker.addEventListener('messageerror', () => stop('Sparkle could not read the response. Please try again.', 'sparkle_message_error'));
@@ -326,9 +359,9 @@
     const activeWorker = ensureWorker();
 
     return new Promise((resolve, reject) => {
-      const item = { resolve, reject, onStatus, timer: null, payload };
+      const item = { id, resolve, reject, onStatus, timer: null, payload, backend: '', retried: false };
       pending.set(id, item);
-      armTimeout(item, SETUP_TIMEOUT_MS);
+      armTimeout(item, 45 * 1000);
       onStatus?.({
         type: 'status',
         phase: 'starting',

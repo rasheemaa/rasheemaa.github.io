@@ -1,19 +1,19 @@
-const CACHE = 'wdis-v12';
+const CACHE = 'wdis-v20';
 const SHELL = [
   '/what-do-i-say/',
   '/what-do-i-say/index.html',
-  '/what-do-i-say/styles.css',
-  '/what-do-i-say/sparkle.css',
-  '/what-do-i-say/bootstrap.js',
-  '/what-do-i-say/config.js',
-  '/what-do-i-say/app.js',
-  '/what-do-i-say/sparkle.js',
-  '/what-do-i-say/sparkle-worker.js',
+  '/what-do-i-say/styles.css?v=8',
+  '/what-do-i-say/sparkle.css?v=2',
+  '/what-do-i-say/bootstrap.js?v=2',
+  '/what-do-i-say/config.js?v=8',
+  '/what-do-i-say/app.js?v=20',
+  '/what-do-i-say/sparkle.js?v=20',
+  '/what-do-i-say/sparkle-worker.js?v=20',
   '/what-do-i-say/manifest.webmanifest',
   '/assets/images/app-icon-192.png',
   '/assets/images/app-icon-512.png'
 ];
-const FRESH = new Set(SHELL.filter(path => /\.(js|css)$/.test(path)));
+const FRESH = new Set(SHELL.map(path => new URL(path, self.location.origin).pathname).filter(path => /\.(js|css)$/.test(path)));
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE)
@@ -34,7 +34,7 @@ self.addEventListener('fetch', event => {
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
     const fresh = request.mode === 'navigate' || FRESH.has(url.pathname);
-    const key = FRESH.has(url.pathname) ? url.pathname : request;
+    const key = request;
     if (!fresh) {
       const cached = await cache.match(key);
       if (cached) return cached;
@@ -46,7 +46,7 @@ self.addEventListener('fetch', event => {
       }
       return response;
     } catch (_) {
-      return (await cache.match(key, { ignoreSearch: true }))
+      return (await cache.match(key))
         || (request.mode === 'navigate' ? await cache.match('/what-do-i-say/') : null)
         || Response.error();
     }

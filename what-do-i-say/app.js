@@ -92,6 +92,9 @@
     resultPanel.hidden = false;
     result.classList.toggle('is-working', active);
     if (active) {
+      // Keep a real previous answer, but never show the empty placeholder as
+      // if it were the outcome of the request currently running.
+      if (!state.last) result.textContent = '';
       result.dataset.workingMessage = message;
       resultPanel.setAttribute('aria-busy', 'true');
     } else {
@@ -411,13 +414,16 @@
     } catch (error) {
       if (error?.code === 'sparkle_cancelled') {
         setSparkleStatus({ phase: 'idle', message: 'Stopped. Your draft is still here whenever you are ready.' });
+        if (!state.last) result.textContent = 'Stopped. Your draft is still here. Tap Give me the words when you are ready.';
         return;
       }
       sparkleStatus.dataset.state = 'error';
       sparkleStatusText.textContent = error?.code === 'sparkle_quality'
         ? 'Sparkle could not verify this wording. Your draft is still here.'
         : 'Sparkle could not run on this device right now.';
-      showError(error?.message || 'Sparkle could not answer right now. Please try again.');
+      const failureMessage = error?.message || 'Sparkle could not answer right now. Please try again.';
+      if (!state.last) result.textContent = failureMessage;
+      showError(failureMessage);
       track('wdis_ai_error', {
         stage: refine ? 'refine' : 'generate',
         engine: 'sparkle_on_device',
@@ -540,7 +546,8 @@
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/what-do-i-say/service-worker.js', { scope: '/what-do-i-say/' }).catch(() => {});
+      navigator.serviceWorker.register('/what-do-i-say/service-worker.js', { scope: '/what-do-i-say/', updateViaCache: 'none' })
+        .then(registration => registration.update()).catch(() => {});
     });
   }
 
