@@ -2,6 +2,7 @@ import { chromium } from 'playwright';
 
 const BASE = 'https://thesheemaedit.com/what-do-i-say/';
 const FAKE_SESSION = 'cs_live_fake123456789';
+const CONTROLLED_PAID_SESSION = 'cs_live_controlledpaid123456789';
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -100,6 +101,45 @@ try {
     }));
     assert(!/Founding Member/i.test(state.trial), 'fake browser storage does not create Founding Member status');
     assert(!/unlocked/i.test(state.status), 'fake browser storage does not show verified unlock');
+    await context.close();
+  }
+
+  {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    await page.route('**/api/verify-payment', async (route) => {
+      const request = route.request();
+      const body = JSON.parse(request.postData() || '{}');
+      if (body.sessionId !== CONTROLLED_PAID_SESSION) {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ paid: false }) });
+        return;
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ paid: true, accessType: 'founder' })
+      });
+    });
+
+    await page.goto(`${BASE}?checkout=success&session_id=${CONTROLLED_PAID_SESSION}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => /Founding Member/i.test(document.querySelector('#trial-status')?.textContent || ''), null, { timeout: 15_000 });
+    let state = await page.evaluate(() => ({
+      trial: document.querySelector('#trial-status')?.textContent || '',
+      founder: localStorage.getItem('wdis_founder_session_v1'),
+      pending: localStorage.getItem('wdis_pending_founder_session_v1')
+    }));
+    assert(/Founding Member/i.test(state.trial), 'server-confirmed paid response unlocks Founding Member status');
+    assert(state.founder === CONTROLLED_PAID_SESSION, 'verified session reference is persisted after server confirmation');
+    assert(state.pending === null, 'pending purchase reference is cleared after verification');
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => /Founding Member/i.test(document.querySelector('#trial-status')?.textContent || ''), null, { timeout: 15_000 });
+    state = await page.evaluate(() => ({
+      trial: document.querySelector('#trial-status')?.textContent || '',
+      founder: localStorage.getItem('wdis_founder_session_v1')
+    }));
+    assert(/Founding Member/i.test(state.trial), 'verified access survives a return visit after server re-verification');
+    assert(state.founder === CONTROLLED_PAID_SESSION, 'verified session reference remains available for return-visit re-verification');
     await context.close();
   }
 
