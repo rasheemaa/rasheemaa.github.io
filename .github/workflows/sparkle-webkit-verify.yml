@@ -7,7 +7,8 @@ on:
       - '.github/scripts/sparkle-smoke.mjs'
       - 'what-do-i-say/index.html'
       - 'what-do-i-say/bootstrap.js'
-      - 'what-do-i-say/app.js'
+      - 'what-do-i-say/chat-app.js'
+      - 'what-do-i-say/styles.css'
       - 'what-do-i-say/sparkle.js'
       - 'what-do-i-say/sparkle-worker.js'
       - 'what-do-i-say/sparkle-mobile-worker.js'
@@ -40,7 +41,8 @@ jobs:
           const base = 'https://thesheemaedit.com/what-do-i-say/';
           const files = [
             'bootstrap.js',
-            'app.js',
+            'chat-app.js',
+            'styles.css',
             'sparkle.js',
             'sparkle-worker.js',
             'sparkle-mobile-worker.js',
@@ -78,7 +80,8 @@ jobs:
                   const html = await page.text();
                   if (!/bootstrap\.js\?v=2/.test(html)) mismatch = 'Production HTML is not loading bootstrap.js?v=2';
                   else if (!/sparkle\.js\?v=21/.test(html)) mismatch = 'Production HTML is not loading sparkle.js?v=21';
-                  else if (!/app\.js\?v=21/.test(html)) mismatch = 'Production HTML is not loading app.js?v=21';
+                  else if (!/chat-app\.js\?v=22/.test(html)) mismatch = 'Production HTML is not loading chat-app.js?v=22';
+                  else if (!/styles\.css\?v=9/.test(html)) mismatch = 'Production HTML is not loading styles.css?v=9';
                   else if (!/config\.js\?v=8/.test(html)) mismatch = 'Production HTML is not loading config.js?v=8';
                   else if (/vercel/i.test(html)) mismatch = 'Production What Do I Say HTML still references Vercel';
                 }
@@ -86,7 +89,7 @@ jobs:
 
               if (!mismatch) {
                 for (const file of files) console.log(`PASS production ${file} matches repository`);
-                console.log('PASS production HTML loads current Sparkle mobile bootstrap/app assets and contains no Vercel reference');
+                console.log('PASS production HTML loads current Sparkle chat assets and contains no Vercel reference');
                 process.exit(0);
               }
               lastMismatch = mismatch;
