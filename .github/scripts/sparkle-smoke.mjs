@@ -266,7 +266,7 @@ try {
   await page.waitForFunction(() => Boolean(window.Sparkle?.generate), null, { timeout: 30_000 });
 
   const sparkleSrc = await page.locator('script[src*="sparkle.js"]').getAttribute('src');
-  assert(sparkleSrc?.includes('sparkle.js?v=20'), `Unexpected Sparkle runtime asset: ${sparkleSrc}`);
+  assert(sparkleSrc?.includes('sparkle.js?v=21'), `Unexpected Sparkle runtime asset: ${sparkleSrc}`);
 
   const mobile = await page.evaluate(() => ({
     innerWidth: window.innerWidth,

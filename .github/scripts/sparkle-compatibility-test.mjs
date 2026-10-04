@@ -59,3 +59,14 @@ for (const failure of ['error', 'crash', 'timeout']) {
   assert.equal(await retry, 'I will be late.');
 }
 console.log('PASS Safari selection; GPU error/crash/timeout recovery; stale replies; quality errors; startup timeout; retry; cancellation');
+
+{
+  const h = harness(), text = 'Tell Maya I cannot meet Friday at 4 PM. I can meet Saturday at 10 AM.';
+  const p = h.api.generate({mode:'write', text, personName:'Maya'}), w = h.workers[0];
+  w.emit('message', {id:w.sent.id, type:'error', code:'sparkle_quality'});
+  assert.equal(await p, 'Hi Maya, I cannot meet Friday at 4 PM. I can meet Saturday at 10 AM.');
+  const rejectExtra = h.api.generate({mode:'write', text: text + ' Also ask about lunch.'});
+  w.emit('message', {id:w.sent.id, type:'error', code:'sparkle_quality'});
+  await assert.rejects(rejectExtra, e => e.code === 'sparkle_quality');
+  console.log('PASS exact scheduling preservation; extra instructions are never silently dropped');
+}

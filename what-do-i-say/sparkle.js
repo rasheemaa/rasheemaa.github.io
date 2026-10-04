@@ -190,20 +190,30 @@
   function schedulingRefusalFallback(payload) {
     if (payload?.mode !== 'write' || payload?.refine) return '';
     const source = String(payload.text || '').trim();
+    // Only accept a complete, already sendable pair of scheduling sentences.
+    // Anchoring the entire input prevents dropping extra facts or instructions.
+    const day = '(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)';
+    const clock = '\\d{1,2}(?::\\d{2})?\\s*(?:AM|PM)';
+    const schedule = source.match(new RegExp(`^(?:Tell\\s+(.{1,60}?)\\s+)?(I (?:cannot|can't|can’t) meet ${day} at ${clock}\\. I can meet ${day} at ${clock}\\.?)$`, 'i'));
+    if (schedule) {
+      const recipient = String(payload.personName || schedule[1] || '').trim();
+      const sentences = schedule[2].replace(/\.$/, '') + '.';
+      return `${recipient ? `Hi ${recipient}, ` : ''}${sentences}`;
+    }
     const timePattern = '(\\d{1,2}(?::\\d{2})?\\s*(?:AM|PM|a\\.m\\.|p\\.m\\.))';
     const dayPattern = '(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)';
     const refusal = source.match(new RegExp(`\\bI\\s+(?:cannot|can['’]t|will not|won['’]t|am unable to)\\s+(?:make|attend|join)\\s+(?:the\\s+)?${timePattern}(?:\\s+meeting)?(?:\\s+(?:on\\s+)?)?${dayPattern}?`, 'i'));
     if (!refusal) return '';
 
     const refusedTime = refusal[1].replace(/\s+/g, ' ').trim();
-    const day = refusal[2] || '';
+    const refusedDay = refusal[2] || '';
     const alternate = source.match(new RegExp(`\\b${timePattern}\\s+works?\\s+instead\\b`, 'i'))
       || source.match(new RegExp(`\\b(?:if|whether)\\s+${timePattern}\\s+works?\\b`, 'i'));
     const alternateTime = alternate?.[1]?.replace(/\s+/g, ' ').trim() || '';
     const mentionsMeeting = /\bmeeting\b/i.test(source);
     const name = String(payload.personName || '').trim();
 
-    let message = `${name ? `Hi ${name}, ` : ''}I can't make the ${refusedTime}${mentionsMeeting ? ' meeting' : ''}${day ? ` ${day}` : ''}.`;
+    let message = `${name ? `Hi ${name}, ` : ''}I can't make the ${refusedTime}${mentionsMeeting ? ' meeting' : ''}${refusedDay ? ` ${refusedDay}` : ''}.`;
     if (alternateTime) message += ` Would ${alternateTime} work instead?`;
     return message.replace(/\s{2,}/g, ' ').trim();
   }
@@ -247,7 +257,7 @@
 
   function ensureWorker() {
     if (worker) return worker;
-    worker = new Worker('/what-do-i-say/sparkle-worker.js?v=20', { type: 'module' });
+    worker = new Worker('/what-do-i-say/sparkle-worker.js?v=21', { type: 'module' });
 
     const currentWorker = worker;
     worker.addEventListener('message', (event) => {
