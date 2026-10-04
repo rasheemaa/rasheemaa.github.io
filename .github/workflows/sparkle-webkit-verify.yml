@@ -5,24 +5,33 @@ on:
     paths:
       - '.github/workflows/sparkle-webkit-verify.yml'
       - '.github/scripts/sparkle-smoke.mjs'
+      - '.github/scripts/sparkle-compatibility-test.mjs'
       - 'what-do-i-say/index.html'
       - 'what-do-i-say/bootstrap.js'
+      - 'what-do-i-say/config.js'
+      - 'what-do-i-say/payment.js'
       - 'what-do-i-say/chat-app.js'
       - 'what-do-i-say/styles.css'
+      - 'what-do-i-say/sparkle.css'
       - 'what-do-i-say/sparkle.js'
       - 'what-do-i-say/sparkle-worker.js'
       - 'what-do-i-say/sparkle-mobile-worker.js'
       - 'what-do-i-say/sparkle-mobile-worker-v2.js'
       - 'what-do-i-say/service-worker.js'
+      - 'what-do-i-say/manifest.webmanifest'
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: sparkle-webkit-production-main
+  cancel-in-progress: true
+
 jobs:
   webkit-production-verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 50
     steps:
       - name: Checkout exact repository revision
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -41,13 +50,17 @@ jobs:
           const base = 'https://thesheemaedit.com/what-do-i-say/';
           const files = [
             'bootstrap.js',
+            'config.js',
+            'payment.js',
             'chat-app.js',
             'styles.css',
+            'sparkle.css',
             'sparkle.js',
             'sparkle-worker.js',
             'sparkle-mobile-worker.js',
             'sparkle-mobile-worker-v2.js',
-            'service-worker.js'
+            'service-worker.js',
+            'manifest.webmanifest'
           ];
           const expected = new Map();
           for (const file of files) {
@@ -57,7 +70,7 @@ jobs:
           const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
           let lastMismatch = 'production revision is not ready yet';
 
-          for (let attempt = 1; attempt <= 36; attempt += 1) {
+          for (let attempt = 1; attempt <= 48; attempt += 1) {
             try {
               let mismatch = '';
               for (const file of files) {
@@ -80,16 +93,17 @@ jobs:
                   const html = await page.text();
                   if (!/bootstrap\.js\?v=2/.test(html)) mismatch = 'Production HTML is not loading bootstrap.js?v=2';
                   else if (!/sparkle\.js\?v=22/.test(html)) mismatch = 'Production HTML is not loading sparkle.js?v=22';
-                  else if (!/chat-app\.js\?v=23/.test(html)) mismatch = 'Production HTML is not loading chat-app.js?v=23';
+                  else if (!/chat-app\.js\?v=24/.test(html)) mismatch = 'Production HTML is not loading chat-app.js?v=24';
                   else if (!/styles\.css\?v=9/.test(html)) mismatch = 'Production HTML is not loading styles.css?v=9';
-                  else if (!/config\.js\?v=8/.test(html)) mismatch = 'Production HTML is not loading config.js?v=8';
+                  else if (!/config\.js\?v=9/.test(html)) mismatch = 'Production HTML is not loading config.js?v=9';
+                  else if (!/payment\.js\?v=2/.test(html)) mismatch = 'Production HTML is not loading payment.js?v=2';
                   else if (/vercel/i.test(html)) mismatch = 'Production What Do I Say HTML still references Vercel';
                 }
               }
 
               if (!mismatch) {
                 for (const file of files) console.log(`PASS production ${file} matches repository`);
-                console.log('PASS production HTML loads current Sparkle chat assets and contains no Vercel reference');
+                console.log('PASS production HTML loads current Sparkle chat and payment assets and contains no Vercel reference');
                 process.exit(0);
               }
               lastMismatch = mismatch;
@@ -97,8 +111,8 @@ jobs:
               lastMismatch = String(error?.message || error);
             }
 
-            console.log(`Production check ${attempt}/36: ${lastMismatch}`);
-            if (attempt < 36) await sleep(10_000);
+            console.log(`Production check ${attempt}/48: ${lastMismatch}`);
+            if (attempt < 48) await sleep(10_000);
           }
 
           throw new Error(`Pages did not deploy the exact WebKit revision: ${lastMismatch}`);
@@ -112,14 +126,14 @@ jobs:
           npm install --no-save --ignore-scripts playwright@1.55.0
           npx playwright install --with-deps webkit
 
-      - name: Run live smoke test through WebKit with iPad Safari identity
+      - name: Run full customer flow through WebKit with iPad Safari identity
         run: |
           node --input-type=module <<'NODE'
           import { readFile, writeFile } from 'node:fs/promises';
           let code = await readFile('.github/scripts/sparkle-smoke.mjs', 'utf8');
           code = code.replace("import { chromium } from 'playwright';", "import { webkit as chromium } from 'playwright';");
           code = code.replace("const browser = await chromium.launch({ headless: true, args: ['--disable-dev-shm-usage'] });", "const browser = await chromium.launch({ headless: true });");
-          code = code.replace("userAgent: 'Sparkle-Smoke-Test/1.0 Chrome'", "userAgent: 'Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1'");
+          code = code.replace("userAgent = 'Sparkle-Smoke-Test/1.0 Chrome'", "userAgent = 'Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1'");
           await writeFile('.github/scripts/.sparkle-webkit-runtime.mjs', code);
           NODE
           node .github/scripts/.sparkle-webkit-runtime.mjs
