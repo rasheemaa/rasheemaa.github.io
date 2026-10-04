@@ -11,7 +11,7 @@
         const requested = new URL(String(scriptURL), window.location.href);
         if (requested.origin === window.location.origin && requested.pathname === '/what-do-i-say/sparkle-worker.js') {
           window.__WDIS_MOBILE_SPARKLE = true;
-          return new NativeWorker('/what-do-i-say/sparkle-mobile-worker.js?v=1', options);
+          return new NativeWorker('/what-do-i-say/sparkle-mobile-worker-v2.js?v=2', options);
         }
       } catch (_) {}
       return new NativeWorker(scriptURL, options);
