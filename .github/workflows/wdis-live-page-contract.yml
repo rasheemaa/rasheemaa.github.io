@@ -16,37 +16,49 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Wait for Pages and verify live mobile Cloudflare contract
+      - name: Check out exact repository revision
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+
+      - name: Wait for Pages and verify exact live mobile Cloudflare contract
         run: |
           set -euo pipefail
+
+          expected_asset=$(grep -oE '/what-do-i-say/sparkle-cloud-mobile\.js\?v=[0-9]+' what-do-i-say/index.html | head -n1 || true)
+          test -n "$expected_asset"
+          echo "Expected mobile asset from checkout: $expected_asset"
+
           ok=0
-          asset=''
-          for attempt in {1..18}; do
+          live_asset=''
+          for attempt in {1..24}; do
             stamp=$(date +%s)
             curl --fail --silent --show-error \
               -H 'Cache-Control: no-cache' \
               "https://thesheemaedit.com/what-do-i-say/?contract=$stamp" \
               -o /tmp/wdis.html || true
 
-            asset=$(grep -oE '/what-do-i-say/sparkle-cloud-mobile\.js\?v=[0-9]+' /tmp/wdis.html | head -n1 || true)
-            if [ -n "$asset" ] \
+            live_asset=$(grep -oE '/what-do-i-say/sparkle-cloud-mobile\.js\?v=[0-9]+' /tmp/wdis.html | head -n1 || true)
+            if [ "$live_asset" = "$expected_asset" ] \
               && grep -q 'On iPhone and iPad, your message is sent securely to Sparkle’s Cloudflare AI service for generation.' /tmp/wdis.html \
               && ! grep -q 'Your message stays on your device' /tmp/wdis.html; then
               ok=1
               break
             fi
-            echo "Live page is not current yet, attempt $attempt"
+            echo "Live page not at exact revision yet, attempt $attempt: live=$live_asset expected=$expected_asset"
             sleep 10
           done
           test "$ok" = "1"
-          test -n "$asset"
 
           curl --fail --silent --show-error \
             -H 'Cache-Control: no-cache' \
-            "https://thesheemaedit.com${asset}&contract=$(date +%s)" \
+            "https://thesheemaedit.com${expected_asset}&contract=$(date +%s)" \
             -o /tmp/mobile.js
           grep -q 'cloudflare-mobile' /tmp/mobile.js
           grep -q '/api/generate' /tmp/mobile.js
 
-          echo "Verified live mobile asset: $asset"
+          expected_file=$(printf '%s' "$expected_asset" | sed 's#^/##; s#?v=.*$##')
+          cmp -s "$expected_file" /tmp/mobile.js
+
+          echo "Verified exact live mobile asset: $expected_asset"
           echo 'WDIS_LIVE_MOBILE_CONTRACT_PASS'
