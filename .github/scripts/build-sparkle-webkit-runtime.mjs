@@ -31,12 +31,6 @@ replaceOnce(
   'browser console error collector'
 );
 
-replaceOnce(
-  "assert(has(output, /(?:cannot|can't|can’t|won't|will not|unable|unavailable)/i), `${label} lost the refusal`);",
-  "assert(has(output, /(?:cannot|can['’]?t|cant|won['’]?t|wont|will not|unable|unavailable|not available|don['’]?t think I(?:['’]?ll| will) be able|do not think I(?:['’]?ll| will) be able|don['’]?t think I can|do not think I can)/i), `${label} lost the refusal`);",
-  'schedule refusal assertion'
-);
-
 const cancellationPattern = /  await resetMode\('write'\);\n  await page\.locator\('#prompt'\)\.fill\('Tell Alex I cannot make tonight\.'\);\n  await page\.locator\('#generate'\)\.click\(\);\n  await page\.locator\('#sparkle-cancel'\)\.waitFor\(\{ state: 'visible', timeout: 10_000 \}\);\n  await page\.locator\('#sparkle-cancel'\)\.click\(\);\n  await page\.waitForFunction\(\(\) => !document\.querySelector\('#generate'\)\?\.disabled, null, \{ timeout: 20_000 \}\);\n  assert\(!\(await page\.evaluate\(\(\) => localStorage\.getItem\('wdis_trial_started_at_v2'\)\)\), 'Cancellation started the trial'\);\n  assert\(\(await page\.locator\('\.message-row\.user \.bubble'\)\.last\(\)\.textContent\(\)\)\?\.includes\('Alex'\), 'Canceled user message disappeared'\);\n  await page\.locator\('#new-message-top'\)\.click\(\);\n  console\.log\('PASS cancellation preserves the user message and does not start the trial'\);/;
 
 if (!cancellationPattern.test(code)) {
