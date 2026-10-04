@@ -100,7 +100,7 @@ jobs:
                   const html = await page.text();
                   if (!/bootstrap\.js\?v=2/.test(html)) mismatch = 'Production HTML is not loading bootstrap.js?v=2';
                   else if (!/sparkle\.js\?v=22/.test(html)) mismatch = 'Production HTML is not loading sparkle.js?v=22';
-                  else if (!/sparkle-quality-hotfix\.js\?v=2/.test(html)) mismatch = 'Production HTML is not loading sparkle-quality-hotfix.js?v=2';
+                  else if (!/sparkle-quality-hotfix\.js\?v=3/.test(html)) mismatch = 'Production HTML is not loading sparkle-quality-hotfix.js?v=3';
                   else if (!/chat-app\.js\?v=24/.test(html)) mismatch = 'Production HTML is not loading chat-app.js?v=24';
                   else if (!/styles\.css\?v=10/.test(html)) mismatch = 'Production HTML is not loading styles.css?v=10';
                   else if (!/trust\.css\?v=1/.test(html)) mismatch = 'Production HTML is not loading trust.css?v=1';
