@@ -35,7 +35,6 @@
   function devicePrefersLite() {
     const saved = readProfilePreference();
     if (saved?.backend === 'wasm' || saved?.profile === 'Sparkle Lite') return true;
-    // iPadOS can identify itself as macOS; touch support distinguishes it.
     const ua = navigator.userAgent || '';
     return /iPad|iPhone|iPod/.test(ua)
       || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)
@@ -190,8 +189,32 @@
   function schedulingRefusalFallback(payload) {
     if (payload?.mode !== 'write' || payload?.refine) return '';
     const source = String(payload.text || '').trim();
-    // Only accept a complete, already sendable pair of scheduling sentences.
-    // Anchoring the entire input prevents dropping extra facts or instructions.
+    const name = String(payload.personName || '').trim();
+
+    // If the user's note is already essentially a sendable scheduling message,
+    // preserve it deterministically instead of allowing a small model to erase the refusal.
+    let direct = source;
+    if (name) {
+      const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      direct = direct.replace(new RegExp(`^(?:Please\\s+)?(?:Tell|Text|Message)\\s+${escaped}\\s+(?:that\\s+)?`, 'i'), '');
+    } else {
+      direct = direct.replace(/^(?:Please\s+)?(?:Tell|Text|Message)\s+.{1,60}?\s+(?=(?:I|we)\b)/i, '');
+    }
+    direct = direct
+      .replace(/\b(I|we)\s+can\s+(see|meet|call|text|message|contact)\s+(?:her|him|them)\b/gi, '$1 can $2 you')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+
+    const hasRefusal = /\b(?:cannot|can['’]t|won['’]t|will not|unable|unavailable|decline)\b/i.test(direct);
+    const hasScheduleDetail = detailAnchors(source).length > 0;
+    const directAnchors = new Set(detailAnchors(direct).map(anchorKey));
+    const keepsScheduleDetails = detailAnchors(source).every(anchor => directAnchors.has(anchorKey(anchor)));
+    const startsLikeMessage = /^(?:I|we)\b/i.test(direct);
+    if (hasRefusal && hasScheduleDetail && keepsScheduleDetails && startsLikeMessage) {
+      const body = /[.!?]$/.test(direct) ? direct : `${direct}.`;
+      return `${name ? `Hi ${name}, ` : ''}${body}`;
+    }
+
     const day = '(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)';
     const clock = '\\d{1,2}(?::\\d{2})?\\s*(?:AM|PM)';
     const schedule = source.match(new RegExp(`^(?:Tell\\s+(.{1,60}?)\\s+)?(I (?:cannot|can't|can’t) meet ${day} at ${clock}\\. I can meet ${day} at ${clock}\\.?)$`, 'i'));
@@ -211,7 +234,6 @@
       || source.match(new RegExp(`\\b(?:if|whether)\\s+${timePattern}\\s+works?\\b`, 'i'));
     const alternateTime = alternate?.[1]?.replace(/\s+/g, ' ').trim() || '';
     const mentionsMeeting = /\bmeeting\b/i.test(source);
-    const name = String(payload.personName || '').trim();
 
     let message = `${name ? `Hi ${name}, ` : ''}I can't make the ${refusedTime}${mentionsMeeting ? ' meeting' : ''}${refusedDay ? ` ${refusedDay}` : ''}.`;
     if (alternateTime) message += ` Would ${alternateTime} work instead?`;
