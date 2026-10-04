@@ -24,6 +24,16 @@
   const trialOK = () => S.founder || !start() || Date.now() - start() < TRIAL_MS;
   const setFounderStatus = msg => $$('[data-founder-status]').forEach(n => n.textContent = msg);
 
+  function inferRecipient(text) {
+    const source = String(text || '').trim();
+    const match = source.match(/^(?:please\s+)?(?:tell|text|message)\s+(.{1,60}?)\s+(?:that\s+)?(?:I|we)\b/i);
+    if (!match) return '';
+    const recipient = String(match[1] || '').trim().replace(/[,:;.!?]+$/, '');
+    if (!recipient || recipient.split(/\s+/).length > 4) return '';
+    if (/^(?:them|him|her|someone|somebody|the recipient|my\s+(?:friend|mom|mother|dad|father|boss|manager|partner|boyfriend|girlfriend|husband|wife))$/i.test(recipient)) return '';
+    return recipient.slice(0, 60);
+  }
+
   function updateTrial() {
     if (S.founder) { el.trial.textContent = 'Founding Member'; el.trialDetail.textContent = ' · access unlocked'; return; }
     if (!start()) { el.trial.textContent = '3-day free trial'; el.trialDetail.textContent = ' · starts with your first message'; return; }
@@ -100,9 +110,11 @@
     actions.append(right,more,options); m.stack.append(actions); scrollDown();
   }
 
-  function initialPayload(text) { return { mode:S.mode, tone:'warm', situation:'general', personName:'', text, refine:'', currentMessage:'' }; }
+  function initialPayload(text) {
+    return { mode:S.mode, tone:'warm', situation:'general', personName:S.mode === 'write' ? inferRecipient(text) : '', text, refine:'', currentMessage:'' };
+  }
   function refinePayload(kind, instruction='') {
-    if (kind === 'custom') return { mode:'write', tone:'warm', situation:'general', personName:'', text:`Edit request: ${instruction}\n\nMessage to edit:\n${S.last}`, refine:'custom', currentMessage:S.last };
+    if (kind === 'custom') return { mode:'write', tone:'warm', situation:'general', personName:S.base?.personName || '', text:`Edit request: ${instruction}\n\nMessage to edit:\n${S.last}`, refine:'custom', currentMessage:S.last };
     return { ...(S.base || initialPayload(S.last)), refine:kind, currentMessage:S.last };
   }
 
