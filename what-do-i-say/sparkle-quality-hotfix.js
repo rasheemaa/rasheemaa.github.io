@@ -51,6 +51,7 @@
       .replace(/\bI just wanted to\b/gi, 'I wanted to')
       .replace(/\bThank you for\b/gi, 'Thanks for')
       .replace(/\bI am sorry\b/gi, 'Sorry')
+      .replace(/\s+instead(?=[.!?]|$)/gi, '')
       .replace(/\s{2,}/g, ' ')
       .trim();
 
