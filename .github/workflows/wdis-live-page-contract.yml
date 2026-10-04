@@ -20,13 +20,16 @@ jobs:
         run: |
           set -euo pipefail
           ok=0
+          asset=''
           for attempt in {1..18}; do
             stamp=$(date +%s)
             curl --fail --silent --show-error \
               -H 'Cache-Control: no-cache' \
               "https://thesheemaedit.com/what-do-i-say/?contract=$stamp" \
               -o /tmp/wdis.html || true
-            if grep -q 'sparkle-cloud-mobile.js?v=1' /tmp/wdis.html \
+
+            asset=$(grep -oE '/what-do-i-say/sparkle-cloud-mobile\.js\?v=[0-9]+' /tmp/wdis.html | head -n1 || true)
+            if [ -n "$asset" ] \
               && grep -q 'On iPhone and iPad, your message is sent securely to Sparkle’s Cloudflare AI service for generation.' /tmp/wdis.html \
               && ! grep -q 'Your message stays on your device' /tmp/wdis.html; then
               ok=1
@@ -36,12 +39,14 @@ jobs:
             sleep 10
           done
           test "$ok" = "1"
+          test -n "$asset"
 
           curl --fail --silent --show-error \
             -H 'Cache-Control: no-cache' \
-            "https://thesheemaedit.com/what-do-i-say/sparkle-cloud-mobile.js?v=1&contract=$(date +%s)" \
+            "https://thesheemaedit.com${asset}&contract=$(date +%s)" \
             -o /tmp/mobile.js
           grep -q 'cloudflare-mobile' /tmp/mobile.js
           grep -q '/api/generate' /tmp/mobile.js
 
+          echo "Verified live mobile asset: $asset"
           echo 'WDIS_LIVE_MOBILE_CONTRACT_PASS'
