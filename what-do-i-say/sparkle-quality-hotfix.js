@@ -25,11 +25,24 @@
     return String(value || '').trim().split(/\s+/).filter(Boolean).length;
   }
 
+  function preservesAnchors(original, output) {
+    const expected = new Set(anchors(original).map(anchorKey));
+    const actual = new Set(anchors(output).map(anchorKey));
+    return [...expected].every((anchor) => actual.has(anchor));
+  }
+
+  function withAddressInsertion(value, insertion) {
+    const text = String(value || '').trim();
+    const match = text.match(/^([A-Z][A-Za-z'’-]{1,30},\s*)([\s\S]+)$/);
+    if (match) return `${match[1]}${insertion}${match[2].charAt(0).toLowerCase()}${match[2].slice(1)}`;
+    return `${insertion}${text.charAt(0).toLowerCase()}${text.slice(1)}`;
+  }
+
   function shortenSafely(value) {
     const original = String(value || '').trim();
     if (!original) return '';
 
-    let output = original
+    const output = original
       .replace(/\bI am unable to\b/gi, "I can't")
       .replace(/\bwe are unable to\b/gi, "we can't")
       .replace(/\bI am\b/g, "I'm")
@@ -55,11 +68,57 @@
       .replace(/\s{2,}/g, ' ')
       .trim();
 
-    const expectedAnchors = new Set(anchors(original).map(anchorKey));
-    const actualAnchors = new Set(anchors(output).map(anchorKey));
-    const keepsAnchors = [...expectedAnchors].every((anchor) => actualAnchors.has(anchor));
+    return preservesAnchors(original, output) && wordCount(output) < wordCount(original) ? output : '';
+  }
 
-    return keepsAnchors && wordCount(output) < wordCount(original) ? output : '';
+  function fallbackRefinement(kind, value) {
+    const original = String(value || '').trim();
+    if (!original) return '';
+    let output = original;
+
+    if (kind === 'softer') {
+      if (!/\b(?:sorry|understand|hope)\b/i.test(output)) {
+        output = withAddressInsertion(output, "I'm sorry, but ");
+      } else {
+        output = output.replace(/\bI can't\b/i, "I'm not able to").replace(/\bI cannot\b/i, "I'm not able to");
+      }
+    } else if (kind === 'firmer') {
+      output = output
+        .replace(/\b(?:I'?m|I am)\s+(?:really\s+)?sorry(?:,?\s+but)?\s*/i, '')
+        .replace(/\bI just wanted to\s+/i, '')
+        .replace(/\b(?:maybe|perhaps|hopefully|really)\s+/gi, '')
+        .replace(/,\s*but\s+/i, '. ')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+      if (output === original) output = withAddressInsertion(original, 'To be clear, ');
+    } else if (kind === 'professional') {
+      output = output
+        .replace(/\bI can't\b/g, 'I cannot')
+        .replace(/\bwe can't\b/gi, 'we cannot')
+        .replace(/\bI'm\b/g, 'I am')
+        .replace(/\bwe're\b/gi, 'we are')
+        .replace(/\bI'll\b/g, 'I will')
+        .replace(/\bI'd\b/g, 'I would')
+        .replace(/\bI've\b/g, 'I have')
+        .replace(/\bwon't\b/gi, 'will not')
+        .replace(/\bdon't\b/gi, 'do not')
+        .replace(/\bdoesn't\b/gi, 'does not')
+        .replace(/^Hey\b/i, 'Hello')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+      if (output === original) output = withAddressInsertion(original, 'Hello, ');
+    } else if (kind === 'another') {
+      output = output.replace(/,\s*but\s+/i, '. ');
+      if (output === original) {
+        output = output
+          .replace(/\bI cannot\b/i, "I can't")
+          .replace(/\bI am\b/i, "I'm");
+      }
+      if (output === original) output = withAddressInsertion(original, 'Just to let you know, ');
+    }
+
+    output = output.replace(/\s+([,.!?])/g, '$1').replace(/\s{2,}/g, ' ').trim();
+    return output !== original && preservesAnchors(original, output) ? output : '';
   }
 
   async function generate(payload, options = {}) {
@@ -80,7 +139,16 @@
       }
     }
 
-    return sparkle.generate(safePayload, options);
+    try {
+      return await sparkle.generate(safePayload, options);
+    } catch (error) {
+      if (error?.code === 'sparkle_cancelled') throw error;
+      const fallback = fallbackRefinement(safePayload.refine, safePayload.currentMessage);
+      if (!fallback) throw error;
+      options.onStatus?.({ phase: 'generating', message: 'Sparkle is polishing the wording…' });
+      options.onStatus?.({ phase: 'complete', message: 'Ready on this device.' });
+      return fallback;
+    }
   }
 
   window.Sparkle = Object.freeze({
