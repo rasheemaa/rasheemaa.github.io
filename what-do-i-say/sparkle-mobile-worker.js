@@ -153,6 +153,14 @@ function cleanOutput(value) {
   return output.replace(/\s{2,}/g, ' ').trim();
 }
 
+function negativeClauses(value) {
+  const negative = /\b(?:cannot|can['’]t|won['’]t|will not|do not|don['’]t|not|no|unable|unavailable|decline)\b/i;
+  return (String(value || '').match(/[^.!?\n]+[.!?]?/g) || [])
+    .map((sentence) => sentence.trim())
+    .filter((sentence) => sentence && negative.test(sentence))
+    .slice(0, 2);
+}
+
 function qualityIssue(text, payload) {
   if (!text || /<\/?think>|<\|/i.test(text)) return 'Return one complete message with no model markup.';
   const reference = payload.refine
@@ -163,8 +171,12 @@ function qualityIssue(text, payload) {
   const normalized = normalizeTimes(text).toLowerCase().replace(/\s/g, '');
   const missing = anchors(reference).filter((value) => !normalized.includes(value.toLowerCase().replace(/\s/g, '')));
   if (missing.length) return `Keep these exact details: ${missing.join(', ')}.`;
-  const negative = /\b(?:cannot|can['’]t|won['’]t|will not|not|no|unable|unavailable|decline)\b/i;
-  if (negative.test(reference) && !negative.test(text)) return 'Keep the refusal or negative statement explicit.';
+  const negative = /\b(?:cannot|can['’]t|won['’]t|will not|do not|don['’]t|not|no|unable|unavailable|decline)\b/i;
+  if (negative.test(reference) && !negative.test(text)) {
+    const clauses = negativeClauses(reference);
+    if (clauses.length) return `Keep this explicit refusal or negative statement: ${clauses.map((clause) => `“${clause}”`).join(' ')}`;
+    return 'Keep the refusal or negative statement explicit.';
+  }
   if (payload.refine === 'another') {
     const a = text.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
     const b = String(payload.currentMessage || '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
