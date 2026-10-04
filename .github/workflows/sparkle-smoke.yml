@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/sparkle-smoke.yml'
       - '.github/scripts/sparkle-smoke.mjs'
+      - '.github/scripts/run-sparkle-chromium-runtime.mjs'
       - '.github/scripts/sparkle-compatibility-test.mjs'
       - '.github/scripts/sparkle-targeted-retry.mjs'
       - '.github/scripts/sparkle-targeted-mobile.mjs'
@@ -74,4 +75,4 @@ jobs:
 
       - name: Test full live customer flow end to end
         if: ${{ !contains(github.event.head_commit.message, '[sparkle-targeted]') && !contains(github.event.head_commit.message, '[sparkle-mobile]') }}
-        run: node .github/scripts/sparkle-smoke.mjs
+        run: node .github/scripts/run-sparkle-chromium-runtime.mjs
