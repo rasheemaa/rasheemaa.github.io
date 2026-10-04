@@ -1,5 +1,6 @@
 const requestPayloads = new Map();
 const nativePostMessage = self.postMessage.bind(self);
+let baseReady = false;
 
 function normalizeSpace(value) {
   return String(value || '').replace(/\s+/g, ' ').trim();
@@ -39,11 +40,6 @@ function schedulingFallback(payload) {
   return '';
 }
 
-self.addEventListener('message', (event) => {
-  const data = event.data || {};
-  if (data.type === 'generate' && data.id) requestPayloads.set(data.id, data.payload || {});
-});
-
 self.postMessage = function mobileGuardPostMessage(data, transfer) {
   const message = data || {};
   if (message.type === 'error' && message.code === 'sparkle_quality' && message.id) {
@@ -65,4 +61,34 @@ self.postMessage = function mobileGuardPostMessage(data, transfer) {
   else nativePostMessage(message, transfer);
 };
 
-await import('/what-do-i-say/sparkle-mobile-worker.js?v=1');
+const baseReadyPromise = import('/what-do-i-say/sparkle-mobile-worker.js?v=1').then(() => {
+  baseReady = true;
+});
+
+self.addEventListener('message', (event) => {
+  const data = event.data || {};
+  if (data.type !== 'generate' || !data.id) return;
+  requestPayloads.set(data.id, data.payload || {});
+  if (baseReady) return;
+
+  event.stopImmediatePropagation();
+  nativePostMessage({
+    id: data.id,
+    type: 'status',
+    phase: 'loading',
+    message: 'Starting Sparkle Mobile on this iPad…',
+    profile: 'Sparkle Mobile',
+    backend: 'wasm'
+  });
+
+  baseReadyPromise.then(() => {
+    self.dispatchEvent(new MessageEvent('message', { data }));
+  }).catch((error) => {
+    nativePostMessage({
+      id: data.id,
+      type: 'error',
+      code: 'sparkle_load_error',
+      message: `Sparkle Mobile could not load on this browser. ${String(error?.message || '')}`.trim()
+    });
+  });
+});
