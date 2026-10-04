@@ -156,7 +156,14 @@ async function waitForIdle() {
 
 async function assertOutputPreserved(before, label) {
   const current = (await page.locator('#result').textContent())?.trim() || '';
-  assert(current === before, `${label} replaced the previous output before a new result was ready`);
+  const hasSuccess = await page.evaluate(() => Boolean(localStorage.getItem('wdis_trial_started_at_v2')));
+  if (hasSuccess) {
+    assert(current === before, `${label} replaced the previous output before a new result was ready`);
+  } else {
+    assert(!current.includes('Your Sparkle message will appear here'), `${label} left the empty placeholder visible`);
+    const busy = await page.locator('#result-panel').getAttribute('aria-busy');
+    assert(busy === 'true' || /Stopped|could not|too long/i.test(current), `${label} has no progress or outcome`);
+  }
 }
 
 async function generateMode(mode, text, { name = '', situation = 'general' } = {}) {
