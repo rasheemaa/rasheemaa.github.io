@@ -11,13 +11,16 @@ on:
       - 'what-do-i-say/index.html'
       - 'what-do-i-say/bootstrap.js'
       - 'what-do-i-say/config.js'
+      - 'what-do-i-say/payment.js'
       - 'what-do-i-say/chat-app.js'
       - 'what-do-i-say/sparkle.js'
       - 'what-do-i-say/sparkle-worker.js'
       - 'what-do-i-say/sparkle-mobile-worker.js'
+      - 'what-do-i-say/sparkle-mobile-worker-v2.js'
       - 'what-do-i-say/styles.css'
       - 'what-do-i-say/sparkle.css'
       - 'what-do-i-say/service-worker.js'
+      - 'what-do-i-say/manifest.webmanifest'
   workflow_dispatch:
 
 permissions:
@@ -30,7 +33,7 @@ concurrency:
 jobs:
   sparkle-smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - name: Checkout exact repository revision
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -64,6 +67,6 @@ jobs:
         if: ${{ contains(github.event.head_commit.message, '[sparkle-targeted]') && !contains(github.event.head_commit.message, '[sparkle-mobile]') }}
         run: node .github/scripts/sparkle-targeted-retry.mjs
 
-      - name: Test tuned Sparkle live end to end
+      - name: Test full live customer flow end to end
         if: ${{ !contains(github.event.head_commit.message, '[sparkle-targeted]') && !contains(github.event.head_commit.message, '[sparkle-mobile]') }}
         run: node .github/scripts/sparkle-smoke.mjs
