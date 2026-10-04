@@ -9,25 +9,25 @@ permalink: /what-do-i-say/
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://*.thesheemaedit.com https://what-do-i-say-payments.rasheema-abdullah.workers.dev https://huggingface.co https://*.huggingface.co https://*.hf.co https://cdn.jsdelivr.net; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
 <meta name="referrer" content="no-referrer">
-<meta name="theme-color" content="#21172c">
+<meta name="theme-color" content="#fff8f5">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="What Do I Say?">
 <title>What Do I Say? | The Sheema Edit</title>
-<meta name="description" content="Private on-device AI help for the messages you overthink. Sparkle helps you write, reply to, and clean up everyday messages without sending the message to a paid AI API.">
+<meta name="description" content="Private on-device AI help for the messages you overthink. Chat with Sparkle until the words feel right.">
 <link rel="canonical" href="https://thesheemaedit.com/what-do-i-say/">
 <link rel="manifest" href="/what-do-i-say/manifest.webmanifest">
 <link rel="icon" href="/assets/images/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
 <meta property="og:type" content="website">
 <meta property="og:title" content="What Do I Say? | The Sheema Edit</title>
-<meta property="og:description" content="You know what you mean. Sparkle helps you find the words privately on your device.">
+<meta property="og:description" content="You know what you mean. Chat with Sparkle until the words feel right.">
 <meta property="og:url" content="https://thesheemaedit.com/what-do-i-say/">
 <meta property="og:image" content="https://thesheemaedit.com/assets/images/social-card.png">
 <meta name="twitter:card" content="summary_large_image">
 <script src="/what-do-i-say/bootstrap.js?v=2"></script>
-<link rel="stylesheet" href="/what-do-i-say/styles.css?v=8">
+<link rel="stylesheet" href="/what-do-i-say/styles.css?v=9">
 <link rel="stylesheet" href="/what-do-i-say/sparkle.css?v=2">
 </head>
 <body>
@@ -35,138 +35,74 @@ permalink: /what-do-i-say/
 <header class="topbar">
   <a class="wordmark" href="/what-do-i-say/">WHAT DO I SAY?</a>
   <div class="top-actions">
-    <span class="byline">by The Sheema Edit</span>
-    <button class="ghost install-button" type="button" hidden>Add to phone</button>
+    <span class="trial-pill"><strong id="trial-status">3-day free trial</strong><span id="trial-detail"> · starts with your first message</span></span>
+    <button class="access-button" type="button" data-founder-checkout>Founding access</button>
+    <button class="install-button" type="button" hidden>Add to phone</button>
   </div>
 </header>
-<main id="app" class="shell">
-  <section class="hero">
-    <p class="kicker">Powered by Sparkle ✦ · private on-device AI</p>
-    <h1>You know what you mean.<br><span>You just need the words.</span></h1>
-    <p class="lede">Tell Sparkle what happened, paste what they sent, or drop in your draft. Sparkle writes a custom response around your exact situation and tone right on your device.</p>
-    <div class="trial-pill" aria-live="polite"><strong id="trial-status">3-day free trial</strong><span id="trial-detail"> · starts with your first Sparkle message · no card required</span></div>
-  </section>
 
-  <section class="workspace" aria-label="Sparkle message generator">
-    <div class="mode-tabs" role="tablist" aria-label="Choose what you need help with">
-      <button class="mode active" type="button" data-mode="write" aria-selected="true">Send a message</button>
-      <button class="mode" type="button" data-mode="reply" aria-selected="false">Respond to someone</button>
-      <button class="mode" type="button" data-mode="fix" aria-selected="false">Rewrite my message</button>
-    </div>
-
-    <div class="sparkle-status" id="sparkle-status" data-state="idle" role="status" aria-live="polite">
-      <span class="sparkle-mark" aria-hidden="true">✦</span>
-      <div><strong>Powered by Sparkle</strong><span id="sparkle-status-text">Private on-device AI. Sparkle downloads to this device on first use and is cached after that.</span></div>
-    </div>
-
-    <form id="message-form" class="composer">
-      <div class="field-row two">
-        <label>Situation
-          <select id="situation">
-            <option value="general">Everyday message</option>
-            <option value="work">Work</option>
-            <option value="boundary">Set a boundary</option>
-            <option value="apology">Apologize</option>
-            <option value="cancel">Cancel or reschedule</option>
-            <option value="decline">Say no</option>
-            <option value="followup">Follow up</option>
-            <option value="refund">Ask for a refund or fix</option>
-            <option value="relationship">Relationship conversation</option>
-          </select>
-        </label>
-        <label>Name <span class="optional">optional</span>
-          <input id="person-name" type="text" maxlength="60" placeholder="Jordan">
-        </label>
+<main id="app" class="chat-shell">
+  <section class="chat-app" aria-label="Chat with Sparkle">
+    <header class="chat-heading">
+      <div>
+        <p class="eyebrow">Sparkle ✦</p>
+        <h1>Say what you mean.</h1>
+        <p>I’ll help with the words.</p>
       </div>
+      <button id="new-message-top" class="new-message-button" type="button" hidden>New message</button>
+    </header>
 
-      <label id="prompt-label" class="main-label">What are you trying to say?
-        <textarea id="prompt" rows="7" maxlength="3500" required placeholder="I need to tell my manager I can't come in tomorrow because something personal came up, but I don't want to overshare."></textarea>
-      </label>
-
-      <fieldset class="tone-picker">
-        <legend>How should it sound?</legend>
-        <div class="tone-grid">
-          <label><input type="radio" name="tone" value="warm" checked><span>Warm</span></label>
-          <label><input type="radio" name="tone" value="direct"><span>Direct</span></label>
-          <label><input type="radio" name="tone" value="professional"><span>Professional</span></label>
-          <label><input type="radio" name="tone" value="casual"><span>Casual</span></label>
-          <label><input type="radio" name="tone" value="firm"><span>Firm</span></label>
-          <label><input type="radio" name="tone" value="concise"><span>Short</span></label>
+    <div id="chat-thread" class="chat-thread" aria-live="polite" aria-relevant="additions text">
+      <section id="welcome-card" class="welcome-card">
+        <p class="welcome-question">What are we doing?</p>
+        <div class="mode-tabs" role="tablist" aria-label="Choose what you need help with">
+          <button class="mode active" type="button" data-mode="write" aria-selected="true">Send a message</button>
+          <button class="mode" type="button" data-mode="reply" aria-selected="false">Respond to someone</button>
+          <button class="mode" type="button" data-mode="fix" aria-selected="false">Rewrite my message</button>
         </div>
-      </fieldset>
-
-      <button class="primary" id="generate" type="submit">Give me the words</button>
-      <button class="text-button" id="sparkle-cancel" type="button" hidden>Stop Sparkle</button>
-      <p class="privacy-note">Sparkle runs an open-weight language model locally in your browser, so the message you enter is not sent to OpenAI, Claude, Cloudflare AI, or Google Analytics. The first use downloads the model to your device and later uses are cached. Don’t enter passwords, card numbers, or other highly sensitive information.</p>
-    </form>
+      </section>
+      <div id="conversation" class="conversation"></div>
+    </div>
 
     <div id="ai-error" class="ai-error" hidden role="alert" aria-live="assertive">
-      <div>
-        <strong>That didn’t go through.</strong>
-        <p id="ai-error-message">Sparkle could not answer right now.</p>
-      </div>
+      <span id="ai-error-message">Sparkle could not answer right now.</span>
       <button id="ai-retry" type="button">Try again</button>
     </div>
 
-    <section id="result-panel" class="result-panel" aria-live="polite">
-      <div class="result-heading">
-        <div><p class="mini">Sparkle output</p><h2>Your message</h2></div>
-        <button id="copy" class="copy-button" type="button">Copy</button>
+    <div class="sparkle-status compact" id="sparkle-status" data-state="idle" role="status" aria-live="polite">
+      <span class="sparkle-mark" aria-hidden="true">✦</span>
+      <span id="sparkle-status-text">Private on-device AI</span>
+    </div>
+
+    <form id="message-form" class="chat-composer">
+      <label class="sr-only" for="prompt" id="prompt-label">What are you trying to say?</label>
+      <div class="composer-box">
+        <textarea id="prompt" rows="1" maxlength="3500" required placeholder="Tell me what you’re trying to say…"></textarea>
+        <button class="send-button" id="generate" type="submit" aria-label="Send to Sparkle">Send</button>
       </div>
-      <div id="result" class="result" tabindex="0">Your Sparkle message will appear here.</div>
-      <div class="refine-row" aria-label="Refine the message">
-        <button type="button" data-refine="shorter">Make it shorter</button>
-        <button type="button" data-refine="softer">Make it softer</button>
-        <button type="button" data-refine="firmer">Make it firmer</button>
-        <button type="button" data-refine="professional">Make it professional</button>
-        <button type="button" data-refine="another">Try another version</button>
-      </div>
-    </section>
-  </section>
+      <button class="stop-button" id="sparkle-cancel" type="button" hidden>Stop Sparkle</button>
+      <p class="privacy-note">Your message stays on your device. Don’t enter passwords or card numbers.</p>
+    </form>
 
-  <section class="founder-card" id="founder">
-    <div>
-      <p class="kicker">Launch plan</p>
-      <h2>Use Sparkle now. Lock in Founding Member access while it is available.</h2>
-      <p><strong>3-day free trial:</strong> starts with your first Sparkle message, with no card required. <strong>Founding Member:</strong> $19.99 once for the first 100 members, with core platform access for life. After the founding launch, the regular plan is intended to be $9.99/month.</p>
-    </div>
-    <div class="founder-actions">
-      <button class="founder-button" type="button" data-founder-checkout>Become a Founding Member · $19.99 once</button>
-      <p>Checkout starts through the Cloudflare payment service and is securely handled by Stripe. The Founding Member offer is limited to the first 100 completed purchases.</p>
-      <p class="paywall-note" data-founder-status aria-live="polite">After checkout, Stripe returns you here automatically and Founding Member access is verified securely.</p>
-    </div>
-  </section>
-
-  <section class="history-card">
-    <div class="history-title"><h2>Recent messages</h2><button id="clear-history" class="text-button" type="button">Clear</button></div>
-    <div id="history" class="history-list"><p class="empty">Nothing saved yet.</p></div>
-  </section>
-
-  <section class="how-it-works">
-    <h2>Built for the messages people overthink.</h2>
-    <div class="examples">
-      <article><strong>Work</strong><p>Call out, ask for time off, follow up, quit, ask about pay.</p></article>
-      <article><strong>People</strong><p>Set a boundary, apologize, ask for space, cancel plans, say no.</p></article>
-      <article><strong>Customer service</strong><p>Ask for a refund, report a problem, request a replacement, escalate.</p></article>
-    </div>
+    <p class="founder-status" data-founder-status aria-live="polite">Founding Member access is $19.99 once during launch. Checkout is securely handled by Stripe.</p>
   </section>
 </main>
 
 <div class="paywall" id="paywall" hidden>
   <section class="paywall-card" role="dialog" aria-modal="true" aria-labelledby="paywall-title">
     <button class="paywall-close" type="button" aria-label="Close">×</button>
-    <p class="kicker">Founding access</p>
+    <p class="eyebrow">Founding access</p>
     <h2 id="paywall-title">Keep the words coming.</h2>
-    <p>Founding Member access is <strong>$19.99 once</strong> for the first 100 people. Secure checkout is live through Stripe.</p>
+    <p>Founding Member access is <strong>$19.99 once</strong> for the first 100 people. Secure checkout is handled by Stripe.</p>
     <button class="founder-button" type="button" data-founder-checkout>Become a Founding Member · $19.99 once</button>
     <p class="paywall-note" data-founder-status aria-live="polite">After checkout, Stripe returns you here automatically and Founding Member access is verified securely.</p>
   </section>
 </div>
 
-<footer><a href="/">The Sheema Edit</a><span>·</span><a href="/shop/">Shop</a><span>·</span><a href="https://www.tiktok.com/@_rasheemaa" target="_blank" rel="noopener noreferrer">TikTok</a></footer>
+<footer><a href="/">The Sheema Edit</a></footer>
 <script src="/what-do-i-say/config.js?v=8"></script>
 <script src="/what-do-i-say/sparkle.js?v=21"></script>
 <script src="/what-do-i-say/payment.js?v=2" defer></script>
-<script src="/what-do-i-say/app.js?v=21" defer></script>
+<script src="/what-do-i-say/app.js?v=22" defer></script>
 </body>
 </html>
