@@ -14,6 +14,7 @@ on:
       - 'what-do-i-say/payment.js'
       - 'what-do-i-say/chat-app.js'
       - 'what-do-i-say/sparkle.js'
+      - 'what-do-i-say/sparkle-cloud-mobile.js'
       - 'what-do-i-say/sparkle-worker.js'
       - 'what-do-i-say/sparkle-mobile-worker.js'
       - 'what-do-i-say/sparkle-mobile-worker-v2.js'
