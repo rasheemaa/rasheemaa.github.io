@@ -6,7 +6,7 @@ async function waitForProductionAssets() {
     'what-do-i-say/bootstrap.js',
     'what-do-i-say/sparkle-mobile-safe-worker.js'
   ];
-  const expected = await Promise.all(paths.map((path) => readFile(path, 'utf8')));
+  const expected = await Promise.all((path => path), paths.map((path) => readFile(path, 'utf8')));
 
   for (let attempt = 0; attempt < 36; attempt += 1) {
     const matches = await Promise.all(paths.map(async (path, index) => {
@@ -49,22 +49,29 @@ page.on('request', (request) => {
   if (/huggingface\.co|hf\.co|cdn-lfs\.huggingface\.co/i.test(url)) modelRequests.push(url);
 });
 
+async function assistantCount() {
+  return page.locator('.message-row.assistant:not(.working)').count();
+}
+
 async function generateAndAssert(promptText, availableTime, unavailableTime) {
+  const before = await assistantCount();
   await page.locator('#prompt').fill(promptText);
   await page.locator('#generate').click();
-  await page.waitForFunction(() => {
-    const text = document.querySelector('#result')?.textContent?.trim() || '';
-    const busy = document.querySelector('#message-form')?.getAttribute('aria-busy') === 'true';
-    return !busy && text && text !== 'Your Sparkle message will appear here.';
-  }, null, { timeout: 30_000 });
+  await page.waitForFunction((count) => {
+    const error = document.querySelector('#ai-error');
+    if (error && !error.hidden) return true;
+    const answers = document.querySelectorAll('.message-row.assistant:not(.working)');
+    return answers.length > count && !document.querySelector('#generate')?.disabled;
+  }, before, { timeout: 30_000 });
 
-  const output = (await page.locator('#result').textContent() || '').trim();
-  const errorVisible = await page.locator('#ai-error').isVisible();
+  const errorVisible = await page.locator('#ai-error').evaluate((node) => !node.hidden);
   const errorText = errorVisible ? (await page.locator('#ai-error-message').textContent() || '').trim() : '';
-  console.log(`SPARKLE_MOBILE_OUTPUT ${JSON.stringify(output)}`);
   if (errorText) console.log(`SPARKLE_MOBILE_ERROR ${JSON.stringify(errorText)}`);
-
   assert(!errorVisible, `Sparkle Mobile showed an error: ${errorText}`);
+
+  const output = (await page.locator('.message-row.assistant:not(.working) .bubble').last().textContent() || '').trim();
+  console.log(`SPARKLE_MOBILE_OUTPUT ${JSON.stringify(output)}`);
+  assert(output.length >= 8, `Sparkle Mobile returned an empty or tiny answer: ${output}`);
   assert(new RegExp(availableTime.replace(' ', '\\s*'), 'i').test(output), `Sparkle Mobile lost the available time: ${output}`);
   assert(new RegExp(unavailableTime.replace(' ', '\\s*'), 'i').test(output), `Sparkle Mobile lost the unavailable time: ${output}`);
   assert(/(?:cannot|can't|can’t|not|unable|unavailable)/i.test(output), `Sparkle Mobile lost the refusal: ${output}`);
@@ -77,6 +84,7 @@ try {
     waitUntil: 'domcontentloaded',
     timeout: 60_000
   });
+  await page.waitForFunction(() => Boolean(window.Sparkle?.generate), null, { timeout: 30_000 });
 
   const mobileState = await page.evaluate(() => ({
     routed: window.__WDIS_MOBILE_SPARKLE === true,
