@@ -6,7 +6,7 @@
     if (!isAppleMobile || typeof window.Worker !== 'function') return;
 
     const NativeWorker = window.Worker;
-    const MOBILE_WORKER_URL = '/what-do-i-say/sparkle-mobile-worker-v2.js?v=5';
+    const MOBILE_WORKER_URL = '/what-do-i-say/sparkle-mobile-safe-worker.js?v=1';
 
     class RecyclingMobileWorker {
       constructor(options) {
@@ -92,6 +92,7 @@
         const requested = new URL(String(scriptURL), window.location.href);
         if (requested.origin === window.location.origin && requested.pathname === '/what-do-i-say/sparkle-worker.js') {
           window.__WDIS_MOBILE_SPARKLE = true;
+          window.__WDIS_MOBILE_SAFE_MODE = true;
           window.__WDIS_MOBILE_WORKER_RECYCLE_ENABLED = true;
           return new RecyclingMobileWorker(options);
         }
@@ -104,6 +105,7 @@
       Object.setPrototypeOf(MobileAwareWorker, NativeWorker);
       window.Worker = MobileAwareWorker;
       window.__WDIS_MOBILE_SPARKLE = true;
+      window.__WDIS_MOBILE_SAFE_MODE = true;
     } catch (_) {}
   };
 
