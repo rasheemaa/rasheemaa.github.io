@@ -1,8 +1,10 @@
 import { chromium } from 'playwright';
 
 const BASE = 'https://thesheemaedit.com/what-do-i-say/';
+const WORKER_CHECKOUT = 'https://what-do-i-say-payments.rasheema-abdullah.workers.dev/api/checkout';
 const FAKE_SESSION = 'cs_live_fake123456789';
 const CONTROLLED_PAID_SESSION = 'cs_live_controlledpaid123456789';
+const CONTROLLED_CHECKOUT_SESSION = 'cs_live_controlledcheckout123456789';
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -16,15 +18,30 @@ async function waitForCurrentProduction(page) {
     const current = await page.evaluate(() => {
       const csp = document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.content || '';
       const config = Array.from(document.scripts).some((script) => String(script.src || '').includes('/what-do-i-say/config.js?v=8'));
+      const payment = Array.from(document.scripts).some((script) => String(script.src || '').includes('/what-do-i-say/payment.js?v=2'));
       const copy = document.body.innerText || '';
+      const legacyPaymentLinks = Array.from(document.querySelectorAll('a[href]')).filter((link) => String(link.href || '').includes('buy.stripe.com')).length;
+      const checkoutButtons = document.querySelectorAll('[data-founder-checkout]').length;
       return {
         csp,
         config,
+        payment,
+        legacyPaymentLinks,
+        checkoutButtons,
         currentCopy: copy.includes('Founding Member access is verified securely.') && !copy.includes('verification is being reconnected')
       };
     });
-    if (current.config && current.currentCopy && current.csp.includes('what-do-i-say-payments.rasheema-abdullah.workers.dev')) {
+    if (
+      current.config &&
+      current.payment &&
+      current.currentCopy &&
+      current.legacyPaymentLinks === 0 &&
+      current.checkoutButtons >= 1 &&
+      current.csp.includes('what-do-i-say-payments.rasheema-abdullah.workers.dev')
+    ) {
       console.log('PASS production payment assets match current launch revision');
+      console.log('PASS production contains no direct Stripe Payment Link checkout');
+      console.log('PASS production exposes Cloudflare checkout buttons');
       return;
     }
     await page.waitForTimeout(3000);
@@ -38,6 +55,43 @@ try {
     const context = await browser.newContext();
     const page = await context.newPage();
     await waitForCurrentProduction(page);
+    await context.close();
+  }
+
+  {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    let checkoutRequest = null;
+
+    await page.route('**/api/checkout', async (route) => {
+      const request = route.request();
+      checkoutRequest = {
+        url: request.url(),
+        method: request.method(),
+        body: JSON.parse(request.postData() || '{}')
+      };
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          sessionId: CONTROLLED_CHECKOUT_SESSION,
+          url: `https://checkout.stripe.com/c/pay/${CONTROLLED_CHECKOUT_SESSION}`
+        })
+      });
+    });
+
+    await page.route('https://checkout.stripe.com/**', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><title>Controlled Stripe checkout</title>' });
+    });
+
+    await page.goto(`${BASE}?checkout_wiring=${Date.now()}`, { waitUntil: 'domcontentloaded' });
+    await page.locator('[data-founder-checkout]').first().click();
+    await page.waitForURL('https://checkout.stripe.com/**', { timeout: 15_000 });
+
+    assert(checkoutRequest?.url === WORKER_CHECKOUT, 'live Founding Member button calls only the Cloudflare checkout Worker');
+    assert(checkoutRequest?.method === 'POST', 'live Founding Member checkout uses POST');
+    assert(/^[a-f0-9]{64}$/.test(String(checkoutRequest?.body?.claimToken || '')), 'live checkout sends a browser-bound purchase claim');
+    assert(page.url().startsWith('https://checkout.stripe.com/'), 'validated Cloudflare checkout response redirects only to Stripe Checkout');
     await context.close();
   }
 
