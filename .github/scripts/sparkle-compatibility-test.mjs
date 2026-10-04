@@ -65,8 +65,13 @@ console.log('PASS Safari selection; GPU error/crash/timeout recovery; stale repl
   const p = h.api.generate({mode:'write', text, personName:'Maya'}), w = h.workers[0];
   w.emit('message', {id:w.sent.id, type:'error', code:'sparkle_quality'});
   assert.equal(await p, 'Hi Maya, I cannot meet Friday at 4 PM. I can meet Saturday at 10 AM.');
-  const rejectExtra = h.api.generate({mode:'write', text: text + ' Also ask about lunch.'});
+
+  const withExtra = text + ' Also ask about lunch.';
+  const preserveExtra = h.api.generate({mode:'write', text: withExtra, personName:'Maya'});
   w.emit('message', {id:w.sent.id, type:'error', code:'sparkle_quality'});
-  await assert.rejects(rejectExtra, e => e.code === 'sparkle_quality');
+  const preserved = await preserveExtra;
+  assert.match(preserved, /Friday at 4 PM/i);
+  assert.match(preserved, /Saturday at 10 AM/i);
+  assert.match(preserved, /lunch/i);
   console.log('PASS exact scheduling preservation; extra instructions are never silently dropped');
 }
