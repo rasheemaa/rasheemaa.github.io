@@ -6,7 +6,7 @@
     if (!isAppleMobile || typeof window.Worker !== 'function') return;
 
     const NativeWorker = window.Worker;
-    const MOBILE_WORKER_URL = '/what-do-i-say/sparkle-mobile-worker-v2.js?v=4';
+    const MOBILE_WORKER_URL = '/what-do-i-say/sparkle-mobile-worker-v2.js?v=5';
 
     class RecyclingMobileWorker {
       constructor(options) {
