@@ -87,7 +87,7 @@ try {
   await page.waitForFunction(() => Boolean(window.Sparkle?.generate), null, { timeout: 30_000 });
 
   const assets = await page.evaluate(() => [...document.scripts].map(script => script.getAttribute('src') || ''));
-  assert(assets.some(src => src.includes('sparkle.js?v=21')), 'Production is not loading sparkle.js?v=21');
+  assert(assets.some(src => src.includes('sparkle.js?v=22')), 'Production is not loading sparkle.js?v=22');
   assert(assets.some(src => src.includes('chat-app.js?v=23')), 'Production is not loading chat-app.js?v=23');
 
   const layout = await page.evaluate(() => ({
