@@ -103,8 +103,9 @@
     const more = document.createElement('button'); more.type = 'button'; more.className = 'more-options'; more.textContent = 'More options'; more.setAttribute('aria-expanded','false');
     const options = document.createElement('div'); options.className = 'refine-options'; options.hidden = true;
     right.onclick = async () => {
-      S.last = text; await copy(text,right);
+      S.last = text;
       if (!actions.querySelector('.start-new')) { const n = document.createElement('button'); n.type='button'; n.className='start-new'; n.textContent='Start a new message'; n.onclick=reset; actions.append(n); }
+      await copy(text,right);
     };
     more.onclick = () => { const open = more.getAttribute('aria-expanded') === 'true'; more.setAttribute('aria-expanded',String(!open)); more.textContent = open ? 'More options' : 'Fewer options'; options.hidden = open; };
     Object.entries(labels).forEach(([key,label]) => { const b=document.createElement('button'); b.type='button'; b.textContent=label; b.onclick=()=>{ if(!S.pending){ S.last=text; refine(key,label); } }; options.append(b); });
