@@ -113,7 +113,10 @@
   }
 
   function initialPayload(text) {
-    return { mode:S.mode, tone:'warm', situation:'general', personName:S.mode === 'write' ? inferRecipient(text) : '', text, refine:'', currentMessage:'' };
+    const source = S.mode === 'fix'
+      ? String(text || '').replace(/\bcant\b/gi, "can't").replace(/\bwont\b/gi, "won't").replace(/\bdont\b/gi, "don't").replace(/\bdoesnt\b/gi, "doesn't")
+      : text;
+    return { mode:S.mode, tone:'warm', situation:'general', personName:S.mode === 'write' ? inferRecipient(source) : '', text:source, refine:'', currentMessage:'' };
   }
   function refinePayload(kind, instruction='') {
     const base = S.base || initialPayload(S.last);
