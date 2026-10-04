@@ -8,6 +8,7 @@ on:
       - '.github/scripts/payment-access-smoke.mjs'
       - 'what-do-i-say/index.html'
       - 'what-do-i-say/config.js'
+      - 'what-do-i-say/payment.js'
       - 'what-do-i-say/app.js'
   workflow_dispatch:
 
