@@ -1,9 +1,11 @@
 (() => {
   if (window.location.pathname.startsWith('/what-do-i-say')) return;
 
-  const POPUP_KEY = 'wdis_launch_popup_seen_v1';
-  const FOUNDER_KEY = 'wdis_founder_v1';
-  const TRIAL_KEY = 'wdis_trial_started_at_v2';
+  const POPUP_KEY = 'wdis_launch_popup_seen_v2';
+  const FOUNDER_KEYS = ['wdis_founder_session_v1', 'wdis_founder_v1'];
+  const TRIAL_SESSION_KEY = 'wdis_paid_trial_session_v1';
+  const TRIAL_EXPIRES_KEY = 'wdis_paid_trial_expires_at_v1';
+  const TRIAL_USED_KEY = 'wdis_paid_trial_used_v1';
   const TRIAL_MS = 3 * 24 * 60 * 60 * 1000;
   const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -14,14 +16,16 @@
     try { window.localStorage.setItem(key, value); } catch (_) {}
   };
 
-  if (safeGet(FOUNDER_KEY) === '1') return;
+  if (FOUNDER_KEYS.some((key) => Boolean(safeGet(key)))) return;
   const lastSeen = Number(safeGet(POPUP_KEY) || '0');
   if (Number.isFinite(lastSeen) && Date.now() - lastSeen < DAY_MS) return;
 
-  const trialStart = Number(safeGet(TRIAL_KEY) || '0');
-  const trialStarted = Number.isFinite(trialStart) && trialStart > 0;
-  const remaining = trialStarted ? Math.max(0, TRIAL_MS - (Date.now() - trialStart)) : TRIAL_MS;
-  const expired = trialStarted && remaining <= 0;
+  const trialSession = safeGet(TRIAL_SESSION_KEY);
+  const trialExpiresAt = Number(safeGet(TRIAL_EXPIRES_KEY) || '0');
+  const trialUsed = safeGet(TRIAL_USED_KEY) === '1';
+  const trialStarted = Boolean(trialSession) && Number.isFinite(trialExpiresAt) && trialExpiresAt > Date.now();
+  const remaining = trialStarted ? Math.max(0, trialExpiresAt - Date.now()) : 0;
+  const expired = trialUsed && !trialStarted;
   const remainingHours = Math.max(1, Math.ceil(remaining / (60 * 60 * 1000)));
   const remainingText = remainingHours > 24
     ? `${Math.ceil(remainingHours / 24)} days left`
@@ -62,22 +66,22 @@
   document.head.appendChild(style);
 
   const headline = expired
-    ? 'Your free trial ended. <span>Lifetime Access is still open.</span>'
+    ? 'Your trial ended. <span>Lifetime Access is still open.</span>'
     : trialStarted
-      ? `Your <span>What Do I Say?</span> trial is still running.`
+      ? `Your <span>What Do I Say?</span> trial is active.`
       : 'Meet <span>What Do I Say?</span>';
 
   const lede = expired
     ? 'Lifetime Access is still available for $19.99 once while the launch offer is available.'
     : trialStarted
       ? `You still have ${remainingText}. Come back whenever a text, reply, boundary, apology, work message, or awkward conversation has you staring at the keyboard.`
-      : 'The new online message platform from The Sheema Edit helps you write it, reply to it, or fix what you already typed. Your 3-day free trial starts with your first generated message.';
+      : 'The new online message platform from The Sheema Edit helps you write it, reply to it, or fix what you already typed. Try it for 3 days for $1 once. No automatic renewal.';
 
   const cta = expired
     ? 'See Lifetime Access →'
     : trialStarted
-      ? 'Continue my free trial →'
-      : 'Start my 3-day free trial →';
+      ? 'Continue my trial →'
+      : 'Start my 3-day trial · $1 →';
 
   const backdrop = document.createElement('div');
   backdrop.className = 'wdis-launch-backdrop';
@@ -90,8 +94,8 @@
         <h2 id="wdis-launch-title">${headline}</h2>
         <p class="wdis-launch-lede" id="wdis-launch-description">${lede}</p>
         <div class="wdis-launch-trial" aria-label="Launch offer">
-          <span>3 days free</span>
-          <span>No card required</span>
+          <span>${trialStarted ? remainingText : expired ? 'Trial ended' : '3 days · $1 once'}</span>
+          <span>${trialStarted ? '$1 trial active' : 'No automatic renewal'}</span>
           <span>$19.99 lifetime access</span>
         </div>
         <a class="wdis-launch-cta" href="/what-do-i-say/">${cta}</a>
