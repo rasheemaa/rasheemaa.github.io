@@ -109,7 +109,7 @@ document.querySelectorAll("[data-support-edit-link]").forEach((link) => {
 // The launch popup replaces the previous general shop popup during the What Do I Say? launch.
 if (!window.location.pathname.startsWith("/what-do-i-say")) {
   const launchPopupScript = document.createElement("script");
-  launchPopupScript.src = "/assets/js/wdis-launch-popup.js";
+  launchPopupScript.src = "/assets/js/wdis-launch-popup.js?v=2";
   launchPopupScript.async = true;
   document.head.appendChild(launchPopupScript);
 }
