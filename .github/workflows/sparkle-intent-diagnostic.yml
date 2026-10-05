@@ -1,0 +1,119 @@
+name: Sparkle intent diagnostic
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sparkle-intent-diagnostic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - name: Check modified JavaScript syntax
+        run: |
+          node --check what-do-i-say/chat-app.js
+          node --check what-do-i-say/sparkle-quality-hotfix.js
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+
+      - name: Install WebKit
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.55.0
+          npx playwright install --with-deps webkit
+
+      - name: Capture live runtime diagnostic
+        id: diagnose
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          node --input-type=module <<'NODE' 2>&1 | tee /tmp/sparkle-intent-diagnostic.txt
+          import { webkit } from 'playwright';
+          const browser = await webkit.launch({ headless: true });
+          const context = await browser.newContext({
+            viewport: { width: 820, height: 1180 },
+            userAgent: 'Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
+            serviceWorkers: 'block'
+          });
+          await context.addInitScript(() => {
+            try {
+              localStorage.removeItem('wdis_trial_started_at_v2');
+              localStorage.removeItem('wdis_founder_session_v1');
+              localStorage.removeItem('wdis_pending_founder_session_v1');
+            } catch {}
+          });
+          const page = await context.newPage();
+          const consoleLines = [];
+          page.on('pageerror', error => { const line = `PAGEERROR ${error.stack || error.message}`; consoleLines.push(line); console.log(line); });
+          page.on('console', message => { const line = `CONSOLE ${message.type()} ${message.text()}`; consoleLines.push(line); console.log(line); });
+          page.on('requestfailed', request => console.log(`REQUESTFAILED ${request.url()} ${request.failure()?.errorText || ''}`));
+          try {
+            console.log('STEP goto');
+            const response = await page.goto(`https://thesheemaedit.com/what-do-i-say/?intent_diag=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+            console.log(`PAGE_STATUS ${response?.status()}`);
+            console.log(`TITLE ${await page.title()}`);
+            console.log(`SCRIPTS ${JSON.stringify(await page.evaluate(() => [...document.scripts].map(s => s.src || s.getAttribute('src') || '')))}`);
+            console.log(`SPARKLE ${JSON.stringify(await page.evaluate(() => ({ exists: Boolean(window.Sparkle), generate: typeof window.Sparkle?.generate, mode: window.Sparkle?.mode || '', name: window.Sparkle?.name || '' })))}`);
+            console.log(`FORM ${await page.locator('#message-form').count()} PROMPT ${await page.locator('#prompt').count()} SEND ${await page.locator('#generate').count()}`);
+            await page.waitForFunction(() => Boolean(window.Sparkle?.generate), null, { timeout: 30000 });
+            console.log('STEP sparkle-ready');
+
+            const input = 'Can you loan me a dollar';
+            const before = await page.locator('.message-row.assistant:not(.working)').count();
+            await page.locator('#prompt').fill(input);
+            console.log(`PROMPT_VALUE ${JSON.stringify(await page.locator('#prompt').inputValue())}`);
+            await page.locator('#generate').click();
+            console.log('STEP clicked');
+            await page.waitForFunction(count => {
+              const error = document.querySelector('#ai-error');
+              if (error && !error.hidden) return true;
+              return document.querySelectorAll('.message-row.assistant:not(.working)').length > count && !document.querySelector('#generate')?.disabled;
+            }, before, { timeout: 120000 });
+            const errorVisible = await page.locator('#ai-error').evaluate(node => !node.hidden);
+            const errorText = (await page.locator('#ai-error-message').textContent()) || '';
+            console.log(`ERROR_VISIBLE ${errorVisible} ERROR_TEXT ${JSON.stringify(errorText)}`);
+            const outputs = await page.locator('.message-row.assistant:not(.working) .bubble').allTextContents();
+            console.log(`OUTPUTS ${JSON.stringify(outputs)}`);
+            const users = await page.locator('.message-row.user .bubble').allTextContents();
+            console.log(`USERS ${JSON.stringify(users)}`);
+            console.log(`STATUS ${JSON.stringify(await page.locator('#sparkle-status-text').textContent())}`);
+            console.log(`SEND_DISABLED ${await page.locator('#generate').isDisabled()}`);
+            console.log(`REFINE_ACTIONS ${await page.locator('.message-row.assistant:not(.working) .response-actions').count()}`);
+            if (errorVisible) throw new Error(`Sparkle UI error: ${errorText}`);
+            if (!outputs.length) throw new Error('No assistant output appeared');
+            console.log('DIAGNOSTIC_SUCCESS');
+          } catch (error) {
+            console.log(`DIAGNOSTIC_FAILURE ${error?.stack || error}`);
+            console.log(`FINAL_URL ${page.url()}`);
+            console.log(`FINAL_HTML_SNIPPET ${JSON.stringify((await page.locator('body').innerText().catch(() => '')).slice(0,4000))}`);
+            throw error;
+          } finally {
+            await browser.close();
+          }
+          NODE
+
+      - name: Upload diagnostic log
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: sparkle-intent-diagnostic
+          path: /tmp/sparkle-intent-diagnostic.txt
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Fail if diagnostic failed
+        if: steps.diagnose.outcome != 'success'
+        run: exit 1
