@@ -10,7 +10,7 @@ on:
       - 'what-do-i-say/index.html'
       - 'what-do-i-say/bootstrap.js'
       - 'what-do-i-say/config.js'
-      - 'what-do-i-say/payment.js'
+      - 'what-do-i-say/payment-v3.js'
       - 'what-do-i-say/chat-app.js'
       - 'what-do-i-say/styles.css'
       - 'what-do-i-say/sparkle.css'
@@ -59,7 +59,7 @@ jobs:
           const files = [
             'bootstrap.js',
             'config.js',
-            'payment.js',
+            'payment-v3.js',
             'chat-app.js',
             'styles.css',
             'sparkle.css',
@@ -111,7 +111,7 @@ jobs:
                   else if (!/styles\.css\?v=10/.test(html)) mismatch = 'Production HTML is not loading styles.css?v=10';
                   else if (!/trust\.css\?v=1/.test(html)) mismatch = 'Production HTML is not loading trust.css?v=1';
                   else if (!/config\.js\?v=9/.test(html)) mismatch = 'Production HTML is not loading config.js?v=9';
-                  else if (!/payment\.js\?v=2/.test(html)) mismatch = 'Production HTML is not loading payment.js?v=2';
+                  else if (!/payment-v3\.js\?v=1/.test(html)) mismatch = 'Production HTML is not loading payment-v3.js?v=1';
                   else if (!/\/what-do-i-say\/privacy\//.test(html)) mismatch = 'Production HTML is missing the Privacy link';
                   else if (!/\/what-do-i-say\/terms\//.test(html)) mismatch = 'Production HTML is missing the Terms link';
                   else if (!/\/what-do-i-say\/refunds\//.test(html)) mismatch = 'Production HTML is missing the Refunds link';
