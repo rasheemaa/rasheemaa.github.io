@@ -1,0 +1,46 @@
+name: Paid $1 trial live UI smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/paid-trial-ui-smoke.yml'
+      - '.github/scripts/paid-trial-ui-smoke.mjs'
+      - 'what-do-i-say/index.html'
+      - 'what-do-i-say/payment-v3.js'
+      - 'what-do-i-say/paid-trial-access.js'
+      - 'what-do-i-say/service-worker.js'
+      - 'what-do-i-say/terms.html'
+      - 'what-do-i-say/refunds.html'
+      - 'what-do-i-say/privacy.html'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wdis-paid-trial-live-ui
+  cancel-in-progress: true
+
+jobs:
+  paid-trial-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact revision
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+
+      - name: Install Chromium test runtime
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Verify live $1 paid trial customer flow
+        run: node .github/scripts/paid-trial-ui-smoke.mjs
