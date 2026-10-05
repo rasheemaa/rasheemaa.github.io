@@ -62,19 +62,19 @@
   document.head.appendChild(style);
 
   const headline = expired
-    ? 'Your free trial ended. <span>Founding access is still open.</span>'
+    ? 'Your free trial ended. <span>Lifetime Access is still open.</span>'
     : trialStarted
       ? `Your <span>What Do I Say?</span> trial is still running.`
       : 'Meet <span>What Do I Say?</span>';
 
   const lede = expired
-    ? 'Founding Members can still lock in core access for $19.99 once while the launch offer is available.'
+    ? 'Lifetime Access is still available for $19.99 once while the launch offer is available.'
     : trialStarted
       ? `You still have ${remainingText}. Come back whenever a text, reply, boundary, apology, work message, or awkward conversation has you staring at the keyboard.`
       : 'The new online message platform from The Sheema Edit helps you write it, reply to it, or fix what you already typed. Your 3-day free trial starts with your first generated message.';
 
   const cta = expired
-    ? 'See Founding Member access →'
+    ? 'See Lifetime Access →'
     : trialStarted
       ? 'Continue my free trial →'
       : 'Start my 3-day free trial →';
@@ -92,10 +92,10 @@
         <div class="wdis-launch-trial" aria-label="Launch offer">
           <span>3 days free</span>
           <span>No card required</span>
-          <span>$19.99 founding access</span>
+          <span>$19.99 lifetime access</span>
         </div>
         <a class="wdis-launch-cta" href="/what-do-i-say/">${cta}</a>
-        <p class="wdis-launch-note">Founding Member pricing is $19.99 once for the first 100 members. The regular plan is intended to be $9.99/month after the founding launch.</p>
+        <p class="wdis-launch-note">Lifetime Access is $19.99 once for the first 100 customers. The regular plan is intended to be $9.99/month after the launch.</p>
         <button class="wdis-launch-skip" type="button">Not right now</button>
       </div>
     </section>`;
