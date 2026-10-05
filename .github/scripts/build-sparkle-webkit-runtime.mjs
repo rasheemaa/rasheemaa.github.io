@@ -37,9 +37,17 @@ replaceOnce(
   'browser console error collector'
 );
 
-const cancellationPattern = /  await resetMode\('write'\);\n  await page\.locator\('#prompt'\)\.fill\('Tell Alex I cannot make tonight\.'\);\n  await page\.locator\('#generate'\)\.click\(\);\n  await page\.locator\('#sparkle-cancel'\)\.waitFor\(\{ state: 'visible', timeout: 10_000 \}\);\n  await page\.locator\('#sparkle-cancel'\)\.click\(\);\n  await page\.waitForFunction\(\(\) => !document\.querySelector\('#generate'\)\?\.disabled, null, \{ timeout: 20_000 \}\);\n  assert\(\(await page\.locator\('\.message-row\.user \.bubble'\)\.last\(\)\.textContent\(\)\)\?\.includes\('Alex'\), 'Canceled user message disappeared'\);\n  await page\.locator\('#new-message-top'\)\.click\(\);\n  console\.log\('PASS cancellation preserves the user message and does not start the trial'\);/;
+const cancellationPattern = `  await resetMode('write');
+  await page.locator('#prompt').fill('Tell Alex I cannot make tonight.');
+  await page.locator('#generate').click();
+  await page.locator('#sparkle-cancel').waitFor({ state: 'visible', timeout: 10_000 });
+  await page.locator('#sparkle-cancel').click();
+  await page.waitForFunction(() => !document.querySelector('#generate')?.disabled, null, { timeout: 20_000 });
+  assert((await page.locator('.message-row.user .bubble').last().textContent())?.includes('Alex'), 'Canceled user message disappeared');
+  await page.locator('#new-message-top').click();
+  console.log('PASS cancellation preserves the user message and does not start the trial');`;
 
-if (!cancellationPattern.test(code)) {
+if (!code.includes(cancellationPattern)) {
   throw new Error('Could not locate the cancellation smoke block to adapt for WebKit');
 }
 
