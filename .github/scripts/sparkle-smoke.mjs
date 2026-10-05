@@ -127,7 +127,8 @@ try {
   assert(layout.composerRight <= layout.width + 1, `Composer overflows: ${JSON.stringify(layout)}`);
   assert(await page.locator('#welcome-card').isVisible(), 'Welcome card is not visible');
   assert((await page.locator('.mode').count()) === 3, 'Expected three starter choices');
-  assert((await page.locator('[data-founder-checkout]').count()) === 2, 'Founder checkout controls are missing');
+  assert((await page.locator('[data-checkout-offer="trial"]').count()) >= 1, 'Trial checkout control is missing');
+  assert((await page.locator('[data-founder-checkout]').count()) >= 1, 'Lifetime Access checkout control is missing');
   console.log('PASS compact chat-first mobile layout');
 
   const health = await page.evaluate(async (api) => {
