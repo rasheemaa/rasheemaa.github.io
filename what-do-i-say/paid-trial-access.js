@@ -114,7 +114,7 @@
         set(K.legacyTrial, EXPIRED_SENTINEL());
         set(K.trialExpires, String(Number(data.expiresAt || 0)));
         paintTrialCopy();
-        if (!quiet) setPaymentStatus('Your three-day trial has ended. Choose Founding Member access to keep using Sparkle.');
+        if (!quiet) setPaymentStatus('Your three-day trial has ended. Choose Lifetime Access to keep using Sparkle.');
         return false;
       }
 
