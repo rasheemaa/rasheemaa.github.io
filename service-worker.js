@@ -1,4 +1,4 @@
-const CACHE_NAME = "sheema-edit-v27";
+const CACHE_NAME = "sheema-edit-v26";
 const CORE_SHELL = [
   "/",
   "/index.html",
@@ -9,6 +9,7 @@ const CORE_SHELL = [
   "/assets/css/styles.css",
   "/assets/css/app-polish.css",
   "/assets/js/main.js",
+  "/assets/js/wdis-launch-popup.js",
   "/assets/images/favicon.svg",
   "/assets/images/app-icon-192.png",
   "/assets/images/app-icon-512.png",
@@ -41,14 +42,6 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
   if (request.method !== "GET" || url.origin !== self.location.origin) return;
-
-  if (url.pathname === "/assets/js/wdis-launch-popup.js") {
-    event.respondWith(
-      fetch(new Request(request, { cache: "no-store" }))
-        .catch(() => caches.match(request, { ignoreSearch: true }))
-    );
-    return;
-  }
 
   // The private tool owns its cache. Do not serve older Sparkle scripts from
   // the site-wide cache on visits before its scoped worker takes control.
