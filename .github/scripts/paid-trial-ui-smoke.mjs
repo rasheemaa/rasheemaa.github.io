@@ -44,8 +44,8 @@ await waitForProductionAssets();
 
 const [launchPopup, refunds, terms, rootServiceWorker, paidTrialAccess, scopedServiceWorker] = await Promise.all([
   fetchLiveText('assets/js/wdis-launch-popup.js'),
-  fetchLiveText('what-do-i-say/refunds.html'),
-  fetchLiveText('what-do-i-say/terms.html'),
+  fetchLiveText('what-do-i-say/refunds/'),
+  fetchLiveText('what-do-i-say/terms/'),
   fetchLiveText('service-worker.js'),
   fetchLiveText('what-do-i-say/paid-trial-access.js?v=1'),
   fetchLiveText('what-do-i-say/service-worker.js')
