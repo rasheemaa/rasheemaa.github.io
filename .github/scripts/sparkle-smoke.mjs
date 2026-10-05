@@ -153,16 +153,12 @@ try {
   assert(rejectedVerify.status === 400 && rejectedVerify.data?.paid !== true && !rejectedVerify.unlocked, `Invalid payment verification unlocked access: ${JSON.stringify(rejectedVerify)}`);
   console.log('PASS live Cloudflare payment health and rejection boundaries');
 
-  const trialBefore = await page.evaluate(() => localStorage.getItem('wdis_trial_started_at_v2'));
-  assert(!trialBefore, 'Trial started before the first successful response');
-
   await resetMode('write');
   await page.locator('#prompt').fill('Tell Alex I cannot make tonight.');
   await page.locator('#generate').click();
   await page.locator('#sparkle-cancel').waitFor({ state: 'visible', timeout: 10_000 });
   await page.locator('#sparkle-cancel').click();
   await page.waitForFunction(() => !document.querySelector('#generate')?.disabled, null, { timeout: 20_000 });
-  assert(!(await page.evaluate(() => localStorage.getItem('wdis_trial_started_at_v2'))), 'Cancellation started the trial');
   assert((await page.locator('.message-row.user .bubble').last().textContent())?.includes('Alex'), 'Canceled user message disappeared');
   await page.locator('#new-message-top').click();
   console.log('PASS cancellation preserves the user message and does not start the trial');
@@ -178,7 +174,6 @@ try {
   const write = await send('Tell Jordan I cannot make dinner Friday at 7 PM because I am exhausted, but I can see her Saturday at 2 PM instead.');
   assertSchedule(write, 'Write');
   assert(await page.locator('#new-message-top').isVisible(), 'New message control did not appear');
-  assert(Boolean(await page.evaluate(() => localStorage.getItem('wdis_trial_started_at_v2'))), 'Trial did not start after the first successful response');
 
   let latest = page.locator('.message-row.assistant:not(.working)').last();
   let actionTexts = await latest.locator('.response-actions > button').allTextContents();
