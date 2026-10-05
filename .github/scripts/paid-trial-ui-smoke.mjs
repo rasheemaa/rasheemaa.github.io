@@ -9,6 +9,13 @@ function assert(condition, message) {
   console.log(`PASS ${message}`);
 }
 
+async function fetchLiveText(path) {
+  const separator = path.includes('?') ? '&' : '?';
+  const response = await fetch(`https://thesheemaedit.com/${path}${separator}lifetime_copy_verify=${Date.now()}`, { cache: 'no-store' });
+  assert(response.ok, `live ${path} is reachable`);
+  return response.text();
+}
+
 async function waitForProductionAssets() {
   // Jekyll removes front matter from index.html during the Pages build, so the
   // rendered HTML is verified behaviorally below instead of byte-for-byte.
@@ -34,6 +41,27 @@ async function waitForProductionAssets() {
 }
 
 await waitForProductionAssets();
+
+const [launchPopup, refunds, terms, rootServiceWorker, paidTrialAccess, scopedServiceWorker] = await Promise.all([
+  fetchLiveText('assets/js/wdis-launch-popup.js'),
+  fetchLiveText('what-do-i-say/refunds.html'),
+  fetchLiveText('what-do-i-say/terms.html'),
+  fetchLiveText('service-worker.js'),
+  fetchLiveText('what-do-i-say/paid-trial-access.js?v=1'),
+  fetchLiveText('what-do-i-say/service-worker.js')
+]);
+assert(launchPopup.includes('Lifetime Access'), 'launch popup uses Lifetime Access');
+assert(!launchPopup.includes('Founding Member'), 'launch popup has no stale Founding Member copy');
+assert(refunds.includes('Lifetime Access'), 'refund policy uses Lifetime Access');
+assert(!refunds.includes('Founding Member'), 'refund policy has no stale Founding Member copy');
+assert(terms.includes('Lifetime Access'), 'terms use Lifetime Access');
+assert(!terms.includes('Founding Member'), 'terms have no stale Founding Member copy');
+assert(rootServiceWorker.includes("sheema-edit-v27"), 'public site is serving cache v27');
+assert(paidTrialAccess.includes('Choose Lifetime Access to keep using Sparkle.'), 'post-trial state points customers to Lifetime Access');
+assert(!paidTrialAccess.includes('Founding Member'), 'post-trial access script has no stale Founding Member copy');
+assert(scopedServiceWorker.includes("wdis-v37"), 'What Do I Say scoped cache is refreshed to v37');
+assert(scopedServiceWorker.includes('/what-do-i-say/lifetime-copy.js?v=1'), 'Lifetime Access copy guard is a fresh scoped asset');
+
 const browser = await chromium.launch({ headless: true, args: ['--disable-dev-shm-usage'] });
 const context = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
 await context.addInitScript(() => {
@@ -77,6 +105,7 @@ try {
   const scripts = await page.evaluate(() => [...document.scripts].map((script) => script.getAttribute('src') || ''));
   assert(scripts.some((src) => src.includes('payment-v3.js?v=1')), 'production loads the $1 trial checkout controller');
   assert(scripts.some((src) => src.includes('paid-trial-access.js?v=1')), 'production loads the paid trial access gate');
+  assert(scripts.some((src) => src.includes('lifetime-copy.js?v=1')), 'production loads the Lifetime Access copy guard');
 
   await page.waitForFunction(() => document.querySelector('#trial-status')?.textContent?.includes('$1'));
   assert((await page.locator('#trial-status').textContent())?.includes('$1'), 'fresh customer sees the $1 three-day trial price');
@@ -88,11 +117,15 @@ try {
   assert((await page.locator('.message-row.assistant:not(.working)').count()) === 0, 'fresh customer cannot generate before purchasing access');
 
   const trialButton = page.locator('#paywall [data-checkout-offer="trial"]');
-  const founderButton = page.locator('#paywall [data-checkout-offer="founder"]');
+  const lifetimeButton = page.locator('#paywall [data-checkout-offer="founder"]');
   assert(await trialButton.isVisible(), 'paywall offers the $1 trial');
   assert((await trialButton.textContent())?.includes('$1'), '$1 trial button shows the price');
-  assert(await founderButton.isVisible(), 'paywall keeps the separate Founding Member option');
-  assert((await founderButton.textContent())?.includes('$19.99'), 'Founding Member button keeps the $19.99 one-time price');
+  assert(await lifetimeButton.isVisible(), 'paywall offers the separate Lifetime Access option');
+  assert((await lifetimeButton.textContent())?.includes('Lifetime Access'), 'Lifetime Access button uses the current offer name');
+  assert((await lifetimeButton.textContent())?.includes('$19.99'), 'Lifetime Access button keeps the $19.99 one-time price');
+  const paywallText = await page.locator('#paywall').innerText();
+  assert(paywallText.includes('Lifetime Access'), 'visible paywall copy names Lifetime Access');
+  assert(!paywallText.includes('Founding Member'), 'visible paywall copy has no stale Founding Member text');
 
   await trialButton.click();
   await page.waitForURL(/checkout\.stripe\.com/, { timeout: 10_000 });
