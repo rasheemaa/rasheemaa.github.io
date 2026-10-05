@@ -1,0 +1,251 @@
+name: Sparkle intent production regression
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sparkle-intent-production-regression.yml'
+      - 'what-do-i-say/index.html'
+      - 'what-do-i-say/chat-app.js'
+      - 'what-do-i-say/sparkle-quality-hotfix.js'
+      - 'what-do-i-say/sparkle-cloud-mobile.js'
+      - 'what-do-i-say/service-worker.js'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sparkle-intent-production-main
+  cancel-in-progress: true
+
+jobs:
+  webkit-intent-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact repository revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+
+      - name: Wait for corrected production assets
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFile } from 'node:fs/promises';
+          const base = 'https://thesheemaedit.com/what-do-i-say/';
+          const files = ['index.html', 'chat-app.js', 'sparkle-quality-hotfix.js', 'service-worker.js'];
+          const expected = new Map();
+          for (const file of files) expected.set(file, (await readFile(`what-do-i-say/${file}`, 'utf8')).trim());
+          const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+          let last = 'production has not updated yet';
+          for (let attempt = 1; attempt <= 48; attempt += 1) {
+            try {
+              let mismatch = '';
+              for (const file of files) {
+                const response = await fetch(`${base}${file}?intent_verify=${Date.now()}`, { cache: 'no-store' });
+                if (!response.ok) { mismatch = `${file} returned ${response.status}`; break; }
+                if ((await response.text()).trim() !== expected.get(file)) { mismatch = `${file} does not match this commit`; break; }
+              }
+              if (!mismatch) {
+                const page = await fetch(`${base}?intent_verify=${Date.now()}`, { cache: 'no-store' });
+                const html = await page.text();
+                if (!page.ok) mismatch = `page returned ${page.status}`;
+                else if (!/sparkle-quality-hotfix\.js\?v=4/.test(html)) mismatch = 'live page is not loading sparkle-quality-hotfix.js?v=4';
+                else if (!/chat-app\.js\?v=25/.test(html)) mismatch = 'live page is not loading chat-app.js?v=25';
+                else if (/vercel/i.test(html)) mismatch = 'live page contains a Vercel reference';
+              }
+              if (!mismatch) {
+                console.log('PASS corrected production assets are live');
+                process.exit(0);
+              }
+              last = mismatch;
+            } catch (error) {
+              last = String(error?.message || error);
+            }
+            console.log(`Production wait ${attempt}/48: ${last}`);
+            if (attempt < 48) await sleep(10_000);
+          }
+          throw new Error(`Corrected production revision never became live: ${last}`);
+          NODE
+
+      - name: Install Playwright WebKit
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.55.0
+          npx playwright install --with-deps webkit
+
+      - name: Verify human-message intent, refinements, and state in live iPad WebKit
+        run: |
+          node --input-type=module <<'NODE'
+          import { webkit } from 'playwright';
+
+          const site = `https://thesheemaedit.com/what-do-i-say/?intent_regression=${Date.now()}`;
+          const browser = await webkit.launch({ headless: true });
+          const context = await browser.newContext({
+            viewport: { width: 820, height: 1180 },
+            userAgent: 'Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
+            serviceWorkers: 'block'
+          });
+          await context.addInitScript(() => {
+            try {
+              localStorage.removeItem('wdis_trial_started_at_v2');
+              localStorage.removeItem('wdis_founder_session_v1');
+              localStorage.removeItem('wdis_pending_founder_session_v1');
+            } catch {}
+          });
+          const page = await context.newPage();
+          const errors = [];
+          page.on('pageerror', error => errors.push(`pageerror: ${error.message}`));
+          page.on('console', message => { if (message.type() === 'error') errors.push(`console: ${message.text()}`); });
+
+          const assert = (condition, message) => { if (!condition) throw new Error(message); };
+          const capabilityRefusal = text => /(?:as an ai|as a language model|I (?:do not|don't) have (?:the )?(?:ability|capability)|^(?:I(?:'m| am) sorry\s*,?\s*(?:but\s+)?)?I\s+(?:cannot|can['’]?t|cant|am unable to)\s+(?:do that|do this|help with|assist with|lend|loan|send (?:you )?money))/i.test(String(text || '').trim());
+          const sendable = (text, label) => {
+            const value = String(text || '').trim();
+            assert(value.length >= 3, `${label} was empty`);
+            assert(!capabilityRefusal(value), `${label} was an assistant capability refusal: ${value}`);
+            assert(!/^(?:here(?:'s| is)|message:|response:|rewritten message:|editing task:)/i.test(value), `${label} leaked meta wording: ${value}`);
+          };
+
+          async function waitForAnswer(before) {
+            await page.waitForFunction(count => {
+              const error = document.querySelector('#ai-error');
+              if (error && !error.hidden) return true;
+              return document.querySelectorAll('.message-row.assistant:not(.working)').length > count && !document.querySelector('#generate')?.disabled;
+            }, before, { timeout: 120_000 });
+            const errorVisible = await page.locator('#ai-error').evaluate(node => !node.hidden);
+            if (errorVisible) throw new Error((await page.locator('#ai-error-message').textContent()) || 'Sparkle UI error');
+            return (await page.locator('.message-row.assistant:not(.working) .bubble').last().textContent())?.trim() || '';
+          }
+
+          async function send(text) {
+            const before = await page.locator('.message-row.assistant:not(.working)').count();
+            await page.locator('#prompt').fill(text);
+            await page.locator('#generate').click();
+            const output = await waitForAnswer(before);
+            sendable(output, text);
+            return output;
+          }
+
+          async function reset(mode = 'write') {
+            if (await page.locator('#new-message-top').isVisible()) await page.locator('#new-message-top').click();
+            await page.locator(`[data-mode="${mode}"]`).click();
+          }
+
+          async function refineButton(label) {
+            const current = page.locator('.message-row.assistant:not(.working)').last();
+            const more = current.locator('.more-options');
+            if ((await more.getAttribute('aria-expanded')) !== 'true') await more.click();
+            const before = await page.locator('.message-row.assistant:not(.working)').count();
+            await current.locator('.refine-options button').filter({ hasText: label }).click();
+            const output = await waitForAnswer(before);
+            sendable(output, label);
+            return output;
+          }
+
+          await page.goto(site, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+          await page.waitForFunction(() => Boolean(window.Sparkle?.generate), null, { timeout: 30_000 });
+          const scripts = await page.evaluate(() => [...document.scripts].map(node => node.getAttribute('src') || ''));
+          assert(scripts.some(src => src.includes('sparkle-quality-hotfix.js?v=4')), 'iPad production page did not load intent hotfix v4');
+          assert(scripts.some(src => src.includes('chat-app.js?v=25')), 'iPad production page did not load chat controller v25');
+
+          const cases = [
+            ['Can you loan me a dollar', /(?:loan|lend|borrow|dollar)/i],
+            ['Can you pick me up later', /(?:pick|ride).*(?:later)|later.*(?:pick|ride)/i],
+            ["Can you send me twenty dollars and I’ll pay you Friday", /(?:twenty|\$20|20\s+dollars?).*Friday|Friday.*(?:twenty|\$20|20\s+dollars?)/i],
+            ["Tell my sister I’m running late", /running late/i],
+            ["Sorry, I don’t have it", /(?:sorry|don['’]?t have|do not have)/i],
+            ["I don’t want to go tonight but I don’t want to hurt her feelings", /tonight/i],
+            ['Can you watch my kid for an hour', /(?:watch|keep an eye on).*(?:kid|child).*(?:hour)|(?:hour).*(?:watch|kid|child)/i],
+            ['Can you call me when you get home', /call.*(?:get|home)|(?:get|home).*call/i]
+          ];
+
+          for (const [input, expected] of cases) {
+            await reset('write');
+            const output = await send(input);
+            assert(expected.test(output), `Output did not preserve the communication intent for ${JSON.stringify(input)}: ${output}`);
+            console.log(`PASS message intent: ${input} => ${JSON.stringify(output)}`);
+          }
+
+          await reset('write');
+          let current = await send("Can you send me twenty dollars and I’ll pay you Friday");
+          const keepMoneyAndFriday = (value, label) => {
+            assert(/Friday/i.test(value), `${label} lost Friday: ${value}`);
+            assert(/(?:twenty|\$20|20\s+dollars?)/i.test(value), `${label} lost the amount: ${value}`);
+            assert(!capabilityRefusal(value), `${label} became a capability refusal: ${value}`);
+          };
+          keepMoneyAndFriday(current, 'base draft');
+
+          for (const label of ['Make it shorter', 'Make it softer', 'Make it firmer', 'Make it professional', 'Try another version']) {
+            current = await refineButton(label);
+            keepMoneyAndFriday(current, label);
+            console.log(`PASS preset refinement: ${label} => ${JSON.stringify(current)}`);
+          }
+
+          for (const instruction of [
+            'Make that less awkward',
+            'Say it nicer',
+            'That’s too formal',
+            'Add that I’ll pay them Friday',
+            'Try again but more casual',
+            'Make it sound less desperate',
+            'I like that one but make it shorter',
+            'Make it sound more like me'
+          ]) {
+            current = await send(instruction);
+            keepMoneyAndFriday(current, instruction);
+            console.log(`PASS conversational refinement: ${instruction} => ${JSON.stringify(current)}`);
+          }
+
+          await reset('reply');
+          const reply = await send('They said: “Can you pick me up tonight?” I want to say I cannot tonight, but I can tomorrow.');
+          assert(/tonight/i.test(reply) && /tomorrow/i.test(reply), `Reply lost timing or perspective: ${reply}`);
+          console.log(`PASS Reply mode: ${JSON.stringify(reply)}`);
+
+          await reset('fix');
+          const fixed = await send('can you call me when u get home');
+          assert(/call/i.test(fixed) && /home/i.test(fixed), `Rewrite mode changed the intent: ${fixed}`);
+          console.log(`PASS Rewrite mode: ${JSON.stringify(fixed)}`);
+
+          await reset('write');
+          await page.evaluate(() => {
+            let calls = 0;
+            window.__intentStatePayloads = [];
+            window.Sparkle = {
+              generate: async payload => {
+                calls += 1;
+                window.__intentStatePayloads.push(JSON.parse(JSON.stringify(payload)));
+                if (calls === 1) return 'Can you pick me up later?';
+                if (calls === 2) return "I'm sorry, but I can't do that.";
+                return 'Could you pick me up later?';
+              },
+              cancel: () => {}
+            };
+          });
+          await send('Can you pick me up later');
+          const beforeBad = await page.locator('.message-row.assistant:not(.working)').count();
+          await page.locator('#prompt').fill('Make it softer');
+          await page.locator('#generate').click();
+          const bad = await waitForAnswer(beforeBad);
+          assert(capabilityRefusal(bad), 'Injected non-draft refusal did not appear for the state test');
+          const badRow = page.locator('.message-row.assistant:not(.working)').last();
+          assert((await badRow.locator('.response-actions').count()) === 0, 'Non-draft refusal incorrectly received refinement controls');
+
+          const beforeRecovery = await page.locator('.message-row.assistant:not(.working)').count();
+          await page.locator('#prompt').fill('Make it shorter');
+          await page.locator('#generate').click();
+          await waitForAnswer(beforeRecovery);
+          const statePayloads = await page.evaluate(() => window.__intentStatePayloads);
+          assert(statePayloads.length === 3, `Unexpected state test call count: ${statePayloads.length}`);
+          assert(statePayloads[2].currentMessage === 'Can you pick me up later?', `Bad refusal poisoned currentMessage: ${JSON.stringify(statePayloads[2])}`);
+          console.log('PASS failed output does not poison the latest valid draft');
+
+          assert(errors.length === 0, `Browser errors: ${errors.join(' | ')}`);
+          console.log('PASS live iPad WebKit Sparkle intent regression');
+          await browser.close();
+          NODE
