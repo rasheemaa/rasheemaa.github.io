@@ -106,8 +106,8 @@ jobs:
                   if (!/bootstrap\.js\?v=2/.test(html)) mismatch = 'Production HTML is not loading bootstrap.js?v=2';
                   else if (!/sparkle\.js\?v=22/.test(html)) mismatch = 'Production HTML is not loading sparkle.js?v=22';
                   else if (!/sparkle-cloud-mobile\.js\?v=2/.test(html)) mismatch = 'Production HTML is not loading sparkle-cloud-mobile.js?v=2';
-                  else if (!/sparkle-quality-hotfix\.js\?v=3/.test(html)) mismatch = 'Production HTML is not loading sparkle-quality-hotfix.js?v=3';
-                  else if (!/chat-app\.js\?v=24/.test(html)) mismatch = 'Production HTML is not loading chat-app.js?v=24';
+                  else if (!/sparkle-quality-hotfix\.js\?v=4/.test(html)) mismatch = 'Production HTML is not loading sparkle-quality-hotfix.js?v=4';
+                  else if (!/chat-app\.js\?v=25/.test(html)) mismatch = 'Production HTML is not loading chat-app.js?v=25';
                   else if (!/styles\.css\?v=10/.test(html)) mismatch = 'Production HTML is not loading styles.css?v=10';
                   else if (!/trust\.css\?v=1/.test(html)) mismatch = 'Production HTML is not loading trust.css?v=1';
                   else if (!/config\.js\?v=9/.test(html)) mismatch = 'Production HTML is not loading config.js?v=9';
