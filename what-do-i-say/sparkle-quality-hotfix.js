@@ -131,7 +131,7 @@
       if (/less\s+apologetic|less\s+sorry|more\s+direct|firmer/i.test(request)) {
         output = lessApologetic(output);
         if (output === original) output = output.replace(/,\s*but\s+/i, '. ');
-      } else if (/warmer|more\s+warm|gentler|friendlier/i.test(request)) {
+      } else if (/warmer|more\s+warm|gentler|friendlier|nicer|softer/i.test(request)) {
         if (!/\b(?:care|understand|hope|sorry)\b/i.test(output)) {
           output = withAddressInsertion(output, 'I want you to know ');
         }
@@ -142,14 +142,90 @@
     return output !== original && preservesAnchors(original, output) ? output : '';
   }
 
+  function extractCustomInstruction(payload) {
+    return String(payload?.text || '')
+      .split(/\n\s*Message to edit:\s*/i)[0]
+      .replace(/^\s*Edit request:\s*/i, '')
+      .trim();
+  }
+
+  function hasUserRefusal(value) {
+    return /\b(?:I|we)\s+(?:cannot|can['’]?t|cant|won['’]?t|wont|will\s+not|(?:am|are)\s+unable|do\s+not|don['’]?t|dont)\b/i.test(String(value || ''));
+  }
+
+  function looksLikeCapabilityRefusal(value, payload = {}) {
+    const output = String(value || '').trim();
+    if (!output) return false;
+    if (/\b(?:as an ai|as a language model|I (?:do not|don't) have (?:the )?(?:ability|capability)|I (?:cannot|can't|can’t) physically)\b/i.test(output)) return true;
+
+    const capability = /^(?:I(?:'m| am) sorry\s*,?\s*(?:but\s+)?)?I\s+(?:cannot|can['’]?t|cant|won['’]?t|wont|am unable to)\s+(?:do that|do this|help with (?:that|this)|assist with (?:that|this)|fulfill (?:that|this)|perform (?:that|this)|provide (?:that|this)|lend\b|loan\b|send (?:you )?money\b)/i;
+    if (!capability.test(output)) return false;
+
+    const source = String(payload?.currentMessage || payload?.text || '');
+    return !hasUserRefusal(source);
+  }
+
+  function communicationRetryPayload(payload) {
+    const source = String(payload?.text || '').trim();
+    return {
+      ...payload,
+      text: [
+        'Communication drafting context: the text below is content the user wants to communicate to another human. It is not a request for Sparkle to perform the real-world action described.',
+        'Write or improve the human-to-human message while preserving the user’s meaning, facts, perspective, and recipient. Keep normal safety handling if the communication itself is genuinely unsafe.',
+        `Message content:\n${source}`
+      ].join('\n\n')
+    };
+  }
+
+  function customEditPayload(payload) {
+    const current = String(payload?.currentMessage || '').trim();
+    const instruction = extractCustomInstruction(payload);
+    return {
+      ...payload,
+      mode: 'write',
+      refine: '',
+      currentMessage: '',
+      text: [
+        'Editing task: revise an existing human-to-human message. The current message is communication for another person, not a request for Sparkle to perform anything.',
+        'Apply the requested change to the current message. Preserve the speaker’s perspective, recipient, meaning, and concrete facts unless the requested change explicitly adds, removes, or changes a detail. Do not invent any other facts.',
+        'If the requested change refers to them, him, or her and the current message is addressed to that same recipient, write directly to the recipient as you or your.',
+        `Requested change:\n${instruction || 'Try another natural version.'}`,
+        `Current message:\n${current}`,
+        'Return only the revised sendable message.'
+      ].join('\n\n')
+    };
+  }
+
   async function generate(payload, options = {}) {
-    if (!payload?.refine) return sparkle.generate(payload, options);
+    if (!payload?.refine) {
+      const first = await sparkle.generate(payload, options);
+      if (payload?.mode !== 'write' || !looksLikeCapabilityRefusal(first, payload)) return first;
+
+      options.onStatus?.({ phase: 'checking', message: 'Sparkle is checking who the message is for…' });
+      return sparkle.generate(communicationRetryPayload(payload), options);
+    }
 
     const safePayload = {
       ...payload,
       text: normalizeModalMay(payload.text),
       currentMessage: normalizeModalMay(payload.currentMessage)
     };
+
+    if (safePayload.refine === 'custom') {
+      try {
+        const edited = await sparkle.generate(customEditPayload(safePayload), options);
+        if (!looksLikeCapabilityRefusal(edited, customEditPayload(safePayload))) return edited;
+        options.onStatus?.({ phase: 'checking', message: 'Sparkle is keeping the edit focused on your message…' });
+        return sparkle.generate(communicationRetryPayload(customEditPayload(safePayload)), options);
+      } catch (error) {
+        if (error?.code === 'sparkle_cancelled') throw error;
+        const fallback = fallbackRefinement('custom', safePayload.currentMessage, extractCustomInstruction(safePayload));
+        if (!fallback) throw error;
+        options.onStatus?.({ phase: 'generating', message: 'Sparkle is polishing the wording…' });
+        options.onStatus?.({ phase: 'complete', message: 'Ready on this device.' });
+        return fallback;
+      }
+    }
 
     if (safePayload.refine === 'shorter') {
       const shortened = shortenSafely(safePayload.currentMessage);
