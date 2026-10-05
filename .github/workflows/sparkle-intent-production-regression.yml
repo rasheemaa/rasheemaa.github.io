@@ -103,6 +103,7 @@ jobs:
           page.on('pageerror', error => errors.push(`pageerror: ${error.message}`));
           page.on('console', message => { if (message.type() === 'error') errors.push(`console: ${message.text()}`); });
 
+          const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
           const assert = (condition, message) => { if (!condition) throw new Error(message); };
           const capabilityRefusal = text => /(?:as an ai|as a language model|I (?:do not|don't) have (?:the )?(?:ability|capability)|^(?:I(?:'m| am) sorry\s*,?\s*(?:but\s+)?)?I\s+(?:cannot|can['’]?t|cant|am unable to)\s+(?:do that|do this|help with|assist with|lend|loan|send (?:you )?money))/i.test(String(text || '').trim());
           const sendable = (text, label) => {
@@ -170,6 +171,7 @@ jobs:
             const output = await send(input);
             assert(expected.test(output), `Output did not preserve the communication intent for ${JSON.stringify(input)}: ${output}`);
             console.log(`PASS message intent: ${input} => ${JSON.stringify(output)}`);
+            await sleep(250);
           }
 
           await reset('write');
@@ -185,6 +187,7 @@ jobs:
             current = await refineButton(label);
             keepMoneyAndFriday(current, label);
             console.log(`PASS preset refinement: ${label} => ${JSON.stringify(current)}`);
+            await sleep(250);
           }
 
           for (const instruction of [
@@ -200,6 +203,7 @@ jobs:
             current = await send(instruction);
             keepMoneyAndFriday(current, instruction);
             console.log(`PASS conversational refinement: ${instruction} => ${JSON.stringify(current)}`);
+            await sleep(250);
           }
 
           await reset('reply');
@@ -228,6 +232,8 @@ jobs:
             };
           });
           await send('Can you pick me up later');
+          const firstValidRow = page.locator('.message-row.assistant:not(.working)').last();
+
           const beforeBad = await page.locator('.message-row.assistant:not(.working)').count();
           await page.locator('#prompt').fill('Make it softer');
           await page.locator('#generate').click();
@@ -240,10 +246,20 @@ jobs:
           await page.locator('#prompt').fill('Make it shorter');
           await page.locator('#generate').click();
           await waitForAnswer(beforeRecovery);
-          const statePayloads = await page.evaluate(() => window.__intentStatePayloads);
+          let statePayloads = await page.evaluate(() => window.__intentStatePayloads);
           assert(statePayloads.length === 3, `Unexpected state test call count: ${statePayloads.length}`);
           assert(statePayloads[2].currentMessage === 'Can you pick me up later?', `Bad refusal poisoned currentMessage: ${JSON.stringify(statePayloads[2])}`);
           console.log('PASS failed output does not poison the latest valid draft');
+
+          const firstMore = firstValidRow.locator('.more-options');
+          if ((await firstMore.getAttribute('aria-expanded')) !== 'true') await firstMore.click();
+          const beforeStaleAction = await page.locator('.message-row.assistant:not(.working)').count();
+          await firstValidRow.locator('.refine-options button').filter({ hasText: 'Make it professional' }).click();
+          await waitForAnswer(beforeStaleAction);
+          statePayloads = await page.evaluate(() => window.__intentStatePayloads);
+          assert(statePayloads.length === 4, `Unexpected stale-action call count: ${statePayloads.length}`);
+          assert(statePayloads[3].currentMessage === 'Could you pick me up later?', `Older refinement controls replaced the latest draft: ${JSON.stringify(statePayloads[3])}`);
+          console.log('PASS older refinement controls operate on the latest valid draft');
 
           assert(errors.length === 0, `Browser errors: ${errors.join(' | ')}`);
           console.log('PASS live iPad WebKit Sparkle intent regression');
