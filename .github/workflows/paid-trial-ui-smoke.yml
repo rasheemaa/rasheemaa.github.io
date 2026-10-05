@@ -6,6 +6,10 @@ on:
     paths:
       - '.github/workflows/paid-trial-ui-smoke.yml'
       - '.github/scripts/paid-trial-ui-smoke.mjs'
+      - 'index.html'
+      - 'service-worker.js'
+      - 'assets/js/main.js'
+      - 'assets/js/wdis-launch-popup.js'
       - 'what-do-i-say/index.html'
       - 'what-do-i-say/payment-v3.js'
       - 'what-do-i-say/paid-trial-access.js'
