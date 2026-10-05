@@ -26,6 +26,12 @@ replaceOnce(
 );
 
 replaceOnce(
+  "chat-app.js?v=24",
+  "chat-app.js?v=25",
+  'chat app production asset version'
+);
+
+replaceOnce(
   "page.on('console', message => { if (message.type() === 'error') browserErrors.push(`console: ${message.text()}`); });",
   "page.on('console', message => { if (message.type() === 'error' && !/Failed to load resource:.*status of 400/i.test(message.text())) browserErrors.push(`console: ${message.text()}`); });",
   'browser console error collector'
