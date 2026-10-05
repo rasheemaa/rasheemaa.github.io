@@ -10,8 +10,9 @@ function assert(condition, message) {
 }
 
 async function waitForProductionAssets() {
+  // Jekyll removes front matter from index.html during the Pages build, so the
+  // rendered HTML is verified behaviorally below instead of byte-for-byte.
   const paths = [
-    'what-do-i-say/index.html',
     'what-do-i-say/payment-v3.js',
     'what-do-i-say/paid-trial-access.js',
     'what-do-i-say/service-worker.js'
@@ -29,7 +30,7 @@ async function waitForProductionAssets() {
     if (matches.every(Boolean)) return;
     await new Promise((resolve) => setTimeout(resolve, 10_000));
   }
-  throw new Error('Production did not deploy the paid trial revision under test');
+  throw new Error('Production did not deploy the paid trial assets under test');
 }
 
 await waitForProductionAssets();
