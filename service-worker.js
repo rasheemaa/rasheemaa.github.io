@@ -1,4 +1,4 @@
-const CACHE_NAME = "sheema-edit-v27";
+const CACHE_NAME = "sheema-edit-v28";
 const CORE_SHELL = [
   "/",
   "/index.html",
@@ -8,8 +8,8 @@ const CORE_SHELL = [
   "/site.webmanifest",
   "/assets/css/styles.css",
   "/assets/css/app-polish.css",
-  "/assets/js/main.js",
-  "/assets/js/wdis-launch-popup.js",
+  "/assets/js/main.js?v=2",
+  "/assets/js/wdis-launch-popup.js?v=2",
   "/assets/images/favicon.svg",
   "/assets/images/app-icon-192.png",
   "/assets/images/app-icon-512.png",
