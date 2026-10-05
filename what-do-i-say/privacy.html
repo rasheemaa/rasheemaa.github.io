@@ -14,16 +14,16 @@ permalink: /what-do-i-say/privacy/
 :root{--ink:#251b2d;--muted:#76677f;--paper:#fffaf7;--line:rgba(37,27,45,.12);--pink:#ff5aa9}*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#fffaf7,#f6f1ff);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.65}.wrap{width:min(100% - 32px,760px);margin:0 auto;padding:32px 0 64px}a{color:#b51e69}.back{display:inline-block;margin-bottom:28px;font-weight:800;text-decoration:none}article{padding:clamp(22px,5vw,42px);border:1px solid var(--line);border-radius:26px;background:#fff;box-shadow:0 18px 55px rgba(55,35,65,.1)}h1,h2{font-family:Georgia,"Times New Roman",serif;line-height:1.15}h1{margin:.2em 0;font-size:clamp(2rem,7vw,3.2rem)}h2{margin-top:1.6em}.muted{color:var(--muted);font-size:.92rem}li{margin:.5em 0}</style>
 </head>
 <body><main class="wrap"><a class="back" href="/what-do-i-say/">← Back to What Do I Say?</a><article>
-<p class="muted">Last updated October 4, 2026</p>
+<p class="muted">Last updated October 5, 2026</p>
 <h1>Privacy</h1>
 <p>What Do I Say? is designed to keep message content limited to the services needed to generate your draft. Processing differs by device so Sparkle can stay reliable.</p>
 <h2>How message generation works</h2>
 <ul><li><strong>On iPhone and iPad:</strong> the message text you submit is sent securely to the What Do I Say? Cloudflare Worker and processed with Cloudflare Workers AI so Sparkle can generate a response without loading a large AI model inside Safari.</li><li><strong>On supported desktop browsers:</strong> Sparkle may continue to process message generation on-device in the browser.</li><li>Generated drafts are returned to your browser and may be stored locally as part of the product experience.</li></ul>
 <p>The What Do I Say? application does not intentionally write your message text or generated draft into its server logs. Operational logging is designed to use content-free error and request information.</p>
 <h2>Browser storage</h2>
-<ul><li>Your browser stores limited information needed for the three-day trial, purchase verification, return access, and product state.</li><li>The app may cache interface files needed for normal operation.</li><li>Clearing site data can remove trial or purchase-recovery information stored on that device.</li></ul>
+<ul><li>Your browser stores limited information needed to remember trial eligibility, the verified $1 trial session, trial expiration, purchase verification, return access, and product state.</li><li>The app may cache interface files needed for normal operation.</li><li>Clearing site data can remove trial or purchase-recovery information stored on that device.</li></ul>
 <h2>Payments</h2>
-<p>Checkout is handled by Stripe. The Cloudflare Worker receives the information needed to create a Stripe Checkout session and verify whether the correct purchase was completed. Card details are entered with Stripe, not into What Do I Say?.</p>
+<p>Checkout is handled by Stripe. The Cloudflare Worker receives the information needed to create a Stripe Checkout session and verify whether the correct $1 trial or Founding Member purchase was completed. Card details are entered with Stripe, not into What Do I Say?. The $1 trial is a one-time payment and does not automatically renew.</p>
 <h2>Service providers and technical data</h2>
 <p>When Sparkle uses Cloudflare Workers AI, Cloudflare processes the generation request as the infrastructure and AI provider. Requests to the site and its providers can also include normal technical information such as an IP address, browser information, and request timestamps.</p>
 <h2>Security</h2>
