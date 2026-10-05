@@ -5,7 +5,7 @@ async function waitForProductionAssets() {
   const paths = [
     'what-do-i-say/chat-app.js',
     'what-do-i-say/config.js',
-    'what-do-i-say/payment.js',
+    'what-do-i-say/payment-v3.js',
     'what-do-i-say/sparkle.js',
     'what-do-i-say/sparkle-cloud-mobile.js',
     'what-do-i-say/sparkle-worker.js',
@@ -115,7 +115,7 @@ try {
   assert(assets.some(src => src.includes('sparkle-cloud-mobile.js?v=2')), 'Production is not loading sparkle-cloud-mobile.js?v=2');
   assert(assets.some(src => src.includes('chat-app.js?v=24')), 'Production is not loading chat-app.js?v=24');
   assert(assets.some(src => src.includes('config.js?v=9')), 'Production is not loading config.js?v=9');
-  assert(assets.some(src => src.includes('payment.js?v=2')), 'Production is not loading payment.js?v=2');
+  assert(assets.some(src => src.includes('payment-v3.js?v=1')), 'Production is not loading payment-v3.js?v=1');
 
   const layout = await page.evaluate(() => ({
     width: innerWidth,
