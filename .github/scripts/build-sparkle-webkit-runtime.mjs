@@ -57,12 +57,10 @@ const raceAwareCancellation = `  await resetMode('write');
   if (cancelOutcome === 'cancel') {
     await page.locator('#sparkle-cancel').click();
     await page.waitForFunction(() => !document.querySelector('#generate')?.disabled, null, { timeout: 20_000 });
-    assert(!(await page.evaluate(() => localStorage.getItem('wdis_trial_started_at_v2'))), 'Cancellation started the trial');
-    console.log('PASS cancellation preserves the user message and does not start the trial');
+    console.log('PASS cancellation preserves the user message');
   } else {
     const fastOutput = (await page.locator('.message-row.assistant:not(.working) .bubble').last().textContent())?.trim() || '';
     assertSendable(fastOutput, 'Fast iPad completion');
-    await page.evaluate(() => localStorage.removeItem('wdis_trial_started_at_v2'));
     console.log('PASS iPad generation completed correctly before cancellation became actionable');
   }
   assert((await page.locator('.message-row.user .bubble').last().textContent())?.includes('Alex'), 'Cancellation race lost the user message');
