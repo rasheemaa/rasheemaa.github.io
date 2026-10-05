@@ -35,6 +35,22 @@
     return recipient.slice(0, 60);
   }
 
+  function hasUserRefusal(value) {
+    return /\b(?:I|we)\s+(?:cannot|can['’]?t|cant|won['’]?t|wont|will\s+not|(?:am|are)\s+unable|do\s+not|don['’]?t|dont)\b/i.test(String(value || ''));
+  }
+
+  function isNonDraftResponse(value, payload = {}) {
+    const output = String(value || '').trim();
+    if (!output) return true;
+    if (/\b(?:as an ai|as a language model|I (?:do not|don't) have (?:the )?(?:ability|capability)|I (?:cannot|can't|can’t) physically)\b/i.test(output)) return true;
+
+    const capability = /^(?:I(?:'m| am) sorry\s*,?\s*(?:but\s+)?)?I\s+(?:cannot|can['’]?t|cant|won['’]?t|wont|am unable to)\s+(?:do that|do this|help with (?:that|this)|assist with (?:that|this)|fulfill (?:that|this)|perform (?:that|this)|provide (?:that|this)|lend\b|loan\b|send (?:you )?money\b)/i;
+    if (!capability.test(output)) return false;
+
+    const source = String(payload?.currentMessage || payload?.text || '');
+    return !hasUserRefusal(source);
+  }
+
   function updateTrial() {
     if (S.founder) { el.trial.textContent = 'Founding Member'; el.trialDetail.textContent = ' · access unlocked'; return; }
     if (!start()) { el.trial.textContent = '3-day free trial'; el.trialDetail.textContent = ' · starts with your first message'; return; }
@@ -96,19 +112,19 @@
     catch { button.textContent = 'Just right ✓'; }
   }
 
-  function assistant(text) {
+  function assistant(text, refinable = true) {
     const m = message('assistant', text);
+    if (!refinable) return;
     const actions = document.createElement('div'); actions.className = 'response-actions';
     const right = document.createElement('button'); right.type = 'button'; right.className = 'just-right'; right.textContent = 'Just right ✓';
     const more = document.createElement('button'); more.type = 'button'; more.className = 'more-options'; more.textContent = 'More options'; more.setAttribute('aria-expanded','false');
     const options = document.createElement('div'); options.className = 'refine-options'; options.hidden = true;
     right.onclick = async () => {
-      S.last = text;
       if (!actions.querySelector('.start-new')) { const n = document.createElement('button'); n.type='button'; n.className='start-new'; n.textContent='Start a new message'; n.onclick=reset; actions.append(n); }
       await copy(text,right);
     };
     more.onclick = () => { const open = more.getAttribute('aria-expanded') === 'true'; more.setAttribute('aria-expanded',String(!open)); more.textContent = open ? 'More options' : 'Fewer options'; options.hidden = open; };
-    Object.entries(labels).forEach(([key,label]) => { const b=document.createElement('button'); b.type='button'; b.textContent=label; b.onclick=()=>{ if(!S.pending){ S.last=text; refine(key,label); } }; options.append(b); });
+    Object.entries(labels).forEach(([key,label]) => { const b=document.createElement('button'); b.type='button'; b.textContent=label; b.onclick=()=>{ if(!S.pending) refine(key,label); }; options.append(b); });
     actions.append(right,more,options); m.stack.append(actions); scrollDown();
   }
 
@@ -120,7 +136,7 @@
   }
   function refinePayload(kind, instruction='') {
     const base = S.base || initialPayload(S.last);
-    if (kind === 'custom') return { ...base, text:`Edit request: ${instruction}\n\nMessage to edit:\n${S.last}`, refine:'custom', currentMessage:S.last };
+    if (kind === 'custom') return { ...base, text:instruction, refine:'custom', currentMessage:S.last };
     return { ...base, refine:kind, currentMessage:S.last };
   }
 
@@ -130,8 +146,15 @@
     try {
       const out = await window.Sparkle.generate(payload,{onStatus:status});
       if (!out) throw new Error('Sparkle came back empty. Please try again.');
-      S.last = out; if (!kind) S.base = {...payload, refine:'', currentMessage:''}; assistant(out);
-      if (!S.founder && !start()) set(K.trial,String(Date.now())); updateTrial(); el.prompt.placeholder='Tell Sparkle what to change…';
+      const validDraft = !isNonDraftResponse(out, payload);
+      if (validDraft) {
+        S.last = out;
+        if (!kind) S.base = {...payload, refine:'', currentMessage:''};
+      }
+      assistant(out, validDraft);
+      if (validDraft && !S.founder && !start()) set(K.trial,String(Date.now()));
+      updateTrial();
+      if (validDraft) el.prompt.placeholder='Tell Sparkle what to change…';
     } catch (e) {
       if (e?.code === 'sparkle_cancelled') status({phase:'idle',message:'Stopped. Your message is still here.'});
       else { status({phase:'error',message:'Sparkle could not run on this device right now.'}); showError(e?.message || 'Sparkle could not answer right now. Please try again.'); }
