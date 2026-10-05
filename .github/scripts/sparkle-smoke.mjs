@@ -166,6 +166,14 @@ try {
   await page.locator('#new-message-top').click();
   console.log('PASS cancellation preserves the user message and does not start the trial');
 
+  await resetMode('write');
+  const directRequest = await send('Can you loan me a dollar?');
+  assertSendable(directRequest, 'Human-directed request');
+  assert(/loan|lend|borrow|dollar|\$1|one dollar/i.test(directRequest), 'Human-directed request lost the money request');
+  assert(!/(?:I(?:'m| am) sorry[^.!?]{0,80})?(?:I (?:can(?:not|'t)|am unable to)|as an AI|I do not have money|I don't have money|I cannot loan|I can't loan|I cannot lend|I can't lend)/i.test(directRequest), 'Sparkle treated a message for another person as a request directed at the AI');
+  console.log('PASS communication intent: direct human request is returned as a sendable message, not answered by Sparkle');
+
+  await page.locator('#new-message-top').click();
   const write = await send('Tell Jordan I cannot make dinner Friday at 7 PM because I am exhausted, but I can see her Saturday at 2 PM instead.');
   assertSchedule(write, 'Write');
   assert(await page.locator('#new-message-top').isVisible(), 'New message control did not appear');
