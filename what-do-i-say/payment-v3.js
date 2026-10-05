@@ -88,7 +88,7 @@
     }
 
     setBusy(true);
-    setStatus(offer === 'trial' ? 'Opening the secure $1 trial checkout…' : 'Opening secure Founding Member checkout…');
+    setStatus(offer === 'trial' ? 'Opening the secure $1 trial checkout…' : 'Opening secure Lifetime Access checkout…');
 
     try {
       if (offer === 'trial') localStorage.setItem(PENDING_TRIAL_KEY, '1');
