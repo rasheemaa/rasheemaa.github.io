@@ -13,5 +13,6 @@ if (!code.includes(original)) {
 }
 
 code = code.replace(original, replacement);
+code = code.replaceAll('chat-app.js?v=24', 'chat-app.js?v=25');
 await writeFile(runtimePath, code);
 await import(`${pathToFileURL(runtimePath).href}?run=${Date.now()}`);
