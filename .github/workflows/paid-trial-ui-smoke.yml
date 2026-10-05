@@ -44,3 +44,5 @@ jobs:
 
       - name: Verify live $1 paid trial customer flow
         run: node .github/scripts/paid-trial-ui-smoke.mjs
+
+# Triggered after workflow registration so the live verification run attaches to a real push.
