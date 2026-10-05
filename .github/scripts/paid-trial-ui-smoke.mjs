@@ -98,7 +98,12 @@ try {
   await page.waitForURL(/checkout\.stripe\.com/, { timeout: 10_000 });
   assert(checkoutBody?.offer === 'trial', '$1 trial button sends the trial offer to checkout');
   assert(/^[a-f0-9]{64}$/.test(String(checkoutBody?.claimToken || '')), 'trial checkout remains browser-claim bound');
-  const pendingTrial = await page.evaluate(() => localStorage.getItem('wdis_pending_trial_checkout_v1'));
+
+  // The page is now on checkout.stripe.com. Inspect the browser context's
+  // persisted storage for The Sheema Edit origin rather than Stripe localStorage.
+  const storage = await context.storageState();
+  const siteOrigin = storage.origins.find((entry) => entry.origin === 'https://thesheemaedit.com');
+  const pendingTrial = siteOrigin?.localStorage?.find((entry) => entry.name === 'wdis_pending_trial_checkout_v1')?.value || '';
   assert(pendingTrial === '1', 'browser remembers that the pending checkout is the trial');
 
   console.log('PAID_TRIAL_UI_PASS');
