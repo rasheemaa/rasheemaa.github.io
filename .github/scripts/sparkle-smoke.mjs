@@ -283,7 +283,7 @@ try {
   await paymentContext.route('https://checkout.stripe.com/**', route => route.fulfill({ status: 200, contentType: 'text/html', body: '<title>Stripe fixture</title>' }));
   const paymentPage = await paymentContext.newPage();
   await paymentPage.goto(`${BASE}?payment_ui=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 60_000 });
-  await paymentPage.locator('[data-founder-checkout]').first().click();
+  await paymentPage.locator('[data-founder-checkout]:visible').first().click();
   await paymentPage.waitForURL(/checkout\.stripe\.com/, { timeout: 10_000 });
   assert(checkoutRequested, 'Founder button did not call the Cloudflare checkout route');
   console.log('PASS founder button sends browser claim and accepts only Stripe checkout navigation');
