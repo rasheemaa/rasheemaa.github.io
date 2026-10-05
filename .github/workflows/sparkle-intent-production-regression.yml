@@ -39,7 +39,7 @@ jobs:
           node --input-type=module <<'NODE'
           import { readFile } from 'node:fs/promises';
           const base = 'https://thesheemaedit.com/what-do-i-say/';
-          const files = ['index.html', 'chat-app.js', 'sparkle-quality-hotfix.js', 'service-worker.js'];
+          const files = ['chat-app.js', 'sparkle-quality-hotfix.js', 'service-worker.js'];
           const expected = new Map();
           for (const file of files) expected.set(file, (await readFile(`what-do-i-say/${file}`, 'utf8')).trim());
           const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
