@@ -19,6 +19,7 @@ async function waitForCurrentProduction(page) {
       const csp = document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.content || '';
       const config = Array.from(document.scripts).some((script) => String(script.src || '').includes('/what-do-i-say/config.js?v=9'));
       const payment = Array.from(document.scripts).some((script) => String(script.src || '').includes('/what-do-i-say/payment-v3.js?v=2'));
+      const paidTrial = Array.from(document.scripts).some((script) => String(script.src || '').includes('/what-do-i-say/paid-trial-access.js?v=3'));
       const copy = document.body.innerText || '';
       const legacyPaymentLinks = Array.from(document.querySelectorAll('a[href]')).filter((link) => String(link.href || '').includes('buy.stripe.com')).length;
       const checkoutButtons = document.querySelectorAll('[data-founder-checkout]').length;
@@ -26,6 +27,7 @@ async function waitForCurrentProduction(page) {
         csp,
         config,
         payment,
+        paidTrial,
         legacyPaymentLinks,
         checkoutButtons,
         currentCopy: copy.includes('Lifetime Access') && copy.includes('3 days for $1') && !copy.includes('Founding Member')
@@ -34,6 +36,7 @@ async function waitForCurrentProduction(page) {
     if (
       current.config &&
       current.payment &&
+      current.paidTrial &&
       current.currentCopy &&
       current.legacyPaymentLinks === 0 &&
       current.checkoutButtons >= 1 &&
