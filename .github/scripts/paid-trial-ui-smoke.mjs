@@ -315,6 +315,25 @@ try {
       waitUntil: 'domcontentloaded',
       timeout: 60_000
     });
+    const lifetimePageErrors = [];
+    lifetimeReturnPage.on('pageerror', (error) => lifetimePageErrors.push(String(error?.stack || error)));
+    await lifetimeReturnPage.waitForTimeout(1500);
+    const lifetimeDiagnostic = await lifetimeReturnPage.evaluate(() => ({
+      founderSession: localStorage.getItem('wdis_founder_session_v1'),
+      pendingFounder: localStorage.getItem('wdis_pending_founder_session_v1'),
+      pendingTrial: localStorage.getItem('wdis_pending_trial_checkout_v1'),
+      claim: localStorage.getItem('wdis_founder_claim_v1'),
+      paymentStatus: document.querySelector('[data-payment-status]')?.textContent || '',
+      scripts: [...document.scripts].map((script) => script.getAttribute('src') || ''),
+      search: location.search
+    }));
+    console.log('LIFETIME_RETURN_DIAGNOSTIC', JSON.stringify({
+      verifyBody: lifetimeVerifyBody,
+      state: lifetimeDiagnostic,
+      pageErrors: lifetimePageErrors
+    }));
+    assert(Boolean(lifetimeVerifyBody), 'Lifetime Access return reaches the server verification request');
+    assert(lifetimePageErrors.length === 0, 'Lifetime Access return has no browser runtime error');
     await lifetimeReturnPage.waitForFunction(
       (session) => localStorage.getItem('wdis_founder_session_v1') === session,
       lifetimeSession,
