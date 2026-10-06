@@ -6,6 +6,7 @@
   const EXPIRED_SENTINEL = () => String(Date.now() - TRIAL_MS - 60_000);
   const K = {
     legacyTrial: 'wdis_trial_started_at_v2',
+    lifetimeSession: 'wdis_founder_session_v1',
     trialSession: 'wdis_paid_trial_session_v1',
     trialExpires: 'wdis_paid_trial_expires_at_v1',
     pendingTrial: 'wdis_pending_trial_checkout_v1',
@@ -53,6 +54,7 @@
     const status = document.querySelector('#trial-status');
     const detail = document.querySelector('#trial-detail');
     if (!status || !detail) return;
+    if (get(K.lifetimeSession)) return;
 
     const expiresAt = Number(get(K.trialExpires) || 0);
     const hasPaidTrial = Boolean(get(K.trialSession));
