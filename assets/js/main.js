@@ -65,6 +65,13 @@ filterButtons.forEach((button) => {
   });
 });
 
+// Community room links can open the home feed already filtered to that topic.
+const requestedTopic = new URLSearchParams(window.location.search).get("topic");
+if (requestedTopic) {
+  const requestedButton = [...filterButtons].find((button) => button.dataset.filter === requestedTopic);
+  if (requestedButton) requestedButton.click();
+}
+
 const progressBar = document.querySelector(".reading-progress");
 if (progressBar) {
   const updateProgress = () => {
