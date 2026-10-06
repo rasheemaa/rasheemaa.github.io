@@ -1,7 +1,38 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  sendEmailVerification,
+  updateProfile
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  collectionGroup,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  where,
+  orderBy,
+  limit,
+  onSnapshot,
+  serverTimestamp,
+  increment,
+  writeBatch,
+  runTransaction
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
 const tabButtons = [...document.querySelectorAll("[data-community-tab]")];
 const panels = [...document.querySelectorAll("[data-community-panel]")];
-
 const validTabs = new Set(panels.map((panel) => panel.dataset.communityPanel));
+
 const activateTab = (name, updateHash = true) => {
   const selected = validTabs.has(name) ? name : "feed";
   panels.forEach((panel) => {
@@ -26,16 +57,13 @@ document.querySelectorAll("[data-jump-tab]").forEach((link) => {
     activateTab(link.dataset.jumpTab);
   });
 });
-
 const initialTab = location.hash.replace("#", "");
 if (initialTab && initialTab !== "community") activateTab(initialTab, false);
 
 const config = window.SHEEMA_COMMUNITY_CONFIG || {};
-const configured = /^https:\/\/.+\.supabase\.co$/i.test(config.supabaseUrl || "") &&
-  typeof config.supabaseAnonKey === "string" &&
-  config.supabaseAnonKey.length > 40;
-
+const configured = Boolean(config.apiKey && config.authDomain && config.projectId && config.appId);
 const $ = (id) => document.getElementById(id);
+
 const authDialog = $("community-auth-dialog");
 const profileDialog = $("community-profile-dialog");
 const authButton = $("community-auth-button");
@@ -51,11 +79,23 @@ const memberFeed = $("member-feed-list");
 const memberFeedEmpty = $("member-feed-empty");
 const leaderboard = $("community-leaderboard");
 
-let supabase = null;
+const spaces = {
+  mind: { name: "Mental Wellness & Unmasking", emoji: "🦋" },
+  motherhood: { name: "Motherhood & Family", emoji: "🧸" },
+  chronic: { name: "Chronic Illness & Real Life", emoji: "🌙" },
+  lifestyle: { name: "Lifestyle & Beauty", emoji: "💄" },
+  chaos: { name: "Relatable Chaos", emoji: "😭" }
+};
+
+let auth = null;
+let db = null;
 let currentUser = null;
 let currentProfile = null;
 let authMode = "signup";
 let lastPosts = [];
+let likedPostIds = new Set();
+let stopFeed = null;
+let stopLeaderboard = null;
 
 const escapeHtml = (value = "") => String(value)
   .replaceAll("&", "&amp;")
@@ -64,16 +104,17 @@ const escapeHtml = (value = "") => String(value)
   .replaceAll('"', "&quot;")
   .replaceAll("'", "&#039;");
 
-const relativeTime = (dateString) => {
-  const seconds = Math.max(1, Math.floor((Date.now() - new Date(dateString).getTime()) / 1000));
-  const units = [
-    [31536000, "year"],
-    [2592000, "month"],
-    [604800, "week"],
-    [86400, "day"],
-    [3600, "hour"],
-    [60, "minute"],
-  ];
+const initials = (name = "Member") => name.trim().slice(0, 1).toUpperCase() || "♡";
+
+const timestampToDate = (value) => {
+  if (!value) return new Date();
+  if (typeof value.toDate === "function") return value.toDate();
+  return new Date(value);
+};
+
+const relativeTime = (value) => {
+  const seconds = Math.max(1, Math.floor((Date.now() - timestampToDate(value).getTime()) / 1000));
+  const units = [[31536000,"year"],[2592000,"month"],[604800,"week"],[86400,"day"],[3600,"hour"],[60,"minute"]];
   for (const [size, label] of units) {
     if (seconds >= size) {
       const n = Math.floor(seconds / size);
@@ -83,22 +124,27 @@ const relativeTime = (dateString) => {
   return "just now";
 };
 
-const initials = (name = "Member") => name.trim().slice(0, 1).toUpperCase() || "♡";
 const setMessage = (element, message, type = "") => {
   if (!element) return;
   element.textContent = message;
   element.dataset.type = type;
 };
 
+const memberLevel = (points = 0) => {
+  if (points >= 100) return { level: 5, name: "Day One Energy" };
+  if (points >= 50) return { level: 4, name: "Village Builder" };
+  if (points >= 25) return { level: 3, name: "Community Friend" };
+  if (points >= 10) return { level: 2, name: "Regular" };
+  return { level: 1, name: "New Here" };
+};
+
 const openAuth = () => {
   if (!configured) {
-    if (systemNote) {
-      systemNote.textContent = "Member accounts are built and ready for the free database connection.";
-      systemNote.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
+    setMessage(systemNote, "The Community is ready for its free Firebase project connection.", "error");
+    systemNote?.scrollIntoView({ behavior: "smooth", block: "center" });
     return;
   }
-  if (authDialog?.showModal) authDialog.showModal();
+  authDialog?.showModal?.();
 };
 
 [authButton, authGateButton, railAuthButton].forEach((button) => button?.addEventListener("click", openAuth));
@@ -122,6 +168,11 @@ renderAuthMode();
 const updateSignedOutUi = () => {
   currentUser = null;
   currentProfile = null;
+  likedPostIds = new Set();
+  stopFeed?.();
+  stopLeaderboard?.();
+  stopFeed = null;
+  stopLeaderboard = null;
   authGate.hidden = false;
   composer.hidden = true;
   memberSection.hidden = true;
@@ -131,66 +182,73 @@ const updateSignedOutUi = () => {
   if (leaderboard) leaderboard.innerHTML = '<p class="muted-copy">Join the community to see member levels.</p>';
 };
 
-const loadProfile = async () => {
-  if (!supabase || !currentUser) return null;
-  const { data, error } = await supabase
-    .from("community_profiles")
-    .select("id,display_name,bio,avatar_url,created_at")
-    .eq("id", currentUser.id)
-    .single();
-  if (error) throw error;
-  currentProfile = data;
-  return data;
+const ensureProfile = async (user, displayName = "") => {
+  const ref = doc(db, "profiles", user.uid);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) {
+    const name = (displayName || user.displayName || user.email?.split("@")[0] || "Member").trim().slice(0, 40);
+    await setDoc(ref, {
+      displayName: name || "Member",
+      bio: "",
+      postCount: 0,
+      commentCount: 0,
+      points: 0,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+  }
 };
 
-const loadMyLevel = async () => {
-  if (!supabase || !currentUser) return null;
-  const { data } = await supabase
-    .from("community_leaderboard")
-    .select("points,level,level_name")
-    .eq("id", currentUser.id)
-    .maybeSingle();
-  return data;
+const loadProfile = async () => {
+  if (!db || !currentUser) return null;
+  const snap = await getDoc(doc(db, "profiles", currentUser.uid));
+  if (!snap.exists()) return null;
+  currentProfile = { id: snap.id, ...snap.data() };
+  return currentProfile;
 };
 
 const updateSignedInUi = async () => {
   const profile = await loadProfile();
-  const level = await loadMyLevel();
+  const level = memberLevel(profile?.points || 0);
   authGate.hidden = true;
   composer.hidden = false;
   memberSection.hidden = false;
   signedOutRail.hidden = true;
   signedInRail.hidden = false;
-  if (authButton) authButton.textContent = profile?.display_name || "My community";
-  $("composer-avatar").textContent = initials(profile?.display_name);
-  $("rail-avatar").textContent = initials(profile?.display_name);
-  $("rail-display-name").textContent = profile?.display_name || "Member";
-  $("rail-level").textContent = level ? `Level ${level.level} · ${level.level_name}` : "Level 1 · New Here";
+  if (authButton) authButton.textContent = profile?.displayName || "My community";
+  $("composer-avatar").textContent = initials(profile?.displayName);
+  $("rail-avatar").textContent = initials(profile?.displayName);
+  $("rail-display-name").textContent = profile?.displayName || "Member";
+  $("rail-level").textContent = `Level ${level.level} · ${level.name}`;
 };
 
-const normalizeRelation = (value) => Array.isArray(value) ? value[0] : value;
+const loadMyReactions = async () => {
+  likedPostIds = new Set();
+  if (!db || !currentUser) return;
+  const snap = await getDocs(query(collectionGroup(db, "reactions"), where("userId", "==", currentUser.uid)));
+  snap.forEach((item) => {
+    const postRef = item.ref.parent.parent;
+    if (postRef) likedPostIds.add(postRef.id);
+  });
+};
 
 const postCardHtml = (post) => {
-  const profile = normalizeRelation(post.community_profiles) || {};
-  const space = normalizeRelation(post.community_spaces) || {};
-  const comments = Array.isArray(post.community_comments) ? post.community_comments.length : 0;
-  const reactions = Array.isArray(post.community_reactions) ? post.community_reactions : [];
-  const liked = reactions.some((reaction) => reaction.user_id === currentUser?.id);
-  const mine = post.author_id === currentUser?.id;
-
+  const space = spaces[post.spaceId] || { name: "Community", emoji: "♡" };
+  const liked = likedPostIds.has(post.id);
+  const mine = post.authorId === currentUser?.uid;
   return `
     <article class="community-card member-post-card" data-post-id="${escapeHtml(post.id)}">
-      <div class="post-avatar small" aria-hidden="true">${escapeHtml(initials(profile.display_name))}</div>
+      <div class="post-avatar small" aria-hidden="true">${escapeHtml(initials(post.displayName))}</div>
       <div class="community-post-body">
         <div class="post-heading">
-          <div><strong>${escapeHtml(profile.display_name || "Member")}</strong><span> · ${escapeHtml(relativeTime(post.created_at))}</span></div>
-          <span class="room-chip room-${escapeHtml(post.space_id)}">${escapeHtml(space.emoji || "♡")} ${escapeHtml(space.name || "Community")}</span>
+          <div><strong>${escapeHtml(post.displayName || "Member")}</strong><span> · ${escapeHtml(relativeTime(post.createdAt))}</span></div>
+          <span class="room-chip room-${escapeHtml(post.spaceId)}">${space.emoji} ${escapeHtml(space.name)}</span>
         </div>
-        ${post.is_pinned ? '<span class="pin inline-pin">PINNED</span>' : ""}
+        ${post.isPinned ? '<span class="pin inline-pin">PINNED</span>' : ""}
         <p class="member-post-copy">${escapeHtml(post.body).replaceAll("\n", "<br>")}</p>
         <div class="member-post-actions">
-          <button type="button" data-action="heart" aria-pressed="${liked}">${liked ? "♥" : "♡"} <span>${reactions.length}</span></button>
-          <button type="button" data-action="comments">💬 <span>${comments}</span></button>
+          <button type="button" data-action="heart" aria-pressed="${liked}">${liked ? "♥" : "♡"} <span>${Math.max(0, post.reactionCount || 0)}</span></button>
+          <button type="button" data-action="comments">💬 <span>${Math.max(0, post.commentCount || 0)}</span></button>
           <button type="button" data-action="report">Report</button>
           ${mine ? '<button class="danger-link" type="button" data-action="delete">Delete</button>' : ""}
         </div>
@@ -199,186 +257,243 @@ const postCardHtml = (post) => {
     </article>`;
 };
 
-const loadPosts = async () => {
-  if (!supabase || !currentUser) return;
-  memberFeed.setAttribute("aria-busy", "true");
-  const { data, error } = await supabase
-    .from("community_posts")
-    .select("id,author_id,space_id,body,is_pinned,created_at,community_profiles(display_name,avatar_url),community_spaces(name,emoji),community_comments(id),community_reactions(user_id,reaction)")
-    .order("is_pinned", { ascending: false })
-    .order("created_at", { ascending: false })
-    .limit(50);
-
-  memberFeed.removeAttribute("aria-busy");
-  if (error) {
-    setMessage(systemNote, "The member feed could not load. Please try again.", "error");
-    return;
-  }
-  lastPosts = data || [];
-  memberFeed.innerHTML = lastPosts.map(postCardHtml).join("");
-  memberFeedEmpty.hidden = lastPosts.length > 0;
+const renderFeed = () => {
+  if (!memberFeed) return;
+  const sorted = [...lastPosts].sort((a, b) => {
+    if (Boolean(a.isPinned) !== Boolean(b.isPinned)) return a.isPinned ? -1 : 1;
+    return timestampToDate(b.createdAt) - timestampToDate(a.createdAt);
+  });
+  memberFeed.innerHTML = sorted.map(postCardHtml).join("");
+  memberFeedEmpty.hidden = sorted.length > 0;
 };
 
-const loadLeaderboard = async () => {
-  if (!supabase || !currentUser || !leaderboard) return;
-  const { data, error } = await supabase
-    .from("community_leaderboard")
-    .select("id,display_name,points,level,level_name")
-    .order("points", { ascending: false })
-    .order("display_name", { ascending: true })
-    .limit(20);
+const startFeed = () => {
+  stopFeed?.();
+  const feedQuery = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(50));
+  stopFeed = onSnapshot(feedQuery, (snapshot) => {
+    lastPosts = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+    renderFeed();
+    memberFeed?.removeAttribute("aria-busy");
+  }, () => {
+    memberFeed?.removeAttribute("aria-busy");
+    setMessage(systemNote, "The member feed could not load. Please try again.", "error");
+  });
+};
 
-  if (error) return;
-  leaderboard.innerHTML = (data || []).map((member, index) => `
-    <div class="leader-row${member.id === currentUser.id ? " is-you" : ""}">
-      <span class="leader-rank">${index + 1}</span>
-      <span class="mini-avatar">${escapeHtml(initials(member.display_name))}</span>
-      <div><strong>${escapeHtml(member.display_name)}</strong><small>Level ${member.level} · ${escapeHtml(member.level_name)}</small></div>
-      <b>${member.points} pts</b>
-    </div>
-  `).join("") || '<p class="muted-copy">No points yet. The first conversation starts the board.</p>';
+const startLeaderboard = () => {
+  stopLeaderboard?.();
+  const boardQuery = query(collection(db, "profiles"), orderBy("points", "desc"), limit(20));
+  stopLeaderboard = onSnapshot(boardQuery, (snapshot) => {
+    const members = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+    leaderboard.innerHTML = members.map((member, index) => {
+      const level = memberLevel(member.points || 0);
+      return `
+        <div class="leader-row${member.id === currentUser?.uid ? " is-you" : ""}">
+          <span class="leader-rank">${index + 1}</span>
+          <span class="mini-avatar">${escapeHtml(initials(member.displayName))}</span>
+          <div><strong>${escapeHtml(member.displayName || "Member")}</strong><small>Level ${level.level} · ${level.name}</small></div>
+          <b>${member.points || 0} pts</b>
+        </div>`;
+    }).join("") || '<p class="muted-copy">No points yet. The first conversation starts the board.</p>';
+  });
 };
 
 const refreshCommunity = async () => {
   if (!currentUser) return;
-  await Promise.all([loadPosts(), loadLeaderboard(), updateSignedInUi()]);
+  await loadMyReactions();
+  await updateSignedInUi();
+  renderFeed();
 };
 
 $("refresh-community")?.addEventListener("click", refreshCommunity);
 
 $("community-post-form")?.addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (!supabase || !currentUser) return openAuth();
+  if (!db || !currentUser) return openAuth();
   const body = $("community-post-body").value.trim();
-  const space_id = $("community-post-space").value;
+  const spaceId = $("community-post-space").value;
   if (!body) return setMessage($("community-post-message"), "Write something first ♡", "error");
 
   const submit = event.submitter;
   if (submit) submit.disabled = true;
-  setMessage($("community-post-message"), "Posting...");
-  const { error } = await supabase.from("community_posts").insert({
-    author_id: currentUser.id,
-    space_id,
-    body,
-  });
-  if (submit) submit.disabled = false;
+  setMessage($("community-post-message"), "Posting…");
 
-  if (error) return setMessage($("community-post-message"), error.message, "error");
-  $("community-post-body").value = "";
-  setMessage($("community-post-message"), "Posted ♡", "success");
-  await refreshCommunity();
+  try {
+    const postRef = doc(collection(db, "posts"));
+    const profileRef = doc(db, "profiles", currentUser.uid);
+    const batch = writeBatch(db);
+    batch.set(postRef, {
+      authorId: currentUser.uid,
+      displayName: (currentProfile?.displayName || currentUser.displayName || "Member").slice(0, 40),
+      spaceId,
+      body,
+      isPinned: false,
+      commentCount: 0,
+      reactionCount: 0,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+    batch.update(profileRef, {
+      postCount: increment(1),
+      points: increment(5),
+      updatedAt: serverTimestamp()
+    });
+    await batch.commit();
+    $("community-post-body").value = "";
+    setMessage($("community-post-message"), "Posted ♡", "success");
+    await updateSignedInUi();
+  } catch (error) {
+    setMessage($("community-post-message"), error.message || "That post could not be published.", "error");
+  } finally {
+    if (submit) submit.disabled = false;
+  }
 });
 
 const loadComments = async (postId, drawer) => {
   drawer.hidden = false;
   drawer.innerHTML = '<p class="muted-copy">Loading replies…</p>';
-  const { data, error } = await supabase
-    .from("community_comments")
-    .select("id,body,created_at,author_id,community_profiles(display_name)")
-    .eq("post_id", postId)
-    .order("created_at", { ascending: true });
+  try {
+    const commentsQuery = query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "asc"), limit(200));
+    const snapshot = await getDocs(commentsQuery);
+    const comments = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+    drawer.innerHTML = `
+      <div class="comments-list">${comments.map((comment) => `
+        <div class="member-comment">
+          <span class="mini-avatar">${escapeHtml(initials(comment.displayName))}</span>
+          <div><p><strong>${escapeHtml(comment.displayName || "Member")}</strong> <small>· ${escapeHtml(relativeTime(comment.createdAt))}</small></p><div>${escapeHtml(comment.body).replaceAll("\n", "<br>")}</div></div>
+          ${comment.authorId === currentUser?.uid ? `<button type="button" data-delete-comment="${escapeHtml(comment.id)}" aria-label="Delete comment">×</button>` : ""}
+        </div>`).join("") || '<p class="muted-copy">No replies yet.</p>'}</div>
+      <form class="comment-form">
+        <label class="sr-only">Add a reply</label>
+        <input maxlength="2000" placeholder="Write a reply…" required>
+        <button type="submit">Reply</button>
+      </form>`;
 
-  if (error) {
+    drawer.querySelector(".comment-form")?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const input = event.currentTarget.querySelector("input");
+      const button = event.currentTarget.querySelector("button");
+      const body = input.value.trim();
+      if (!body) return;
+      button.disabled = true;
+      try {
+        const commentRef = doc(collection(db, "posts", postId, "comments"));
+        const batch = writeBatch(db);
+        batch.set(commentRef, {
+          authorId: currentUser.uid,
+          displayName: (currentProfile?.displayName || currentUser.displayName || "Member").slice(0, 40),
+          body,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+        batch.update(doc(db, "posts", postId), { commentCount: increment(1) });
+        batch.update(doc(db, "profiles", currentUser.uid), {
+          commentCount: increment(1),
+          points: increment(2),
+          updatedAt: serverTimestamp()
+        });
+        await batch.commit();
+        input.value = "";
+        await loadComments(postId, drawer);
+        await updateSignedInUi();
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    drawer.querySelectorAll("[data-delete-comment]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        if (!confirm("Delete this reply?")) return;
+        const batch = writeBatch(db);
+        batch.delete(doc(db, "posts", postId, "comments", button.dataset.deleteComment));
+        batch.update(doc(db, "posts", postId), { commentCount: increment(-1) });
+        await batch.commit();
+        await loadComments(postId, drawer);
+      });
+    });
+  } catch {
     drawer.innerHTML = '<p class="muted-copy">Replies could not load.</p>';
-    return;
   }
+};
 
-  const comments = (data || []).map((comment) => {
-    const profile = normalizeRelation(comment.community_profiles) || {};
-    const mine = comment.author_id === currentUser?.id;
-    return `
-      <div class="member-comment">
-        <span class="mini-avatar">${escapeHtml(initials(profile.display_name))}</span>
-        <div><p><strong>${escapeHtml(profile.display_name || "Member")}</strong> <small>· ${escapeHtml(relativeTime(comment.created_at))}</small></p><div>${escapeHtml(comment.body).replaceAll("\n", "<br>")}</div></div>
-        ${mine ? `<button type="button" data-delete-comment="${escapeHtml(comment.id)}" aria-label="Delete comment">×</button>` : ""}
-      </div>`;
-  }).join("");
-
-  drawer.innerHTML = `
-    <div class="comments-list">${comments || '<p class="muted-copy">No replies yet.</p>'}</div>
-    <form class="comment-form">
-      <label class="sr-only">Add a reply</label>
-      <input maxlength="2000" placeholder="Write a reply…" required>
-      <button type="submit">Reply</button>
-    </form>`;
-
-  drawer.querySelector(".comment-form")?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const input = event.currentTarget.querySelector("input");
-    const body = input.value.trim();
-    if (!body) return;
-    const button = event.currentTarget.querySelector("button");
-    button.disabled = true;
-    const { error: insertError } = await supabase.from("community_comments").insert({
-      post_id: postId,
-      author_id: currentUser.id,
-      body,
-    });
-    button.disabled = false;
-    if (insertError) return;
-    input.value = "";
-    await loadComments(postId, drawer);
-    await loadPosts();
-    await loadLeaderboard();
+const toggleHeart = async (postId) => {
+  const reactionRef = doc(db, "posts", postId, "reactions", currentUser.uid);
+  const postRef = doc(db, "posts", postId);
+  await runTransaction(db, async (transaction) => {
+    const reactionSnap = await transaction.get(reactionRef);
+    const postSnap = await transaction.get(postRef);
+    if (!postSnap.exists()) return;
+    if (reactionSnap.exists()) {
+      transaction.delete(reactionRef);
+      transaction.update(postRef, { reactionCount: increment(-1) });
+      likedPostIds.delete(postId);
+    } else {
+      transaction.set(reactionRef, {
+        userId: currentUser.uid,
+        reaction: "heart",
+        createdAt: serverTimestamp()
+      });
+      transaction.update(postRef, { reactionCount: increment(1) });
+      likedPostIds.add(postId);
+    }
   });
+  renderFeed();
+};
 
-  drawer.querySelectorAll("[data-delete-comment]").forEach((button) => {
-    button.addEventListener("click", async () => {
-      if (!confirm("Delete this reply?")) return;
-      await supabase.from("community_comments").delete().eq("id", button.dataset.deleteComment);
-      await loadComments(postId, drawer);
-      await loadPosts();
-      await loadLeaderboard();
-    });
-  });
+const deletePostAndChildren = async (postId) => {
+  const comments = await getDocs(collection(db, "posts", postId, "comments"));
+  const reactions = await getDocs(collection(db, "posts", postId, "reactions"));
+  const batch = writeBatch(db);
+  comments.forEach((item) => batch.delete(item.ref));
+  reactions.forEach((item) => batch.delete(item.ref));
+  batch.delete(doc(db, "posts", postId));
+  await batch.commit();
 };
 
 memberFeed?.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-action]");
-  if (!button || !supabase || !currentUser) return;
+  if (!button || !db || !currentUser) return;
   const card = button.closest("[data-post-id]");
   const postId = card?.dataset.postId;
   if (!postId) return;
-  const post = lastPosts.find((item) => item.id === postId);
 
-  if (button.dataset.action === "heart") {
-    const reactions = Array.isArray(post?.community_reactions) ? post.community_reactions : [];
-    const liked = reactions.some((reaction) => reaction.user_id === currentUser.id);
-    if (liked) {
-      await supabase.from("community_reactions").delete().eq("post_id", postId).eq("user_id", currentUser.id);
-    } else {
-      await supabase.from("community_reactions").insert({ post_id: postId, user_id: currentUser.id, reaction: "heart" });
+  try {
+    if (button.dataset.action === "heart") {
+      button.disabled = true;
+      await toggleHeart(postId);
+      button.disabled = false;
     }
-    await Promise.all([loadPosts(), loadLeaderboard()]);
-  }
 
-  if (button.dataset.action === "comments") {
-    const drawer = card.querySelector("[data-comments-for]");
-    if (drawer.hidden) await loadComments(postId, drawer);
-    else drawer.hidden = true;
-  }
+    if (button.dataset.action === "comments") {
+      const drawer = card.querySelector("[data-comments-for]");
+      if (drawer.hidden) await loadComments(postId, drawer);
+      else drawer.hidden = true;
+    }
 
-  if (button.dataset.action === "delete") {
-    if (!confirm("Delete this post?")) return;
-    await supabase.from("community_posts").delete().eq("id", postId);
-    await refreshCommunity();
-  }
+    if (button.dataset.action === "delete") {
+      if (!confirm("Delete this post?")) return;
+      await deletePostAndChildren(postId);
+    }
 
-  if (button.dataset.action === "report") {
-    const reason = prompt("What should Sheema know about this post?");
-    if (reason === null) return;
-    const { error } = await supabase.from("community_reports").insert({
-      reporter_id: currentUser.id,
-      post_id: postId,
-      reason: reason.trim().slice(0, 500),
-    });
-    if (!error) alert("Thanks. Your report was sent.");
+    if (button.dataset.action === "report") {
+      const reason = prompt("What should Sheema know about this post?");
+      if (reason === null) return;
+      await setDoc(doc(collection(db, "reports")), {
+        reporterId: currentUser.uid,
+        postId,
+        reason: reason.trim().slice(0, 500),
+        createdAt: serverTimestamp()
+      });
+      alert("Thanks. Your report was sent.");
+    }
+  } catch (error) {
+    setMessage(systemNote, error.message || "That action could not be completed.", "error");
   }
 });
 
 $("community-auth-form")?.addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (!supabase) return;
+  if (!auth || !db) return;
   const email = $("auth-email").value.trim();
   const password = $("auth-password").value;
   const displayName = $("auth-display-name").value.trim();
@@ -386,41 +501,49 @@ $("community-auth-form")?.addEventListener("submit", async (event) => {
   submit.disabled = true;
   setMessage($("auth-message"), authMode === "signup" ? "Creating your account…" : "Signing you in…");
 
-  let result;
-  if (authMode === "signup") {
-    if (!displayName) {
-      submit.disabled = false;
-      return setMessage($("auth-message"), "Add a display name first.", "error");
+  try {
+    if (authMode === "signup") {
+      if (!displayName) throw new Error("Add a display name first.");
+      const credential = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(credential.user, { displayName: displayName.slice(0, 40) });
+      await ensureProfile(credential.user, displayName);
+      await sendEmailVerification(credential.user);
+      await signOut(auth);
+      setMessage($("auth-message"), "Check your email to verify your account. Then come back and sign in. ♡", "success");
+      return;
     }
-    result = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { display_name: displayName } },
-    });
-  } else {
-    result = await supabase.auth.signInWithPassword({ email, password });
+
+    const credential = await signInWithEmailAndPassword(auth, email, password);
+    if (!credential.user.emailVerified) {
+      await sendEmailVerification(credential.user);
+      await signOut(auth);
+      setMessage($("auth-message"), "Your email still needs verification. I sent you a fresh link. ♡", "error");
+      return;
+    }
+
+    authDialog.close();
+    event.currentTarget.reset();
+  } catch (error) {
+    const friendly = String(error?.code || "").includes("email-already-in-use")
+      ? "That email already has an account. Try signing in."
+      : String(error?.code || "").includes("invalid-credential")
+        ? "That email or password does not match."
+        : String(error?.code || "").includes("weak-password")
+          ? "Use a stronger password with at least 8 characters."
+          : error.message || "That did not work. Try again.";
+    setMessage($("auth-message"), friendly, "error");
+  } finally {
+    submit.disabled = false;
   }
-
-  submit.disabled = false;
-  if (result.error) return setMessage($("auth-message"), result.error.message, "error");
-
-  if (authMode === "signup" && !result.data.session) {
-    setMessage($("auth-message"), "Check your email to confirm your account, then come back and sign in. ♡", "success");
-    return;
-  }
-
-  authDialog.close();
-  event.currentTarget.reset();
 });
 
 $("sign-out-button")?.addEventListener("click", async () => {
-  if (!supabase) return;
-  await supabase.auth.signOut();
+  if (auth) await signOut(auth);
 });
 
 $("edit-profile-button")?.addEventListener("click", () => {
   if (!currentProfile || !profileDialog?.showModal) return;
-  $("profile-display-name").value = currentProfile.display_name || "";
+  $("profile-display-name").value = currentProfile.displayName || "";
   $("profile-bio").value = currentProfile.bio || "";
   setMessage($("profile-message"), "");
   profileDialog.showModal();
@@ -428,77 +551,66 @@ $("edit-profile-button")?.addEventListener("click", () => {
 
 $("community-profile-form")?.addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (!supabase || !currentUser) return;
-  const display_name = $("profile-display-name").value.trim();
+  if (!db || !currentUser) return;
+  const displayName = $("profile-display-name").value.trim();
   const bio = $("profile-bio").value.trim();
-  if (!display_name) return setMessage($("profile-message"), "Your display name cannot be blank.", "error");
-  const { error } = await supabase
-    .from("community_profiles")
-    .update({ display_name, bio })
-    .eq("id", currentUser.id);
-  if (error) return setMessage($("profile-message"), error.message, "error");
-  setMessage($("profile-message"), "Saved ♡", "success");
-  await refreshCommunity();
-  setTimeout(() => profileDialog.close(), 350);
+  if (!displayName) return setMessage($("profile-message"), "Your display name cannot be blank.", "error");
+  try {
+    await updateDoc(doc(db, "profiles", currentUser.uid), {
+      displayName: displayName.slice(0, 40),
+      bio: bio.slice(0, 280),
+      updatedAt: serverTimestamp()
+    });
+    await updateProfile(currentUser, { displayName: displayName.slice(0, 40) });
+    setMessage($("profile-message"), "Saved ♡", "success");
+    await updateSignedInUi();
+    setTimeout(() => profileDialog.close(), 350);
+  } catch (error) {
+    setMessage($("profile-message"), error.message || "Your profile could not be saved.", "error");
+  }
 });
 
 const init = async () => {
   if (!configured) {
     updateSignedOutUi();
     if (systemNote) {
-      systemNote.innerHTML = '<strong>Community engine ready.</strong> Member accounts turn on as soon as the free database connection is added.';
+      systemNote.innerHTML = '<strong>Firebase Community engine ready.</strong> Member accounts turn on as soon as the free Spark project config is added.';
     }
     return;
   }
 
   try {
-    const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
-    supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
-    });
+    const app = initializeApp(config);
+    auth = getAuth(app);
+    db = getFirestore(app);
 
-    const { data: { session } } = await supabase.auth.getSession();
-    currentUser = session?.user || null;
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        updateSignedOutUi();
+        return;
+      }
 
-    if (currentUser) {
-      await updateSignedInUi();
-      await Promise.all([loadPosts(), loadLeaderboard()]);
-    } else {
-      updateSignedOutUi();
-    }
+      if (!user.emailVerified) {
+        updateSignedOutUi();
+        return;
+      }
 
-    supabase.auth.onAuthStateChange(async (_event, nextSession) => {
-      currentUser = nextSession?.user || null;
-      if (!currentUser) return updateSignedOutUi();
+      currentUser = user;
       try {
+        await ensureProfile(user);
+        await loadMyReactions();
         await updateSignedInUi();
-        await Promise.all([loadPosts(), loadLeaderboard()]);
+        memberFeed?.setAttribute("aria-busy", "true");
+        startFeed();
+        startLeaderboard();
+        setMessage(systemNote, "");
       } catch (error) {
-        setMessage(systemNote, "Your account connected, but the community data could not load.", "error");
+        setMessage(systemNote, "Your account connected, but the Community data could not load.", "error");
       }
     });
-
-    let refreshTimer;
-    supabase
-      .channel("community-live")
-      .on("postgres_changes", { event: "*", schema: "public", table: "community_posts" }, () => {
-        clearTimeout(refreshTimer);
-        refreshTimer = setTimeout(loadPosts, 250);
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "community_comments" }, () => {
-        clearTimeout(refreshTimer);
-        refreshTimer = setTimeout(loadPosts, 250);
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "community_reactions" }, () => {
-        clearTimeout(refreshTimer);
-        refreshTimer = setTimeout(() => Promise.all([loadPosts(), loadLeaderboard()]), 250);
-      })
-      .subscribe();
-
-    setMessage(systemNote, "");
-  } catch (error) {
+  } catch {
     updateSignedOutUi();
-    setMessage(systemNote, "The community connection is temporarily unavailable. The public Edit is still here.", "error");
+    setMessage(systemNote, "The Community connection is temporarily unavailable. The public Edit is still here.", "error");
   }
 };
 
