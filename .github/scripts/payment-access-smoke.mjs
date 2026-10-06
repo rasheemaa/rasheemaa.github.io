@@ -86,6 +86,7 @@ try {
     });
 
     await page.goto(`${BASE}?checkout_wiring=${Date.now()}`, { waitUntil: 'domcontentloaded' });
+    await page.evaluate(() => { document.querySelector('#paywall').hidden = false; });
     await page.locator('[data-founder-checkout]').first().click();
     await page.waitForURL('https://checkout.stripe.com/**', { timeout: 15_000 });
 
