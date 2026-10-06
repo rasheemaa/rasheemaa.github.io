@@ -30,6 +30,10 @@ permalink: /community/
       <p class="community-kicker">✦ The Edit Community</p>
       <h1>Come sit with us.</h1>
       <p>A softer corner of the internet for the conversations The Sheema Edit already starts. No performing. No pretending you have it all together.</p>
+      <div class="community-banner-actions">
+        <button class="button lime" id="community-auth-button" type="button">Join / sign in</button>
+        <span class="free-note">♡ Free to join</span>
+      </div>
     </div>
     <div class="community-badge" aria-label="Five community spaces"><strong>5</strong><span>rooms to land in</span></div>
   </div>
@@ -63,7 +67,39 @@ permalink: /community/
         </div>
       </article>
 
-      <div class="feed-heading"><div><p class="community-kicker">Fresh from The Edit</p><h2>Start with a conversation</h2></div><a href="/#latest">See all edits →</a></div>
+      <section class="member-auth-gate" id="community-auth-gate">
+        <div><p class="community-kicker">Members only</p><h2>The real group chat lives right here.</h2><p>Create a free account to see member posts, join conversations, react, and earn community levels.</p></div>
+        <button class="button" id="community-auth-gate-button" type="button">Join the community →</button>
+      </section>
+
+      <section class="member-composer" id="community-composer" hidden>
+        <div class="composer-avatar" id="composer-avatar" aria-hidden="true">♡</div>
+        <form id="community-post-form">
+          <label class="sr-only" for="community-post-body">Write a community post</label>
+          <textarea id="community-post-body" maxlength="3000" rows="3" placeholder="What’s on your mind?"></textarea>
+          <div class="composer-footer">
+            <label>Post in
+              <select id="community-post-space" aria-label="Choose a community space">
+                <option value="mind">Mental Wellness & Unmasking</option>
+                <option value="motherhood">Motherhood & Family</option>
+                <option value="chronic">Chronic Illness & Real Life</option>
+                <option value="lifestyle">Lifestyle & Beauty</option>
+                <option value="chaos">Relatable Chaos</option>
+              </select>
+            </label>
+            <button class="button lime" type="submit">Post</button>
+          </div>
+          <p class="form-message" id="community-post-message" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="member-feed-section" id="member-feed-section" hidden>
+        <div class="feed-heading"><div><p class="community-kicker">From the community</p><h2>What everybody’s talking about</h2></div><button class="text-button" id="refresh-community" type="button">Refresh ↻</button></div>
+        <div class="community-feed" id="member-feed-list"></div>
+        <div class="empty-state compact" id="member-feed-empty" hidden><span class="empty-icon">♡</span><h3>It’s quiet in here.</h3><p>Be the first person to start a conversation.</p></div>
+      </section>
+
+      <div class="feed-heading"><div><p class="community-kicker">Fresh from The Edit</p><h2>Start with an edit</h2></div><a href="/#latest">See all edits →</a></div>
       <div class="community-feed">
         {% assign edits = site.edits | sort: "date" | reverse %}
         {% for edit in edits limit:5 %}
@@ -83,7 +119,7 @@ permalink: /community/
         </article>
         {% endfor %}
       </div>
-      <div class="backend-note"><strong>Member conversations are the next layer.</strong><p>The community hub is live first. Account based posting, replies, profiles, notifications, and saved member progress need a real database behind the static site, so those controls are not being faked.</p></div>
+      <p class="community-system-note" id="community-system-note" aria-live="polite"></p>
     </div>
 
     <div class="community-panel" data-community-panel="spaces" hidden>
@@ -118,6 +154,10 @@ permalink: /community/
 
     <div class="community-panel" data-community-panel="levels" hidden>
       <div class="panel-intro"><p class="community-kicker">Community Levels</p><h2>Participation, without making connection a competition.</h2><p>When member accounts go live, levels can reward showing up, helping people, and contributing thoughtfully.</p></div>
+      <section class="leaderboard-card" id="leaderboard-card">
+        <div class="leaderboard-heading"><div><p class="community-kicker">Community love</p><h3>Leaderboard</h3></div><span>Helpful participation, not popularity.</span></div>
+        <div id="community-leaderboard"><p class="muted-copy">Join the community to see member levels.</p></div>
+      </section>
       <div class="levels-list">
         <div class="level-card"><strong>1</strong><div><h3>New Here</h3><p>Finding your people and getting comfortable.</p></div></div>
         <div class="level-card"><strong>2</strong><div><h3>Regular</h3><p>Reading, reacting, and joining conversations.</p></div></div>
@@ -129,6 +169,11 @@ permalink: /community/
   </section>
 
   <aside class="community-right-rail">
+    <div class="rail-card account-rail-card" id="community-account-card">
+      <p class="community-kicker">Your account</p>
+      <div id="community-account-signed-out"><h3>Come on in ♡</h3><p>Join free to post, comment, react, and build your level.</p><button class="text-button" id="rail-auth-button" type="button">Join / sign in →</button></div>
+      <div id="community-account-signed-in" hidden><div class="account-row"><span class="mini-avatar" id="rail-avatar">S</span><div><strong id="rail-display-name">Member</strong><small id="rail-level">Level 1 · New Here</small></div></div><button class="text-button" id="edit-profile-button" type="button">Edit profile</button><button class="text-button danger-link" id="sign-out-button" type="button">Sign out</button></div>
+    </div>
     <div class="rail-card">
       <p class="community-kicker">Your rooms</p>
       <a href="#" data-jump-tab="spaces"><span>🦋</span> Mind & Unmasking</a>
@@ -154,8 +199,33 @@ permalink: /community/
 </nav>
 </main>
 
+<dialog class="community-dialog" id="community-auth-dialog">
+  <form method="dialog" class="dialog-close-row"><button type="submit" aria-label="Close">×</button></form>
+  <div class="dialog-copy"><p class="community-kicker">The Edit Community</p><h2 id="auth-dialog-title">Join the community</h2><p>One free account. No paid membership required.</p></div>
+  <form id="community-auth-form">
+    <div class="auth-name-field" id="auth-name-field"><label for="auth-display-name">Display name</label><input id="auth-display-name" autocomplete="name" maxlength="40" placeholder="What should we call you?"></div>
+    <label for="auth-email">Email</label><input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com">
+    <label for="auth-password">Password</label><input id="auth-password" type="password" autocomplete="new-password" minlength="8" required placeholder="At least 8 characters">
+    <button class="button lime auth-submit" id="auth-submit" type="submit">Create free account</button>
+    <p class="form-message" id="auth-message" aria-live="polite"></p>
+  </form>
+  <button class="text-button dialog-switch" id="auth-switch" type="button">Already a member? Sign in</button>
+</dialog>
+
+<dialog class="community-dialog" id="community-profile-dialog">
+  <form method="dialog" class="dialog-close-row"><button type="submit" aria-label="Close">×</button></form>
+  <div class="dialog-copy"><p class="community-kicker">Your profile</p><h2>Edit how you show up.</h2></div>
+  <form id="community-profile-form">
+    <label for="profile-display-name">Display name</label><input id="profile-display-name" maxlength="40" required>
+    <label for="profile-bio">Bio</label><textarea id="profile-bio" maxlength="280" rows="4" placeholder="A little about you..."></textarea>
+    <button class="button lime" type="submit">Save profile</button>
+    <p class="form-message" id="profile-message" aria-live="polite"></p>
+  </form>
+</dialog>
+
 <footer class="site-footer community-footer"><div class="site-shell"><div class="footer-grid"><div><h2>The Sheema Edit</h2><p>Soft thoughts, real life, and a community that gets it.</p></div><div class="footer-links"><h3>Explore</h3><a href="/community/">Community</a><a href="/#latest">The edits</a><a href="/shop/">Shop</a><a href="/about.html">About</a></div><div class="footer-links"><h3>Find me</h3><a href="https://www.instagram.com/_rasheemaa/" target="_blank" rel="me noopener noreferrer">Instagram @_rasheemaa</a><a href="https://www.tiktok.com/@_rasheemaa" target="_blank" rel="me noopener noreferrer">TikTok @_rasheemaa</a></div></div><div class="footer-bottom"><span>© <span data-current-year>2026</span> The Sheema Edit. All feelings reserved.</span><span>Personal stories only. Nothing here is medical advice.</span></div></div></footer>
 <script src="/assets/js/main.js?v=2" defer></script>
-<script src="/assets/js/community.js?v=1" defer></script>
+<script src="/assets/js/community-config.js?v=1"></script>
+<script src="/assets/js/community.js?v=2" type="module"></script>
 </body>
 </html>
