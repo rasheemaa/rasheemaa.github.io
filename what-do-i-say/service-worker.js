@@ -1,4 +1,4 @@
-const CACHE = 'wdis-v37';
+const CACHE = 'wdis-v38';
 const SHELL = [
   '/what-do-i-say/',
   '/what-do-i-say/index.html',
@@ -7,7 +7,7 @@ const SHELL = [
   '/what-do-i-say/trust.css?v=1',
   '/what-do-i-say/bootstrap.js?v=2',
   '/what-do-i-say/config.js?v=9',
-  '/what-do-i-say/chat-app.js?v=25',
+  '/what-do-i-say/chat-app.js?v=26',
   '/what-do-i-say/sparkle.js?v=22',
   '/what-do-i-say/sparkle-cloud-mobile.js?v=2',
   '/what-do-i-say/sparkle-quality-hotfix.js?v=4',
