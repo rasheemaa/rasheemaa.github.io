@@ -169,6 +169,7 @@ const updateSignedOutUi = () => {
   currentUser = null;
   currentProfile = null;
   likedPostIds = new Set();
+  reactionCheckedPostIds = new Set();
   stopFeed?.();
   stopLeaderboard?.();
   stopFeed = null;
@@ -222,14 +223,15 @@ const updateSignedInUi = async () => {
   $("rail-level").textContent = `Level ${level.level} · ${level.name}`;
 };
 
-const loadMyReactions = async () => {
-  likedPostIds = new Set();
+const hydrateLikesForPosts = async (posts) => {
   if (!db || !currentUser) return;
-  const snap = await getDocs(query(collectionGroup(db, "reactions"), where("userId", "==", currentUser.uid)));
-  snap.forEach((item) => {
-    const postRef = item.ref.parent.parent;
-    if (postRef) likedPostIds.add(postRef.id);
-  });
+  const unchecked = posts.filter((post) => !reactionCheckedPostIds.has(post.id));
+  if (!unchecked.length) return;
+  await Promise.all(unchecked.map(async (post) => {
+    const reactionSnap = await getDoc(doc(db, "posts", post.id, "reactions", currentUser.uid));
+    reactionCheckedPostIds.add(post.id);
+    if (reactionSnap.exists()) likedPostIds.add(post.id);
+  }));
 };
 
 const postCardHtml = (post) => {
@@ -269,9 +271,10 @@ const renderFeed = () => {
 
 const startFeed = () => {
   stopFeed?.();
-  const feedQuery = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(50));
-  stopFeed = onSnapshot(feedQuery, (snapshot) => {
+  const feedQuery = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(25));
+  stopFeed = onSnapshot(feedQuery, async (snapshot) => {
     lastPosts = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+    await hydrateLikesForPosts(lastPosts);
     renderFeed();
     memberFeed?.removeAttribute("aria-busy");
   }, () => {
@@ -300,7 +303,7 @@ const startLeaderboard = () => {
 
 const refreshCommunity = async () => {
   if (!currentUser) return;
-  await loadMyReactions();
+  await hydrateLikesForPosts(lastPosts);
   await updateSignedInUi();
   renderFeed();
 };
@@ -598,7 +601,6 @@ const init = async () => {
       currentUser = user;
       try {
         await ensureProfile(user);
-        await loadMyReactions();
         await updateSignedInUi();
         memberFeed?.setAttribute("aria-busy", "true");
         startFeed();
