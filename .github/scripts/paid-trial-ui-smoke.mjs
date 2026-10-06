@@ -184,6 +184,152 @@ try {
   const pendingTrial = siteOrigin?.localStorage?.find((entry) => entry.name === 'wdis_pending_trial_checkout_v1')?.value || '';
   assert(pendingTrial === '1', 'browser remembers that the pending checkout is the trial');
 
+  {
+    const trialReturnContext = await browser.newContext({
+      viewport: { width: 390, height: 844 },
+      serviceWorkers: 'block'
+    });
+    const trialClaim = 'a'.repeat(64);
+    const trialSession = 'cs_live_paidtrialreturn123';
+    let trialVerifyBody = null;
+
+    await trialReturnContext.addInitScript(({ claim }) => {
+      localStorage.setItem('wdis_founder_claim_v1', claim);
+      localStorage.setItem('wdis_pending_trial_checkout_v1', '1');
+      [
+        'wdis_founder_session_v1',
+        'wdis_pending_founder_session_v1',
+        'wdis_paid_trial_session_v1',
+        'wdis_paid_trial_expires_at_v1',
+        'wdis_paid_trial_used_v1'
+      ].forEach((key) => localStorage.removeItem(key));
+    }, { claim: trialClaim });
+
+    await trialReturnContext.route(`${API}/api/verify-payment`, async (route) => {
+      trialVerifyBody = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          paid: true,
+          accessType: 'trial',
+          expiresAt: Date.now() + (72 * 60 * 60 * 1000),
+          autoRenews: false
+        })
+      });
+    });
+
+    const trialReturnPage = await trialReturnContext.newPage();
+    await trialReturnPage.goto(`${SITE}?checkout=success&session_id=${trialSession}`, {
+      waitUntil: 'domcontentloaded',
+      timeout: 60_000
+    });
+    await trialReturnPage.waitForFunction(
+      (session) => localStorage.getItem('wdis_paid_trial_session_v1') === session,
+      trialSession,
+      { timeout: 15_000 }
+    );
+    await trialReturnPage.waitForFunction(
+      () => (document.querySelector('#trial-detail')?.textContent || '').includes('$1 trial active'),
+      null,
+      { timeout: 15_000 }
+    );
+
+    const trialState = await trialReturnPage.evaluate(() => ({
+      trialSession: localStorage.getItem('wdis_paid_trial_session_v1'),
+      founderSession: localStorage.getItem('wdis_founder_session_v1'),
+      pendingTrial: localStorage.getItem('wdis_pending_trial_checkout_v1'),
+      trialUsed: localStorage.getItem('wdis_paid_trial_used_v1'),
+      trialStart: Number(localStorage.getItem('wdis_trial_started_at_v2') || 0),
+      status: document.querySelector('#trial-status')?.textContent || '',
+      detail: document.querySelector('#trial-detail')?.textContent || '',
+      paymentStatus: document.querySelector('[data-payment-status]')?.textContent || '',
+      paywallHidden: document.querySelector('#paywall')?.hidden === true,
+      search: location.search
+    }));
+
+    assert(trialVerifyBody?.sessionId === trialSession, 'paid trial return verifies the Stripe session from the success URL');
+    assert(trialVerifyBody?.claimToken === trialClaim, 'paid trial return stays bound to the purchasing browser claim');
+    assert(trialState.trialSession === trialSession, 'paid trial success return activates exactly the paid trial entitlement');
+    assert(trialState.founderSession === null, 'paid trial success return does not grant Lifetime Access');
+    assert(trialState.pendingTrial === null, 'paid trial pending marker clears after verification');
+    assert(trialState.trialUsed === '1', 'paid trial is recorded as used after verification');
+    assert(trialState.trialStart > 0 && Date.now() - trialState.trialStart < 3 * 24 * 60 * 60 * 1000, 'paid trial return creates an active three-day access window');
+    assert(trialState.detail.includes('$1 trial active') && trialState.detail.includes('no auto-renewal'), 'paid trial return shows the active non-renewing trial state');
+    assert(/trial is active/i.test(trialState.paymentStatus), 'paid trial return confirms access to the customer');
+    assert(trialState.paywallHidden, 'paid trial return closes the paywall after server verification');
+    assert(trialState.search === '', 'paid trial success parameters are removed after verification starts');
+
+    await trialReturnContext.close();
+  }
+
+  {
+    const lifetimeReturnContext = await browser.newContext({
+      viewport: { width: 390, height: 844 },
+      serviceWorkers: 'block'
+    });
+    const lifetimeClaim = 'b'.repeat(64);
+    const lifetimeSession = 'cs_live_lifetimereturn123';
+    let lifetimeVerifyBody = null;
+
+    await lifetimeReturnContext.addInitScript(({ claim }) => {
+      localStorage.setItem('wdis_founder_claim_v1', claim);
+      [
+        'wdis_pending_trial_checkout_v1',
+        'wdis_paid_trial_session_v1',
+        'wdis_paid_trial_expires_at_v1',
+        'wdis_founder_session_v1',
+        'wdis_pending_founder_session_v1'
+      ].forEach((key) => localStorage.removeItem(key));
+    }, { claim: lifetimeClaim });
+
+    await lifetimeReturnContext.route(`${API}/api/verify-payment`, async (route) => {
+      lifetimeVerifyBody = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ paid: true, accessType: 'founder' })
+      });
+    });
+
+    const lifetimeReturnPage = await lifetimeReturnContext.newPage();
+    await lifetimeReturnPage.goto(`${SITE}?checkout=success&session_id=${lifetimeSession}`, {
+      waitUntil: 'domcontentloaded',
+      timeout: 60_000
+    });
+    await lifetimeReturnPage.waitForFunction(
+      (session) => localStorage.getItem('wdis_founder_session_v1') === session,
+      lifetimeSession,
+      { timeout: 15_000 }
+    );
+    await lifetimeReturnPage.waitForFunction(
+      () => /Lifetime Access/i.test(document.querySelector('[data-payment-status]')?.textContent || ''),
+      null,
+      { timeout: 15_000 }
+    );
+
+    const lifetimeState = await lifetimeReturnPage.evaluate(() => ({
+      founderSession: localStorage.getItem('wdis_founder_session_v1'),
+      pendingFounder: localStorage.getItem('wdis_pending_founder_session_v1'),
+      trialSession: localStorage.getItem('wdis_paid_trial_session_v1'),
+      paymentStatus: document.querySelector('[data-payment-status]')?.textContent || '',
+      paywallHidden: document.querySelector('#paywall')?.hidden === true,
+      search: location.search
+    }));
+
+    assert(lifetimeVerifyBody?.sessionId === lifetimeSession, 'Lifetime Access return verifies the Stripe session from the success URL');
+    assert(lifetimeVerifyBody?.claimToken === lifetimeClaim, 'Lifetime Access return stays bound to the purchasing browser claim');
+    assert(lifetimeState.founderSession === lifetimeSession, 'server-verified Lifetime Access persists for return visits');
+    assert(lifetimeState.pendingFounder === null, 'Lifetime Access pending session clears after verification');
+    assert(lifetimeState.trialSession === null, 'Lifetime Access return does not create a paid trial entitlement');
+    assert(/Lifetime Access/i.test(lifetimeState.paymentStatus) && /unlocked/i.test(lifetimeState.paymentStatus), 'Lifetime Access return visibly confirms the current offer name');
+    assert(!/Founding Member/i.test(lifetimeState.paymentStatus), 'Lifetime Access return exposes no stale Founding Member copy');
+    assert(lifetimeState.paywallHidden, 'Lifetime Access return closes the paywall after server verification');
+    assert(lifetimeState.search === '', 'Lifetime Access success parameters are removed after verification');
+
+    await lifetimeReturnContext.close();
+  }
+
   console.log('PAID_TRIAL_UI_PASS');
 } finally {
   await context.close();
