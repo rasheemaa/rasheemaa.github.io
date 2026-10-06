@@ -8,8 +8,10 @@ on:
       - '.github/scripts/payment-access-smoke.mjs'
       - 'what-do-i-say/index.html'
       - 'what-do-i-say/config.js'
-      - 'what-do-i-say/payment.js'
-      - 'what-do-i-say/app.js'
+      - 'what-do-i-say/payment-v3.js'
+      - 'what-do-i-say/paid-trial-access.js'
+      - 'what-do-i-say/chat-app.js'
+      - 'what-do-i-say/service-worker.js'
   workflow_dispatch:
 
 permissions:
