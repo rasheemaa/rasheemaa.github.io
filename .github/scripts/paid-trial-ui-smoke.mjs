@@ -49,12 +49,12 @@ async function waitForCurrentAppShell() {
       const response = await fetch(`${SITE}?app_shell_verify=${Date.now()}`, { cache: 'no-store' });
       if (response.ok) {
         const html = await response.text();
-        if (html.includes('/what-do-i-say/chat-app.js?v=27')) return;
+        if (html.includes('/what-do-i-say/chat-app.js?v=27') && html.includes('/what-do-i-say/payment-v3.js?v=2') && html.includes('/what-do-i-say/paid-trial-access.js?v=2')) return;
       }
     } catch (_) {}
     await new Promise((resolve) => setTimeout(resolve, 10_000));
   }
-  throw new Error('Production app shell did not deploy chat-app.js?v=26 before verification');
+  throw new Error('Production app shell did not deploy the purchase-recovery assets before verification');
 }
 
 await waitForCurrentAppShell();
@@ -91,7 +91,7 @@ const [homepage, shopPage, mainScript, launchPopup, refunds, terms, rootServiceW
   fetchLiveText('what-do-i-say/refunds/'),
   fetchLiveText('what-do-i-say/terms/'),
   fetchLiveText('service-worker.js'),
-  fetchLiveText('what-do-i-say/paid-trial-access.js?v=1'),
+  fetchLiveText('what-do-i-say/paid-trial-access.js?v=2'),
   fetchLiveText('what-do-i-say/service-worker.js')
 ]);
 assert(homepage.includes('/assets/js/main.js?v=2'), 'homepage loads the cache-busted main script');
@@ -121,7 +121,7 @@ assert(rootServiceWorker.includes('/assets/js/main.js?v=2'), 'public cache store
 assert(rootServiceWorker.includes('/assets/js/wdis-launch-popup.js?v=2'), 'public cache stores the cache-busted paid-trial popup');
 assert(paidTrialAccess.includes('Choose Lifetime Access to keep using Sparkle.'), 'post-trial state points customers to Lifetime Access');
 assert(!paidTrialAccess.includes('Founding Member'), 'post-trial access script has no stale Founding Member copy');
-assert(scopedServiceWorker.includes("wdis-v39"), 'What Do I Say scoped cache is refreshed to v39');
+assert(scopedServiceWorker.includes("wdis-v40"), 'What Do I Say scoped cache is refreshed to v40');
 assert(scopedServiceWorker.includes('/what-do-i-say/lifetime-copy.js?v=1'), 'Lifetime Access copy guard is a fresh scoped asset');
 
 const browser = await chromium.launch({ headless: true, args: ['--disable-dev-shm-usage'] });
@@ -136,6 +136,7 @@ await context.addInitScript(() => {
       'wdis_paid_trial_session_v1',
       'wdis_paid_trial_expires_at_v1',
       'wdis_pending_trial_checkout_v1',
+      'wdis_pending_trial_session_v1',
       'wdis_paid_trial_gate_v1',
       'wdis_paid_trial_used_v1'
     ].forEach((key) => localStorage.removeItem(key));
@@ -165,8 +166,8 @@ try {
   await page.waitForFunction(() => Boolean(window.Sparkle?.generate), null, { timeout: 30_000 });
 
   const scripts = await page.evaluate(() => [...document.scripts].map((script) => script.getAttribute('src') || ''));
-  assert(scripts.some((src) => src.includes('payment-v3.js?v=1')), 'production loads the $1 trial checkout controller');
-  assert(scripts.some((src) => src.includes('paid-trial-access.js?v=1')), 'production loads the paid trial access gate');
+  assert(scripts.some((src) => src.includes('payment-v3.js?v=2')), 'production loads the purchase-recovery checkout controller');
+  assert(scripts.some((src) => src.includes('paid-trial-access.js?v=2')), 'production loads the paid trial recovery gate');
   assert(scripts.some((src) => src.includes('lifetime-copy.js?v=1')), 'production loads the Lifetime Access copy guard');
   assert(scripts.some((src) => src.includes('chat-app.js?v=27')), 'production loads the cache-busted access-status app');
 
@@ -200,7 +201,44 @@ try {
   const storage = await context.storageState();
   const siteOrigin = storage.origins.find((entry) => entry.origin === 'https://thesheemaedit.com');
   const pendingTrial = siteOrigin?.localStorage?.find((entry) => entry.name === 'wdis_pending_trial_checkout_v1')?.value || '';
+  const pendingTrialSession = siteOrigin?.localStorage?.find((entry) => entry.name === 'wdis_pending_trial_session_v1')?.value || '';
   assert(pendingTrial === '1', 'browser remembers that the pending checkout is the trial');
+  assert(pendingTrialSession === 'cs_live_paidtrialuismoke', 'browser saves the pending trial session before leaving for Stripe');
+
+  let trialRecoveryVerifyBody = null;
+  await context.route(`${API}/api/verify-payment`, async (route) => {
+    trialRecoveryVerifyBody = route.request().postDataJSON();
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        paid: true,
+        accessType: 'trial',
+        expiresAt: Date.now() + (72 * 60 * 60 * 1000),
+        autoRenews: false
+      })
+    });
+  });
+
+  await page.goto(SITE, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+  await page.waitForFunction(
+    () => localStorage.getItem('wdis_paid_trial_session_v1') === 'cs_live_paidtrialuismoke',
+    null,
+    { timeout: 15_000 }
+  );
+  const recoveredTrial = await page.evaluate(() => ({
+    active: localStorage.getItem('wdis_paid_trial_session_v1'),
+    pending: localStorage.getItem('wdis_pending_trial_session_v1'),
+    pendingFlag: localStorage.getItem('wdis_pending_trial_checkout_v1'),
+    status: document.querySelector('[data-payment-status]')?.textContent || '',
+    search: location.search
+  }));
+  assert(trialRecoveryVerifyBody?.sessionId === 'cs_live_paidtrialuismoke', 'plain same-browser revisit re-verifies the saved trial session');
+  assert(trialRecoveryVerifyBody?.claimToken === checkoutBody?.claimToken, 'trial recovery uses the original browser purchase claim');
+  assert(recoveredTrial.active === 'cs_live_paidtrialuismoke', 'paid trial recovers without the Stripe success URL');
+  assert(recoveredTrial.pending === null && recoveredTrial.pendingFlag === null, 'verified trial recovery clears pending checkout storage');
+  assert(/trial is active/i.test(recoveredTrial.status), 'recovered paid trial visibly confirms active access');
+  assert(!recoveredTrial.search.includes('checkout='), 'paid trial recovery does not depend on checkout return parameters');
 
   {
     const trialReturnContext = await browser.newContext({
@@ -279,6 +317,79 @@ try {
     assert(trialState.search === '', 'paid trial success parameters are removed after verification starts');
 
     await trialReturnContext.close();
+  }
+
+  {
+    const lifetimeRecoveryContext = await browser.newContext({
+      viewport: { width: 390, height: 844 },
+      serviceWorkers: 'block'
+    });
+    const recoverySession = 'cs_live_lifetimerecovery123';
+    let recoveryCheckoutBody = null;
+    let recoveryVerifyBody = null;
+
+    await lifetimeRecoveryContext.route(`${API}/api/checkout`, async (route) => {
+      recoveryCheckoutBody = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          sessionId: recoverySession,
+          url: `https://checkout.stripe.com/c/pay/${recoverySession}`,
+          offer: 'founder'
+        })
+      });
+    });
+    await lifetimeRecoveryContext.route('https://checkout.stripe.com/**', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'text/html', body: '<title>Stripe Checkout recovery smoke</title>' });
+    });
+    await lifetimeRecoveryContext.route(`${API}/api/verify-payment`, async (route) => {
+      recoveryVerifyBody = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ paid: true, accessType: 'founder' })
+      });
+    });
+
+    const recoveryPage = await lifetimeRecoveryContext.newPage();
+    await recoveryPage.goto(SITE, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+    await recoveryPage.evaluate(() => { document.querySelector('#paywall').hidden = false; });
+    await recoveryPage.locator('#paywall [data-checkout-offer="founder"]').click();
+    await recoveryPage.waitForURL(/checkout\.stripe\.com/, { timeout: 10_000 });
+
+    const recoveryStorage = await lifetimeRecoveryContext.storageState();
+    const recoveryOrigin = recoveryStorage.origins.find((entry) => entry.origin === 'https://thesheemaedit.com');
+    const pendingLifetime = recoveryOrigin?.localStorage?.find((entry) => entry.name === 'wdis_pending_founder_session_v1')?.value || '';
+    assert(pendingLifetime === recoverySession, 'browser saves the pending Lifetime Access session before leaving for Stripe');
+    assert(recoveryCheckoutBody?.offer === 'founder', 'Lifetime Access recovery starts from the Lifetime Access checkout');
+
+    await recoveryPage.goto(SITE, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+    await recoveryPage.waitForFunction(
+      (session) => localStorage.getItem('wdis_founder_session_v1') === session,
+      recoverySession,
+      { timeout: 15_000 }
+    );
+    await recoveryPage.waitForFunction(
+      () => /Lifetime Access/i.test(document.querySelector('[data-payment-status]')?.textContent || ''),
+      null,
+      { timeout: 15_000 }
+    );
+
+    const recoveredLifetime = await recoveryPage.evaluate(() => ({
+      active: localStorage.getItem('wdis_founder_session_v1'),
+      pending: localStorage.getItem('wdis_pending_founder_session_v1'),
+      status: document.querySelector('[data-payment-status]')?.textContent || '',
+      search: location.search
+    }));
+    assert(recoveryVerifyBody?.sessionId === recoverySession, 'plain same-browser revisit re-verifies the saved Lifetime Access session');
+    assert(recoveryVerifyBody?.claimToken === recoveryCheckoutBody?.claimToken, 'Lifetime Access recovery uses the original browser purchase claim');
+    assert(recoveredLifetime.active === recoverySession, 'Lifetime Access recovers without the Stripe success URL');
+    assert(recoveredLifetime.pending === null, 'verified Lifetime Access recovery clears the pending session');
+    assert(/Lifetime Access/i.test(recoveredLifetime.status) && /unlocked/i.test(recoveredLifetime.status), 'recovered Lifetime Access visibly confirms unlock');
+    assert(!recoveredLifetime.search.includes('checkout='), 'Lifetime Access recovery does not depend on checkout return parameters');
+
+    await lifetimeRecoveryContext.close();
   }
 
   {
