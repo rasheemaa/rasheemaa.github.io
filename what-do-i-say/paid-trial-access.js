@@ -9,6 +9,7 @@
     trialSession: 'wdis_paid_trial_session_v1',
     trialExpires: 'wdis_paid_trial_expires_at_v1',
     pendingTrial: 'wdis_pending_trial_checkout_v1',
+    pendingTrialSession: 'wdis_pending_trial_session_v1',
     paidGate: 'wdis_paid_trial_gate_v1',
     trialUsed: 'wdis_paid_trial_used_v1'
   };
@@ -99,6 +100,7 @@
         set(K.trialUsed, '1');
         set(K.paidGate, '1');
         del(K.pendingTrial);
+        del(K.pendingTrialSession);
         setTrialClock(data.expiresAt);
         paintTrialCopy();
         const paywall = document.querySelector('#paywall');
@@ -110,6 +112,8 @@
 
       if (response.ok && data.accessType === 'trial' && data.status === 'expired') {
         del(K.trialSession);
+        del(K.pendingTrial);
+        del(K.pendingTrialSession);
         set(K.trialUsed, '1');
         set(K.legacyTrial, EXPIRED_SENTINEL());
         set(K.trialExpires, String(Number(data.expiresAt || 0)));
@@ -130,23 +134,34 @@
 
   const query = new URLSearchParams(location.search);
   const checkout = query.get('checkout');
-  const sessionId = query.get('session_id');
+  const sessionId = String(query.get('session_id') || '').trim();
   const pendingTrial = get(K.pendingTrial) === '1';
+  const pendingTrialSession = String(get(K.pendingTrialSession) || '').trim();
+  const validSession = (value) => /^cs_live_[A-Za-z0-9]+$/.test(String(value || ''));
 
-  if (pendingTrial && checkout === 'success' && /^cs_live_[A-Za-z0-9]+$/.test(String(sessionId || ''))) {
-    set(K.trialSession, String(sessionId));
+  if (
+    checkout === 'success' &&
+    validSession(sessionId) &&
+    (pendingTrial || pendingTrialSession === sessionId)
+  ) {
+    set(K.pendingTrial, '1');
+    set(K.pendingTrialSession, sessionId);
     history.replaceState({}, '', location.pathname);
     verifyTrial(sessionId, { quiet: false });
   } else if (pendingTrial && checkout === 'cancelled') {
     del(K.pendingTrial);
+    del(K.pendingTrialSession);
     history.replaceState({}, '', location.pathname);
     set(K.legacyTrial, EXPIRED_SENTINEL());
     setPaymentStatus('Trial checkout canceled. No payment was made.');
   } else {
-    const savedTrial = get(K.trialSession);
-    if (savedTrial) {
+    const savedTrial = String(get(K.trialSession) || '').trim();
+    if (validSession(savedTrial)) {
       set(K.legacyTrial, EXPIRED_SENTINEL());
       verifyTrial(savedTrial, { quiet: true });
+    } else if (pendingTrial && validSession(pendingTrialSession)) {
+      setPaymentStatus('Checking your recent $1 trial purchase with Stripe…');
+      verifyTrial(pendingTrialSession, { quiet: false });
     }
   }
 
