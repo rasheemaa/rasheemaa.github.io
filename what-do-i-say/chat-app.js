@@ -23,7 +23,7 @@
   const del = k => { try { localStorage.removeItem(k); } catch {} };
   const start = () => Number(get(K.trial) || 0);
   const trialOK = () => S.founder || !start() || Date.now() - start() < TRIAL_MS;
-  const setFounderStatus = msg => $$('[data-founder-status]').forEach(n => n.textContent = msg);
+  const setFounderStatus = msg => $('[data-payment-status], [data-founder-status]').forEach(n => n.textContent = msg);
 
   function inferRecipient(text) {
     const source = String(text || '').trim();
