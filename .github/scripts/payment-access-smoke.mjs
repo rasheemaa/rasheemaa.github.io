@@ -18,7 +18,7 @@ async function waitForCurrentProduction(page) {
     const current = await page.evaluate(() => {
       const csp = document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.content || '';
       const config = Array.from(document.scripts).some((script) => String(script.src || '').includes('/what-do-i-say/config.js?v=9'));
-      const payment = Array.from(document.scripts).some((script) => String(script.src || '').includes('/what-do-i-say/payment.js?v=2'));
+      const payment = Array.from(document.scripts).some((script) => String(script.src || '').includes('/what-do-i-say/payment-v3.js?v=2'));
       const copy = document.body.innerText || '';
       const legacyPaymentLinks = Array.from(document.querySelectorAll('a[href]')).filter((link) => String(link.href || '').includes('buy.stripe.com')).length;
       const checkoutButtons = document.querySelectorAll('[data-founder-checkout]').length;
@@ -28,7 +28,7 @@ async function waitForCurrentProduction(page) {
         payment,
         legacyPaymentLinks,
         checkoutButtons,
-        currentCopy: copy.includes('Founding Member access is verified securely.') && !copy.includes('verification is being reconnected')
+        currentCopy: copy.includes('Lifetime Access') && copy.includes('3 days for $1') && !copy.includes('Founding Member')
       };
     });
     if (
@@ -75,7 +75,8 @@ try {
         contentType: 'application/json',
         body: JSON.stringify({
           sessionId: CONTROLLED_CHECKOUT_SESSION,
-          url: `https://checkout.stripe.com/c/pay/${CONTROLLED_CHECKOUT_SESSION}`
+          url: `https://checkout.stripe.com/c/pay/${CONTROLLED_CHECKOUT_SESSION}`,
+          offer: 'founder'
         })
       });
     });
@@ -88,8 +89,8 @@ try {
     await page.locator('[data-founder-checkout]').first().click();
     await page.waitForURL('https://checkout.stripe.com/**', { timeout: 15_000 });
 
-    assert(checkoutRequest?.url === WORKER_CHECKOUT, 'live Founding Member button calls only the Cloudflare checkout Worker');
-    assert(checkoutRequest?.method === 'POST', 'live Founding Member checkout uses POST');
+    assert(checkoutRequest?.url === WORKER_CHECKOUT, 'live Lifetime Access button calls only the Cloudflare checkout Worker');
+    assert(checkoutRequest?.method === 'POST', 'live Lifetime Access checkout uses POST');
     assert(/^[a-f0-9]{64}$/.test(String(checkoutRequest?.body?.claimToken || '')), 'live checkout sends a browser-bound purchase claim');
     assert(page.url().startsWith('https://checkout.stripe.com/'), 'validated Cloudflare checkout response redirects only to Stripe Checkout');
     await context.close();
@@ -102,10 +103,10 @@ try {
     await page.waitForFunction(() => !location.search.includes('checkout='), null, { timeout: 15_000 });
     const state = await page.evaluate(() => ({
       trial: document.querySelector('#trial-status')?.textContent || '',
-      status: document.querySelector('[data-founder-status]')?.textContent || '',
+      status: document.querySelector('[data-payment-status]')?.textContent || '',
       founder: localStorage.getItem('wdis_founder_session_v1')
     }));
-    assert(!/Founding Member/i.test(state.trial), 'cancelled checkout does not unlock Founding Member access');
+    assert(!/Founding Member/i.test(state.trial), 'cancelled checkout does not unlock Lifetime Access');
     assert(/canceled|cancelled/i.test(state.status), 'cancelled checkout is reported as cancelled');
     assert(state.founder === null, 'cancelled checkout stores no founder session');
     await context.close();
@@ -124,10 +125,10 @@ try {
     await page.waitForFunction(() => !location.search.includes('checkout='), null, { timeout: 15_000 });
     const state = await page.evaluate(() => ({
       trial: document.querySelector('#trial-status')?.textContent || '',
-      status: document.querySelector('[data-founder-status]')?.textContent || '',
+      status: document.querySelector('[data-payment-status]')?.textContent || '',
       founder: localStorage.getItem('wdis_founder_session_v1')
     }));
-    assert(!/Founding Member/i.test(state.trial), 'fake success URL does not unlock Founding Member access');
+    assert(!/Founding Member/i.test(state.trial), 'fake success URL does not unlock Lifetime Access');
     assert(!/unlocked/i.test(state.status), 'fake success URL never shows verified unlock');
     assert(state.founder === null, 'fake success URL stores no verified founder session');
     await context.close();
@@ -151,9 +152,9 @@ try {
     await page.waitForTimeout(750);
     const state = await page.evaluate(() => ({
       trial: document.querySelector('#trial-status')?.textContent || '',
-      status: document.querySelector('[data-founder-status]')?.textContent || ''
+      status: document.querySelector('[data-payment-status]')?.textContent || ''
     }));
-    assert(!/Founding Member/i.test(state.trial), 'fake browser storage does not create Founding Member status');
+    assert(!/Founding Member/i.test(state.trial), 'fake browser storage does not create Lifetime Access status');
     assert(!/unlocked/i.test(state.status), 'fake browser storage does not show verified unlock');
     await context.close();
   }
@@ -176,23 +177,23 @@ try {
     });
 
     await page.goto(`${BASE}?checkout=success&session_id=${CONTROLLED_PAID_SESSION}`, { waitUntil: 'domcontentloaded' });
-    await page.waitForFunction(() => /Founding Member/i.test(document.querySelector('#trial-status')?.textContent || ''), null, { timeout: 15_000 });
+    await page.waitForFunction(() => /Lifetime Access/i.test(document.querySelector('#trial-status')?.textContent || ''), null, { timeout: 15_000 });
     let state = await page.evaluate(() => ({
       trial: document.querySelector('#trial-status')?.textContent || '',
       founder: localStorage.getItem('wdis_founder_session_v1'),
       pending: localStorage.getItem('wdis_pending_founder_session_v1')
     }));
-    assert(/Founding Member/i.test(state.trial), 'server-confirmed paid response unlocks Founding Member status');
+    assert(/Lifetime Access/i.test(state.trial), 'server-confirmed paid response unlocks Lifetime Access status');
     assert(state.founder === CONTROLLED_PAID_SESSION, 'verified session reference is persisted after server confirmation');
     assert(state.pending === null, 'pending purchase reference is cleared after verification');
 
     await page.reload({ waitUntil: 'domcontentloaded' });
-    await page.waitForFunction(() => /Founding Member/i.test(document.querySelector('#trial-status')?.textContent || ''), null, { timeout: 15_000 });
+    await page.waitForFunction(() => /Lifetime Access/i.test(document.querySelector('#trial-status')?.textContent || ''), null, { timeout: 15_000 });
     state = await page.evaluate(() => ({
       trial: document.querySelector('#trial-status')?.textContent || '',
       founder: localStorage.getItem('wdis_founder_session_v1')
     }));
-    assert(/Founding Member/i.test(state.trial), 'verified access survives a return visit after server re-verification');
+    assert(/Lifetime Access/i.test(state.trial), 'verified Lifetime Access survives a return visit after server re-verification');
     assert(state.founder === CONTROLLED_PAID_SESSION, 'verified session reference remains available for return-visit re-verification');
     await context.close();
   }
