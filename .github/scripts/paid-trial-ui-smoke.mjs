@@ -42,6 +42,30 @@ async function waitForProductionAssets() {
 
 await waitForProductionAssets();
 
+async function waitForShopOffer() {
+  let last = '';
+  for (let attempt = 0; attempt < 36; attempt += 1) {
+    try {
+      const response = await fetch(`https://thesheemaedit.com/shop/?paid_trial_shop_verify=${Date.now()}`, { cache: 'no-store' });
+      if (response.ok) {
+        last = await response.text();
+        if (
+          last.includes('3 days · $1') &&
+          last.includes('no automatic renewal') &&
+          last.includes('Lifetime Access $19.99 once') &&
+          !last.includes('3 days free') &&
+          !last.includes('No card required') &&
+          !last.includes('Founding Members')
+        ) return;
+      }
+    } catch (_) {}
+    await new Promise((resolve) => setTimeout(resolve, 10_000));
+  }
+  throw new Error('Production shop page did not deploy the paid trial offer under test');
+}
+
+await waitForShopOffer();
+
 const [homepage, shopPage, mainScript, launchPopup, refunds, terms, rootServiceWorker, paidTrialAccess, scopedServiceWorker] = await Promise.all([
   fetchLiveText(''),
   fetchLiveText('shop/'),
