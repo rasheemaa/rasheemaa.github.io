@@ -42,8 +42,9 @@ async function waitForProductionAssets() {
 
 await waitForProductionAssets();
 
-const [homepage, mainScript, launchPopup, refunds, terms, rootServiceWorker, paidTrialAccess, scopedServiceWorker] = await Promise.all([
+const [homepage, shopPage, mainScript, launchPopup, refunds, terms, rootServiceWorker, paidTrialAccess, scopedServiceWorker] = await Promise.all([
   fetchLiveText(''),
+  fetchLiveText('shop/'),
   fetchLiveText('assets/js/main.js?v=2'),
   fetchLiveText('assets/js/wdis-launch-popup.js?v=2'),
   fetchLiveText('what-do-i-say/refunds/'),
@@ -53,6 +54,15 @@ const [homepage, mainScript, launchPopup, refunds, terms, rootServiceWorker, pai
   fetchLiveText('what-do-i-say/service-worker.js')
 ]);
 assert(homepage.includes('/assets/js/main.js?v=2'), 'homepage loads the cache-busted main script');
+assert(shopPage.includes('3 days · $1'), 'shop card shows the $1 three-day trial');
+assert(shopPage.includes('no automatic renewal'), 'shop card states no automatic renewal');
+assert(shopPage.includes('Lifetime Access $19.99 once'), 'shop card shows Lifetime Access pricing');
+assert(shopPage.includes('Start the 3-day trial · $1'), 'shop card CTA uses the paid trial offer');
+assert(!shopPage.includes('3 days free'), 'shop card has no stale free-trial price');
+assert(!shopPage.includes('No card required'), 'shop card has no stale no-card-required copy');
+assert(!shopPage.includes('Founding Members'), 'shop card has no stale Founding Members copy');
+assert(!shopPage.includes('Start the free trial'), 'shop card has no stale free-trial CTA');
+assert(shopPage.includes('/assets/js/main.js?v=2'), 'shop page loads the cache-busted main script');
 assert(mainScript.includes('/assets/js/wdis-launch-popup.js?v=2'), 'main script loads the cache-busted launch popup');
 assert(launchPopup.includes('Lifetime Access'), 'launch popup uses Lifetime Access');
 assert(launchPopup.includes('3 days for $1 once'), 'launch popup advertises the $1 three-day paid trial');
