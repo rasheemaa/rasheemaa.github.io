@@ -43,6 +43,22 @@ async function waitForProductionAssets() {
 
 await waitForProductionAssets();
 
+async function waitForCurrentAppShell() {
+  for (let attempt = 0; attempt < 36; attempt += 1) {
+    try {
+      const response = await fetch(`${SITE}?app_shell_verify=${Date.now()}`, { cache: 'no-store' });
+      if (response.ok) {
+        const html = await response.text();
+        if (html.includes('/what-do-i-say/chat-app.js?v=26')) return;
+      }
+    } catch (_) {}
+    await new Promise((resolve) => setTimeout(resolve, 10_000));
+  }
+  throw new Error('Production app shell did not deploy chat-app.js?v=26 before verification');
+}
+
+await waitForCurrentAppShell();
+
 async function waitForShopOffer() {
   let last = '';
   for (let attempt = 0; attempt < 36; attempt += 1) {
@@ -152,6 +168,7 @@ try {
   assert(scripts.some((src) => src.includes('payment-v3.js?v=1')), 'production loads the $1 trial checkout controller');
   assert(scripts.some((src) => src.includes('paid-trial-access.js?v=1')), 'production loads the paid trial access gate');
   assert(scripts.some((src) => src.includes('lifetime-copy.js?v=1')), 'production loads the Lifetime Access copy guard');
+  assert(scripts.some((src) => src.includes('chat-app.js?v=26')), 'production loads the cache-busted access-status app');
 
   await page.waitForFunction(() => document.querySelector('#trial-status')?.textContent?.includes('$1'));
   assert((await page.locator('#trial-status').textContent())?.includes('$1'), 'fresh customer sees the $1 three-day trial price');
