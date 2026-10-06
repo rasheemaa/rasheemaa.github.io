@@ -14,6 +14,7 @@ on:
       - 'what-do-i-say/index.html'
       - 'what-do-i-say/payment-v3.js'
       - 'what-do-i-say/paid-trial-access.js'
+      - 'what-do-i-say/lifetime-copy.js'
       - 'what-do-i-say/service-worker.js'
       - 'what-do-i-say/terms.html'
       - 'what-do-i-say/refunds.html'
