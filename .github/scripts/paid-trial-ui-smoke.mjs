@@ -49,7 +49,7 @@ async function waitForCurrentAppShell() {
       const response = await fetch(`${SITE}?app_shell_verify=${Date.now()}`, { cache: 'no-store' });
       if (response.ok) {
         const html = await response.text();
-        if (html.includes('/what-do-i-say/chat-app.js?v=26')) return;
+        if (html.includes('/what-do-i-say/chat-app.js?v=27')) return;
       }
     } catch (_) {}
     await new Promise((resolve) => setTimeout(resolve, 10_000));
@@ -121,7 +121,7 @@ assert(rootServiceWorker.includes('/assets/js/main.js?v=2'), 'public cache store
 assert(rootServiceWorker.includes('/assets/js/wdis-launch-popup.js?v=2'), 'public cache stores the cache-busted paid-trial popup');
 assert(paidTrialAccess.includes('Choose Lifetime Access to keep using Sparkle.'), 'post-trial state points customers to Lifetime Access');
 assert(!paidTrialAccess.includes('Founding Member'), 'post-trial access script has no stale Founding Member copy');
-assert(scopedServiceWorker.includes("wdis-v38"), 'What Do I Say scoped cache is refreshed to v38');
+assert(scopedServiceWorker.includes("wdis-v39"), 'What Do I Say scoped cache is refreshed to v39');
 assert(scopedServiceWorker.includes('/what-do-i-say/lifetime-copy.js?v=1'), 'Lifetime Access copy guard is a fresh scoped asset');
 
 const browser = await chromium.launch({ headless: true, args: ['--disable-dev-shm-usage'] });
@@ -168,7 +168,7 @@ try {
   assert(scripts.some((src) => src.includes('payment-v3.js?v=1')), 'production loads the $1 trial checkout controller');
   assert(scripts.some((src) => src.includes('paid-trial-access.js?v=1')), 'production loads the paid trial access gate');
   assert(scripts.some((src) => src.includes('lifetime-copy.js?v=1')), 'production loads the Lifetime Access copy guard');
-  assert(scripts.some((src) => src.includes('chat-app.js?v=26')), 'production loads the cache-busted access-status app');
+  assert(scripts.some((src) => src.includes('chat-app.js?v=27')), 'production loads the cache-busted access-status app');
 
   await page.waitForFunction(() => document.querySelector('#trial-status')?.textContent?.includes('$1'));
   assert((await page.locator('#trial-status').textContent())?.includes('$1'), 'fresh customer sees the $1 three-day trial price');
