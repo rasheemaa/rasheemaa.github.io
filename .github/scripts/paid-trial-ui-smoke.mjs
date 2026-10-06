@@ -128,6 +128,8 @@ const browser = await chromium.launch({ headless: true, args: ['--disable-dev-sh
 const context = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
 await context.addInitScript(() => {
   try {
+    if (sessionStorage.getItem('wdis_paid_trial_smoke_initialized') === '1') return;
+    sessionStorage.setItem('wdis_paid_trial_smoke_initialized', '1');
     [
       'wdis_trial_started_at_v2',
       'wdis_founder_session_v1',
