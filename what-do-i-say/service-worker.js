@@ -1,4 +1,4 @@
-const CACHE = 'wdis-v40';
+const CACHE = 'wdis-v41';
 const SHELL = [
   '/what-do-i-say/',
   '/what-do-i-say/index.html',
@@ -14,7 +14,7 @@ const SHELL = [
   '/what-do-i-say/sparkle-first-draft-polish.js?v=1',
   '/what-do-i-say/sparkle-worker.js?v=21',
   '/what-do-i-say/payment-v3.js?v=2',
-  '/what-do-i-say/paid-trial-access.js?v=2',
+  '/what-do-i-say/paid-trial-access.js?v=3',
   '/what-do-i-say/lifetime-copy.js?v=1',
   '/what-do-i-say/manifest.webmanifest',
   '/assets/images/app-icon-192.png',
