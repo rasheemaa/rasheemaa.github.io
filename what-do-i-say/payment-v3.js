@@ -4,6 +4,8 @@
   const VERIFY_ENDPOINT = API_BASE ? `${API_BASE}/api/verify-payment` : '';
   const CLAIM_KEY = 'wdis_founder_claim_v1';
   const PENDING_TRIAL_KEY = 'wdis_pending_trial_checkout_v1';
+  const PENDING_TRIAL_SESSION_KEY = 'wdis_pending_trial_session_v1';
+  const PENDING_FOUNDER_KEY = 'wdis_pending_founder_session_v1';
   const buttons = () => Array.from(document.querySelectorAll('[data-checkout-offer]'));
 
   function setStatus(message) {
@@ -91,9 +93,6 @@
     setStatus(offer === 'trial' ? 'Opening the secure $1 trial checkout…' : 'Opening secure Lifetime Access checkout…');
 
     try {
-      if (offer === 'trial') localStorage.setItem(PENDING_TRIAL_KEY, '1');
-      else localStorage.removeItem(PENDING_TRIAL_KEY);
-
       const response = await nativeFetch(CHECKOUT_ENDPOINT, {
         method: 'POST',
         mode: 'cors',
@@ -120,11 +119,32 @@
         throw new Error('Secure checkout returned an invalid response. Please try again.');
       }
 
+      try {
+        if (offer === 'trial') {
+          localStorage.setItem(PENDING_TRIAL_KEY, '1');
+          localStorage.setItem(PENDING_TRIAL_SESSION_KEY, sessionId);
+          localStorage.removeItem(PENDING_FOUNDER_KEY);
+          if (localStorage.getItem(PENDING_TRIAL_SESSION_KEY) !== sessionId) throw new Error('trial recovery write failed');
+        } else {
+          localStorage.setItem(PENDING_FOUNDER_KEY, sessionId);
+          localStorage.removeItem(PENDING_TRIAL_KEY);
+          localStorage.removeItem(PENDING_TRIAL_SESSION_KEY);
+          if (localStorage.getItem(PENDING_FOUNDER_KEY) !== sessionId) throw new Error('lifetime recovery write failed');
+        }
+      } catch (_) {
+        throw new Error('This browser could not save your purchase recovery. Please enable site storage and try again.');
+      }
+
       window.location.assign(checkoutUrl);
     } catch (error) {
-      if (offer === 'trial') {
-        try { localStorage.removeItem(PENDING_TRIAL_KEY); } catch (_) {}
-      }
+      try {
+        if (offer === 'trial') {
+          localStorage.removeItem(PENDING_TRIAL_KEY);
+          localStorage.removeItem(PENDING_TRIAL_SESSION_KEY);
+        } else {
+          localStorage.removeItem(PENDING_FOUNDER_KEY);
+        }
+      } catch (_) {}
       setBusy(false);
       setStatus(error?.message || 'Secure checkout could not start. Please try again.');
     }
