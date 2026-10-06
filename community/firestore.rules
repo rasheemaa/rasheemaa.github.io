@@ -1,0 +1,184 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function verified() {
+      return signedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return verified() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function notBanned() {
+      return signedIn() &&
+        !exists(/databases/$(database)/documents/bans/$(request.auth.uid));
+    }
+
+    function member() {
+      return verified() && notBanned();
+    }
+
+    match /profiles/{uid} {
+      allow create: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() >= 1
+        && request.resource.data.displayName.size() <= 40
+        && request.resource.data.bio is string
+        && request.resource.data.bio.size() <= 280
+        && request.resource.data.postCount == 0
+        && request.resource.data.commentCount == 0
+        && request.resource.data.points == 0;
+
+      allow read: if member();
+
+      allow update: if member()
+        && request.auth.uid == uid
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() >= 1
+        && request.resource.data.displayName.size() <= 40
+        && request.resource.data.bio is string
+        && request.resource.data.bio.size() <= 280
+        && request.resource.data.postCount >= resource.data.postCount
+        && request.resource.data.postCount <= resource.data.postCount + 1
+        && request.resource.data.commentCount >= resource.data.commentCount
+        && request.resource.data.commentCount <= resource.data.commentCount + 1
+        && request.resource.data.points ==
+          request.resource.data.postCount * 5 +
+          request.resource.data.commentCount * 2
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['displayName','bio','updatedAt','postCount','commentCount','points']);
+
+      allow delete: if request.auth.uid == uid || isAdmin();
+    }
+
+    match /posts/{postId} {
+      allow read: if member();
+
+      allow create: if member()
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() >= 1
+        && request.resource.data.displayName.size() <= 40
+        && request.resource.data.spaceId in ['mind','motherhood','chronic','lifestyle','chaos']
+        && request.resource.data.body is string
+        && request.resource.data.body.size() >= 1
+        && request.resource.data.body.size() <= 3000
+        && request.resource.data.isPinned == false
+        && request.resource.data.commentCount == 0
+        && request.resource.data.reactionCount == 0;
+
+      allow update: if isAdmin()
+        || (
+          member()
+          && resource.data.authorId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['body','updatedAt'])
+          && request.resource.data.body is string
+          && request.resource.data.body.size() >= 1
+          && request.resource.data.body.size() <= 3000
+        )
+        || (
+          member()
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['reactionCount'])
+          && request.resource.data.reactionCount >= 0
+          && (
+            request.resource.data.reactionCount == resource.data.reactionCount + 1
+            || request.resource.data.reactionCount == resource.data.reactionCount - 1
+          )
+        )
+        || (
+          member()
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['commentCount'])
+          && request.resource.data.commentCount >= 0
+          && (
+            request.resource.data.commentCount == resource.data.commentCount + 1
+            || request.resource.data.commentCount == resource.data.commentCount - 1
+          )
+        );
+
+      allow delete: if member()
+        && (resource.data.authorId == request.auth.uid || isAdmin());
+
+      match /comments/{commentId} {
+        allow read: if member();
+
+        allow create: if member()
+          && request.resource.data.authorId == request.auth.uid
+          && request.resource.data.displayName is string
+          && request.resource.data.displayName.size() >= 1
+          && request.resource.data.displayName.size() <= 40
+          && request.resource.data.body is string
+          && request.resource.data.body.size() >= 1
+          && request.resource.data.body.size() <= 2000;
+
+        allow update: if member()
+          && resource.data.authorId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['body','updatedAt'])
+          && request.resource.data.body is string
+          && request.resource.data.body.size() >= 1
+          && request.resource.data.body.size() <= 2000;
+
+        allow delete: if member()
+          && (
+            resource.data.authorId == request.auth.uid
+            || get(/databases/$(database)/documents/posts/$(postId)).data.authorId == request.auth.uid
+            || isAdmin()
+          );
+      }
+
+      match /reactions/{uid} {
+        allow read: if member();
+
+        allow create: if member()
+          && uid == request.auth.uid
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.reaction == 'heart';
+
+        allow delete: if member()
+          && uid == request.auth.uid;
+
+        allow update: if false;
+      }
+    }
+
+    match /reports/{reportId} {
+      allow create: if member()
+        && request.resource.data.reporterId == request.auth.uid
+        && request.resource.data.postId is string
+        && request.resource.data.reason is string
+        && request.resource.data.reason.size() <= 500;
+
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /events/{eventId} {
+      allow read: if member();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /resources/{resourceId} {
+      allow read: if member();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /admins/{uid} {
+      allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
+      allow write: if false;
+    }
+
+    match /bans/{uid} {
+      allow read: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+  }
+}
