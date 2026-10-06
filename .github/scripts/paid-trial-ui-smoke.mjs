@@ -49,7 +49,7 @@ async function waitForCurrentAppShell() {
       const response = await fetch(`${SITE}?app_shell_verify=${Date.now()}`, { cache: 'no-store' });
       if (response.ok) {
         const html = await response.text();
-        if (html.includes('/what-do-i-say/chat-app.js?v=27') && html.includes('/what-do-i-say/payment-v3.js?v=2') && html.includes('/what-do-i-say/paid-trial-access.js?v=2')) return;
+        if (html.includes('/what-do-i-say/chat-app.js?v=27') && html.includes('/what-do-i-say/payment-v3.js?v=2') && html.includes('/what-do-i-say/paid-trial-access.js?v=3')) return;
       }
     } catch (_) {}
     await new Promise((resolve) => setTimeout(resolve, 10_000));
@@ -91,7 +91,7 @@ const [homepage, shopPage, mainScript, launchPopup, refunds, terms, rootServiceW
   fetchLiveText('what-do-i-say/refunds/'),
   fetchLiveText('what-do-i-say/terms/'),
   fetchLiveText('service-worker.js'),
-  fetchLiveText('what-do-i-say/paid-trial-access.js?v=2'),
+  fetchLiveText('what-do-i-say/paid-trial-access.js?v=3'),
   fetchLiveText('what-do-i-say/service-worker.js')
 ]);
 assert(homepage.includes('/assets/js/main.js?v=2'), 'homepage loads the cache-busted main script');
@@ -121,7 +121,7 @@ assert(rootServiceWorker.includes('/assets/js/main.js?v=2'), 'public cache store
 assert(rootServiceWorker.includes('/assets/js/wdis-launch-popup.js?v=2'), 'public cache stores the cache-busted paid-trial popup');
 assert(paidTrialAccess.includes('Choose Lifetime Access to keep using Sparkle.'), 'post-trial state points customers to Lifetime Access');
 assert(!paidTrialAccess.includes('Founding Member'), 'post-trial access script has no stale Founding Member copy');
-assert(scopedServiceWorker.includes("wdis-v40"), 'What Do I Say scoped cache is refreshed to v40');
+assert(scopedServiceWorker.includes("wdis-v41"), 'What Do I Say scoped cache is refreshed to v41');
 assert(scopedServiceWorker.includes('/what-do-i-say/lifetime-copy.js?v=1'), 'Lifetime Access copy guard is a fresh scoped asset');
 
 const browser = await chromium.launch({ headless: true, args: ['--disable-dev-shm-usage'] });
@@ -169,7 +169,7 @@ try {
 
   const scripts = await page.evaluate(() => [...document.scripts].map((script) => script.getAttribute('src') || ''));
   assert(scripts.some((src) => src.includes('payment-v3.js?v=2')), 'production loads the purchase-recovery checkout controller');
-  assert(scripts.some((src) => src.includes('paid-trial-access.js?v=2')), 'production loads the paid trial recovery gate');
+  assert(scripts.some((src) => src.includes('paid-trial-access.js?v=3')), 'production loads the paid trial recovery gate');
   assert(scripts.some((src) => src.includes('lifetime-copy.js?v=1')), 'production loads the Lifetime Access copy guard');
   assert(scripts.some((src) => src.includes('chat-app.js?v=27')), 'production loads the cache-busted access-status app');
 
@@ -381,6 +381,8 @@ try {
     const recoveredLifetime = await recoveryPage.evaluate(() => ({
       active: localStorage.getItem('wdis_founder_session_v1'),
       pending: localStorage.getItem('wdis_pending_founder_session_v1'),
+      trialLabel: document.querySelector('#trial-status')?.textContent || '',
+      trialDetail: document.querySelector('#trial-detail')?.textContent || '',
       status: document.querySelector('[data-payment-status]')?.textContent || '',
       search: location.search
     }));
@@ -389,6 +391,7 @@ try {
     assert(recoveredLifetime.active === recoverySession, 'Lifetime Access recovers without the Stripe success URL');
     assert(recoveredLifetime.pending === null, 'verified Lifetime Access recovery clears the pending session');
     assert(/Lifetime Access/i.test(recoveredLifetime.status) && /unlocked/i.test(recoveredLifetime.status), 'recovered Lifetime Access visibly confirms unlock');
+    assert(/Lifetime Access/i.test(recoveredLifetime.trialLabel) && /unlocked/i.test(recoveredLifetime.trialDetail), 'recovered Lifetime Access keeps the top access badge accurate');
     assert(!recoveredLifetime.search.includes('checkout='), 'Lifetime Access recovery does not depend on checkout return parameters');
 
     await lifetimeRecoveryContext.close();
