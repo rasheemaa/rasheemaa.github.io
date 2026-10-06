@@ -55,7 +55,7 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys()
           .hasOnly(['displayName','bio','updatedAt','postCount','commentCount','points']);
 
-      allow delete: if request.auth.uid == uid || isAdmin();
+      allow delete: if (signedIn() && request.auth.uid == uid) || isAdmin();
     }
 
     match /posts/{postId} {
