@@ -22,6 +22,7 @@ async function waitForProductionAssets() {
   const paths = [
     'what-do-i-say/payment-v3.js',
     'what-do-i-say/paid-trial-access.js',
+    'what-do-i-say/chat-app.js',
     'what-do-i-say/service-worker.js'
   ];
   const expected = await Promise.all(paths.map((path) => readFile(path, 'utf8')));
@@ -104,7 +105,7 @@ assert(rootServiceWorker.includes('/assets/js/main.js?v=2'), 'public cache store
 assert(rootServiceWorker.includes('/assets/js/wdis-launch-popup.js?v=2'), 'public cache stores the cache-busted paid-trial popup');
 assert(paidTrialAccess.includes('Choose Lifetime Access to keep using Sparkle.'), 'post-trial state points customers to Lifetime Access');
 assert(!paidTrialAccess.includes('Founding Member'), 'post-trial access script has no stale Founding Member copy');
-assert(scopedServiceWorker.includes("wdis-v37"), 'What Do I Say scoped cache is refreshed to v37');
+assert(scopedServiceWorker.includes("wdis-v38"), 'What Do I Say scoped cache is refreshed to v38');
 assert(scopedServiceWorker.includes('/what-do-i-say/lifetime-copy.js?v=1'), 'Lifetime Access copy guard is a fresh scoped asset');
 
 const browser = await chromium.launch({ headless: true, args: ['--disable-dev-shm-usage'] });
