@@ -1,6 +1,9 @@
-// Public Supabase browser configuration for The Sheema Edit Community.
-// The anon key is designed to be public. Row Level Security in Supabase protects member data.
+// Public Firebase web configuration for The Sheema Edit Community.
+// Firebase web config values are intended to be present in browser code.
+// Security is enforced by Firebase Authentication + Firestore Security Rules.
 window.SHEEMA_COMMUNITY_CONFIG = {
-  supabaseUrl: "",
-  supabaseAnonKey: ""
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  appId: ""
 };
