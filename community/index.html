@@ -1,0 +1,161 @@
+---
+layout: null
+permalink: /community/
+---
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>The Edit Community | The Sheema Edit</title>
+<meta name="description" content="The community side of The Sheema Edit: honest conversations about mental wellness, unmasking, motherhood, chronic illness, lifestyle, beauty, and real life.">
+<meta name="theme-color" content="#ff4fa3">
+<link rel="canonical" href="https://thesheemaedit.com/community/">
+<link rel="icon" href="/assets/images/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="stylesheet" href="/assets/css/styles.css">
+<link rel="stylesheet" href="/assets/css/community.css?v=1">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-C7XV3YJCZE"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-C7XV3YJCZE');</script>
+</head>
+<body class="community-page">
+<a class="skip-link" href="#community-main">Skip to the community</a>
+<header class="site-header"><div class="site-shell header-inner"><a class="brand" href="/" aria-label="The Sheema Edit home"><span class="brand-mark" aria-hidden="true"></span><span>The Sheema Edit</span></a><button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-navigation" aria-label="Open navigation menu"><span></span></button><nav class="site-nav" id="site-navigation" aria-label="Main navigation" data-open="false"><a href="/">Home</a><a href="/community/" aria-current="page">Community</a><a href="/#latest">The edits</a><a href="/shop/">Shop</a><a href="/about.html">About</a></nav></div></header>
+
+<main id="community-main" class="community-app">
+<section class="community-banner">
+  <div class="site-shell community-banner-inner">
+    <div>
+      <p class="community-kicker">✦ The Edit Community</p>
+      <h1>Come sit with us.</h1>
+      <p>A softer corner of the internet for the conversations The Sheema Edit already starts. No performing. No pretending you have it all together.</p>
+    </div>
+    <div class="community-badge" aria-label="Five community spaces"><strong>5</strong><span>rooms to land in</span></div>
+  </div>
+</section>
+
+<div class="site-shell community-layout">
+  <aside class="community-sidebar" aria-label="Community sections">
+    <p class="sidebar-label">The community</p>
+    <nav class="community-tabs">
+      <button class="community-tab is-active" type="button" data-community-tab="feed" aria-pressed="true"><span>♡</span> Community</button>
+      <button class="community-tab" type="button" data-community-tab="spaces" aria-pressed="false"><span>✦</span> Spaces</button>
+      <button class="community-tab" type="button" data-community-tab="library" aria-pressed="false"><span>▣</span> Library</button>
+      <button class="community-tab" type="button" data-community-tab="calendar" aria-pressed="false"><span>◷</span> Calendar</button>
+      <button class="community-tab" type="button" data-community-tab="levels" aria-pressed="false"><span>☆</span> Levels</button>
+    </nav>
+    <div class="sidebar-note">
+      <strong>Built from the Edit.</strong>
+      <p>Read something that hits? This is where the conversation keeps going.</p>
+    </div>
+  </aside>
+
+  <section class="community-content">
+    <div class="community-panel is-active" data-community-panel="feed">
+      <article class="community-card welcome-card">
+        <div class="post-avatar" aria-hidden="true">S</div>
+        <div class="community-post-body">
+          <div class="post-heading"><div><strong>Sheema</strong><span> · pinned</span></div><span class="pin">PINNED</span></div>
+          <h2>Welcome to the side of The Edit where we get to talk back. 💗</h2>
+          <p>The articles can start the conversation, but they do not have to finish it. This community is for the messy middle: unmasking, motherhood, chronic illness, beauty, family, boundaries, funny stories, and all the little things that make real life real.</p>
+          <div class="welcome-rules"><span>Be kind</span><span>Protect privacy</span><span>No pressure to perform</span><span>Advice only when it is wanted</span></div>
+        </div>
+      </article>
+
+      <div class="feed-heading"><div><p class="community-kicker">Fresh from The Edit</p><h2>Start with a conversation</h2></div><a href="/#latest">See all edits →</a></div>
+      <div class="community-feed">
+        {% assign edits = site.edits | sort: "date" | reverse %}
+        {% for edit in edits limit:5 %}
+        {% assign room = "Mind & Unmasking" %}
+        {% assign room_class = "room-mind" %}
+        {% if edit.category contains "Chronic" %}{% assign room = "Chronic Illness & Real Life" %}{% assign room_class = "room-chronic" %}
+        {% elsif edit.category contains "Motherhood" %}{% assign room = "Motherhood & Family" %}{% assign room_class = "room-motherhood" %}
+        {% elsif edit.category contains "Lifestyle" %}{% assign room = "Lifestyle, Beauty & Laughs" %}{% assign room_class = "room-lifestyle" %}{% endif %}
+        <article class="community-card edit-feed-card">
+          <div class="post-avatar small" aria-hidden="true">S</div>
+          <div class="community-post-body">
+            <div class="post-heading"><div><strong>Sheema</strong><span> · {{ edit.date | date: "%b %-d" }}</span></div><span class="room-chip {{ room_class }}">{{ room }}</span></div>
+            <h3><a href="{{ edit.url }}">{{ edit.title }}</a></h3>
+            <p>{{ edit.description }}</p>
+            <div class="post-actions"><a href="{{ edit.url }}">Read the edit</a><span>♡ Talk about what it brought up for you</span></div>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+      <div class="backend-note"><strong>Member conversations are the next layer.</strong><p>The community hub is live first. Account based posting, replies, profiles, notifications, and saved member progress need a real database behind the static site, so those controls are not being faked.</p></div>
+    </div>
+
+    <div class="community-panel" data-community-panel="spaces" hidden>
+      <div class="panel-intro"><p class="community-kicker">Pick your room</p><h2>There is space for the whole version of you.</h2><p>Each room maps directly to the topics The Sheema Edit already talks about.</p></div>
+      <div class="spaces-grid">
+        <article class="space-card space-mind"><span class="space-icon">🦋</span><p class="space-label">Mind & Unmasking</p><h3>Mental Wellness & Unmasking</h3><p>Identity, boundaries, burnout, masking, healing, overthinking, nervous system days, and learning yourself in public.</p><a href="/?topic=mind#latest">Read this room’s edits →</a></article>
+        <article class="space-card space-motherhood"><span class="space-icon">🧸</span><p class="space-label">The village</p><h3>Motherhood & Family</h3><p>The sweet parts, the overstimulating parts, relationships, parenting, family dynamics, and the stories nobody puts in the baby book.</p><a href="/?topic=motherhood#latest">Read this room’s edits →</a></article>
+        <article class="space-card space-chronic"><span class="space-icon">🌙</span><p class="space-label">Real bodies, real days</p><h3>Chronic Illness & Real Life</h3><p>Energy, mobility, invisible symptoms, adapting your life, asking for help, grief, wins, and being a person beyond a diagnosis.</p><a href="/?topic=chronic#latest">Read this room’s edits →</a></article>
+        <article class="space-card space-lifestyle"><span class="space-icon">💄</span><p class="space-label">The fun tab</p><h3>Lifestyle & Beauty</h3><p>Beauty, routines, style, products, little joys, soft resets, glow ups, and doing things because they make life feel more like yours.</p><a href="/?topic=lifestyle#latest">Read this room’s edits →</a></article>
+        <article class="space-card space-chaos"><span class="space-icon">😭</span><p class="space-label">No context needed</p><h3>Relatable Chaos</h3><p>Funny stories, random thoughts, “please tell me it is not just me” moments, internet nonsense, and the group chat version of real life.</p><a href="/#latest">Browse the chaos →</a></article>
+      </div>
+    </div>
+
+    <div class="community-panel" data-community-panel="library" hidden>
+      <div class="panel-intro"><p class="community-kicker">The Library</p><h2>Things to read, use, and come back to.</h2><p>Skool calls it a classroom. Here it is the library because homework energy is not the assignment.</p></div>
+      <div class="library-grid">
+        <a class="library-card" href="/#latest"><span>01</span><div><p>Read</p><h3>The Edits</h3><small>Stories and essays across every community topic.</small></div></a>
+        <a class="library-card" href="/what-do-i-say/"><span>02</span><div><p>Communicate</p><h3>What Do I Say?</h3><small>Use Sparkle when the words are in your head but refuse to line up.</small></div></a>
+        <a class="library-card" href="/shop/"><span>03</span><div><p>Reset</p><h3>The Soft Reset Collection</h3><small>Reflection and planning tools for real life capacity.</small></div></a>
+        <a class="library-card" href="/about.html"><span>04</span><div><p>Start here</p><h3>About The Edit</h3><small>The story, values, and person behind this corner of the internet.</small></div></a>
+      </div>
+    </div>
+
+    <div class="community-panel" data-community-panel="calendar" hidden>
+      <div class="panel-intro"><p class="community-kicker">Community Calendar</p><h2>Gatherings belong here.</h2><p>This space is ready for live chats, check ins, workshops, community hangs, and special Edit drops once dates are scheduled.</p></div>
+      <div class="empty-state">
+        <span class="empty-icon">◷</span>
+        <h3>No fake events on the calendar.</h3>
+        <p>When a gathering has an actual date and time, it will show up here. Until then, this stays clean instead of inventing a schedule you never chose.</p>
+      </div>
+    </div>
+
+    <div class="community-panel" data-community-panel="levels" hidden>
+      <div class="panel-intro"><p class="community-kicker">Community Levels</p><h2>Participation, without making connection a competition.</h2><p>When member accounts go live, levels can reward showing up, helping people, and contributing thoughtfully.</p></div>
+      <div class="levels-list">
+        <div class="level-card"><strong>1</strong><div><h3>New Here</h3><p>Finding your people and getting comfortable.</p></div></div>
+        <div class="level-card"><strong>2</strong><div><h3>Regular</h3><p>Reading, reacting, and joining conversations.</p></div></div>
+        <div class="level-card"><strong>3</strong><div><h3>Community Friend</h3><p>Showing up with care and making the room warmer.</p></div></div>
+        <div class="level-card"><strong>4</strong><div><h3>Village Builder</h3><p>Helping conversations grow without taking them over.</p></div></div>
+        <div class="level-card"><strong>5</strong><div><h3>Day One Energy</h3><p>A trusted, steady voice in The Edit community.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="community-right-rail">
+    <div class="rail-card">
+      <p class="community-kicker">Your rooms</p>
+      <a href="#" data-jump-tab="spaces"><span>🦋</span> Mind & Unmasking</a>
+      <a href="#" data-jump-tab="spaces"><span>🧸</span> Motherhood & Family</a>
+      <a href="#" data-jump-tab="spaces"><span>🌙</span> Chronic Illness & Real Life</a>
+      <a href="#" data-jump-tab="spaces"><span>💄</span> Lifestyle & Beauty</a>
+      <a href="#" data-jump-tab="spaces"><span>😭</span> Relatable Chaos</a>
+    </div>
+    <div class="rail-card rail-soft">
+      <p class="community-kicker">Community standard</p>
+      <h3>Human first.</h3>
+      <p>We can disagree without getting cruel. Protect people’s privacy. Do not diagnose strangers. Ask before unloading advice.</p>
+    </div>
+  </aside>
+</div>
+
+<nav class="community-mobile-tabs" aria-label="Community mobile navigation">
+  <button class="is-active" type="button" data-community-tab="feed" aria-pressed="true"><span>♡</span><small>Community</small></button>
+  <button type="button" data-community-tab="spaces" aria-pressed="false"><span>✦</span><small>Spaces</small></button>
+  <button type="button" data-community-tab="library" aria-pressed="false"><span>▣</span><small>Library</small></button>
+  <button type="button" data-community-tab="calendar" aria-pressed="false"><span>◷</span><small>Calendar</small></button>
+  <button type="button" data-community-tab="levels" aria-pressed="false"><span>☆</span><small>Levels</small></button>
+</nav>
+</main>
+
+<footer class="site-footer community-footer"><div class="site-shell"><div class="footer-grid"><div><h2>The Sheema Edit</h2><p>Soft thoughts, real life, and a community that gets it.</p></div><div class="footer-links"><h3>Explore</h3><a href="/community/">Community</a><a href="/#latest">The edits</a><a href="/shop/">Shop</a><a href="/about.html">About</a></div><div class="footer-links"><h3>Find me</h3><a href="https://www.instagram.com/_rasheemaa/" target="_blank" rel="me noopener noreferrer">Instagram @_rasheemaa</a><a href="https://www.tiktok.com/@_rasheemaa" target="_blank" rel="me noopener noreferrer">TikTok @_rasheemaa</a></div></div><div class="footer-bottom"><span>© <span data-current-year>2026</span> The Sheema Edit. All feelings reserved.</span><span>Personal stories only. Nothing here is medical advice.</span></div></div></footer>
+<script src="/assets/js/main.js?v=2" defer></script>
+<script src="/assets/js/community.js?v=1" defer></script>
+</body>
+</html>
