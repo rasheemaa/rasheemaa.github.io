@@ -10,6 +10,7 @@ on:
       - 'service-worker.js'
       - 'assets/js/main.js'
       - 'assets/js/wdis-launch-popup.js'
+      - 'shop/index.html'
       - 'what-do-i-say/index.html'
       - 'what-do-i-say/payment-v3.js'
       - 'what-do-i-say/paid-trial-access.js'
