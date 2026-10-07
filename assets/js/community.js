@@ -94,6 +94,7 @@ let currentProfile = null;
 let authMode = "signup";
 let lastPosts = [];
 let likedPostIds = new Set();
+let reactionCheckedPostIds = new Set();
 let stopFeed = null;
 let stopLeaderboard = null;
 
