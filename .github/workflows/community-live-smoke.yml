@@ -52,17 +52,19 @@ jobs:
           grep -Fq 'id="feed-following"' community/index.html
           grep -Fq 'const neurotypeLabels = {' assets/js/community.js
           grep -Fq 'const toggleConnection = async (authorId) =>' assets/js/community.js
+          grep -Fq 'const showAuthenticatedShell = (user) =>' assets/js/community.js
+          grep -Fq 'Community profile access is blocked by the database permissions.' assets/js/community.js
           grep -Fq 'data-action="share"' assets/js/community.js
           grep -Fq 'gifUrl ? { gifUrl }' assets/js/community.js
           grep -Fq '18+ only.' community/index.html
           grep -Fq 'You must confirm you are 18 or older to join the Community.' assets/js/community.js
           grep -Fq '/assets/js/community-config.js?v=3' community/index.html
           grep -Fq '/assets/css/community.css?v=11' community/index.html
-          grep -Fq '/assets/js/community.js?v=16' community/index.html
+          grep -Fq '/assets/js/community.js?v=17' community/index.html
           grep -Fq '/* Social app refresh v3 */' assets/css/community.css
-          grep -Fq 'const CACHE_NAME = "sheema-edit-v42";' service-worker.js
+          grep -Fq 'const CACHE_NAME = "sheema-edit-v43";' service-worker.js
           grep -Fq '/assets/css/community.css?v=11' service-worker.js
-          grep -Fq '/assets/js/community.js?v=16' service-worker.js
+          grep -Fq '/assets/js/community.js?v=17' service-worker.js
           node <<'NODE'
           const fs = require('fs');
           const sw = fs.readFileSync('service-worker.js', 'utf8');
@@ -79,11 +81,11 @@ jobs:
             page="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/community/?ci=${GITHUB_SHA}" || true)"
             cfg="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/js/community-config.js?v=3&ci=${GITHUB_SHA}" || true)"
             css="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/css/community.css?v=11&ci=${GITHUB_SHA}" || true)"
-            js="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/js/community.js?v=16&ci=${GITHUB_SHA}" || true)"
+            js="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/js/community.js?v=17&ci=${GITHUB_SHA}" || true)"
             sw="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/service-worker.js?ci=${GITHUB_SHA}" || true)"
 
             if grep -Fq '/assets/css/community.css?v=11' <<<"$page" \
-              && grep -Fq '/assets/js/community.js?v=16' <<<"$page" \
+              && grep -Fq '/assets/js/community.js?v=17' <<<"$page" \
               && grep -Fq 'projectId: "the-sheema-edit"' <<<"$cfg" \
               && grep -Fq '/* Social app refresh v3 */' <<<"$css" \
               && grep -Fq 'let reactionCheckedPostIds = new Set();' <<<"$js" \
@@ -92,9 +94,10 @@ jobs:
               && grep -Fq 'comment-gif-trigger' <<<"$js" \
               && grep -Fq 'const neurotypeLabels = {' <<<"$js" \
               && grep -Fq 'const toggleConnection = async (authorId) =>' <<<"$js" \
-              && grep -Fq 'const CACHE_NAME = "sheema-edit-v42";' <<<"$sw" \
+              && grep -Fq 'const showAuthenticatedShell = (user) =>' <<<"$js" \
+              && grep -Fq 'const CACHE_NAME = "sheema-edit-v43";' <<<"$sw" \
               && grep -Fq '/assets/css/community.css?v=11' <<<"$sw" \
-              && grep -Fq '/assets/js/community.js?v=16' <<<"$sw"; then
+              && grep -Fq '/assets/js/community.js?v=17' <<<"$sw"; then
               exit 0
             fi
             sleep 10
