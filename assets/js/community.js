@@ -156,20 +156,29 @@ authButton?.addEventListener("click", () => {
   else openAuth();
 });
 
+const updateAgeGateVisibility = () => {
+  const signup = authMode === "signup";
+  const passwordStarted = Boolean($("auth-password")?.value);
+  const ageField = $("auth-age-field");
+  const ageConfirm = $("auth-age-confirm");
+  const reveal = signup && passwordStarted;
+
+  if (ageField) ageField.hidden = !reveal;
+  if (ageConfirm) {
+    ageConfirm.required = reveal;
+    ageConfirm.disabled = !reveal;
+    if (!reveal) ageConfirm.checked = false;
+  }
+};
+
 const renderAuthMode = () => {
   const signup = authMode === "signup";
   $("auth-dialog-title").textContent = signup ? "Join the community" : "Welcome back";
   $("auth-name-field").hidden = !signup;
-  const ageField = $("auth-age-field");
-  const ageConfirm = $("auth-age-confirm");
-  if (ageField) ageField.hidden = !signup;
-  if (ageConfirm) {
-    ageConfirm.required = signup;
-    ageConfirm.disabled = !signup;
-  }
   $("auth-submit").textContent = signup ? "Create free account" : "Sign in";
   $("auth-switch").textContent = signup ? "Already a member? Sign in" : "New here? Create a free account";
   $("auth-password").autocomplete = signup ? "new-password" : "current-password";
+  updateAgeGateVisibility();
   setMessage($("auth-message"), "");
 };
 
@@ -177,6 +186,8 @@ $("auth-switch")?.addEventListener("click", () => {
   authMode = authMode === "signup" ? "signin" : "signup";
   renderAuthMode();
 });
+$("auth-password")?.addEventListener("input", updateAgeGateVisibility);
+$("auth-password")?.addEventListener("change", updateAgeGateVisibility);
 renderAuthMode();
 
 const updateSignedOutUi = () => {
@@ -556,7 +567,17 @@ $("community-auth-form")?.addEventListener("submit", async (event) => {
   try {
     if (authMode === "signup") {
       if (!displayName) throw new Error("Add a display name first.");
-      if (!$("auth-age-confirm")?.checked) throw new Error("You must confirm you are 18 or older to join the Community.");
+      if (!$("auth-age-confirm")?.checked) {
+        const ageField = $("auth-age-field");
+        const ageConfirm = $("auth-age-confirm");
+        if (ageField) ageField.hidden = false;
+        if (ageConfirm) {
+          ageConfirm.disabled = false;
+          ageConfirm.required = true;
+          ageConfirm.focus();
+        }
+        throw new Error("You must confirm you are 18 or older to join the Community.");
+      }
       const credential = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(credential.user, { displayName: displayName.slice(0, 40) });
       try {
