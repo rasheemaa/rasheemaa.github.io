@@ -1,5 +1,5 @@
 (() => {
-  const SEED_VERSION = "2026.10.07.1";
+  const SEED_VERSION = "2026.10.07.2";
   const STORAGE_KEYS = {
     hearts: "sheema.community.sparkleHearts.v1",
     follows: "sheema.community.sparkleFollows.v1"
@@ -216,12 +216,12 @@
       </div>`;
   };
 
-  const seedCardHtml = (post) => {
+  const seedCardHtml = (post, idPrefix = "sparkle-seed") => {
     const persona = personaFor(post.persona);
     const liked = hearts.has(post.id);
     const following = follows.has(persona.id);
     return `
-      <article class="community-card member-post-card sparkle-seed-card" id="sparkle-seed-${escapeHtml(post.id)}" data-sparkle-seed="true" data-seed-post-id="${escapeHtml(post.id)}" data-seed-persona-id="${escapeHtml(persona.id)}">
+      <article class="community-card member-post-card sparkle-seed-card" id="${escapeHtml(idPrefix)}-${escapeHtml(post.id)}" data-sparkle-seed="true" data-seed-post-id="${escapeHtml(post.id)}" data-seed-persona-id="${escapeHtml(persona.id)}">
         <div class="post-avatar small sparkle-seed-avatar" aria-hidden="true">${escapeHtml(persona.avatar)}</div>
         <div class="community-post-body">
           <div class="post-heading">
@@ -300,17 +300,33 @@
 
   const isFollowingMode = () => document.getElementById("feed-following")?.classList.contains("is-active");
 
+  const renderPreview = () => {
+    const previewFeed = document.getElementById("community-preview-list");
+    if (!previewFeed) return;
+    previewFeed.innerHTML = seedPosts
+      .slice(0, 3)
+      .map((post) => seedCardHtml(post, "sparkle-preview"))
+      .join("");
+  };
+
+  const openAuthFromPreview = (event) => {
+    const interactive = event.target.closest("[data-seed-action],[data-sparkle-profile]");
+    if (!interactive) return;
+    event.preventDefault();
+    event.stopPropagation();
+    document.getElementById("community-auth-gate-button")?.click();
+  };
+
   const injectSeeds = () => {
     if (rendering) return;
     const feed = document.getElementById("member-feed-list");
     const section = document.getElementById("member-feed-section");
     const empty = document.getElementById("member-feed-empty");
-    if (!feed || !section) return;
+    if (!feed || !section || section.hidden) return;
 
     rendering = true;
     feedObserver?.disconnect();
     try {
-      section.hidden = false;
       if (empty) empty.hidden = true;
       ensureDisclosure();
 
@@ -427,14 +443,18 @@
     if (!feed || !section) return;
 
     document.documentElement.dataset.sparkleSeedVersion = SEED_VERSION;
+    document.getElementById("community-preview-list")?.addEventListener("click", openAuthFromPreview, true);
+    renderPreview();
     feed.addEventListener("click", handleFeedClick, true);
 
     feedObserver = new MutationObserver(() => injectSeeds());
     feedObserver.observe(feed, { childList: true });
 
     const sectionObserver = new MutationObserver(() => {
-      if (section.hidden) section.hidden = false;
-      ensureDisclosure();
+      if (!section.hidden) {
+        ensureDisclosure();
+        injectSeeds();
+      }
     });
     sectionObserver.observe(section, { attributes: true, attributeFilter: ["hidden"] });
 
@@ -442,7 +462,7 @@
       document.getElementById(id)?.addEventListener("click", () => setTimeout(injectSeeds, 0));
     });
 
-    injectSeeds();
+    if (!section.hidden) injectSeeds();
   };
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
