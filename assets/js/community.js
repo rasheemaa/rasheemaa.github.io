@@ -504,13 +504,20 @@ const loadComments = (postId, drawer) => {
       <div class="comments-list">${comments.map((comment) => `
         <div class="member-comment">
           <span class="mini-avatar">${escapeHtml(initials(comment.displayName))}</span>
-          <div><p><strong>${escapeHtml(comment.displayName || "Member")}</strong> <small>· ${escapeHtml(relativeTime(comment.createdAt))}</small></p><div>${escapeHtml(comment.body).replaceAll("\n", "<br>")}</div></div>
+          <div>
+            <p><strong>${escapeHtml(comment.displayName || "Member")}</strong> <small>· ${escapeHtml(relativeTime(comment.createdAt))}</small></p>
+            ${comment.body ? `<div>${escapeHtml(comment.body).replaceAll("\n", "<br>")}</div>` : ""}
+            ${comment.gifUrl ? `<div class="comment-gif-wrap">${gifImageHtml(comment.gifUrl, "GIF reply from " + (comment.displayName || "Member"))}</div>` : ""}
+          </div>
           ${comment.authorId === currentUser?.uid ? `<button type="button" data-delete-comment="${escapeHtml(comment.id)}" aria-label="Delete comment">×</button>` : ""}
         </div>`).join("") || '<p class="muted-copy">No replies yet.</p>'}</div>
       <form class="comment-form">
         <label class="sr-only">Add a reply</label>
-        <input maxlength="2000" placeholder="Write a reply…" required>
+        <input class="comment-text-input" maxlength="2000" placeholder="Write a reply…">
+        <input class="comment-gif-input" type="hidden" value="">
+        <button class="gif-trigger comment-gif-trigger" type="button" aria-haspopup="dialog">GIF</button>
         <button type="submit">Reply</button>
+        <div class="gif-preview comment-gif-preview" hidden></div>
       </form>`;
 
     drawer.querySelector("[data-close-comments]")?.addEventListener("click", () => {
@@ -519,12 +526,26 @@ const loadComments = (postId, drawer) => {
       drawer.hidden = true;
     });
 
-    drawer.querySelector(".comment-form")?.addEventListener("submit", async (event) => {
+    const commentForm = drawer.querySelector(".comment-form");
+    const commentTextInput = commentForm?.querySelector(".comment-text-input");
+    const commentGifInput = commentForm?.querySelector(".comment-gif-input");
+    const commentGifPreview = commentForm?.querySelector(".comment-gif-preview");
+    commentForm?.querySelector(".comment-gif-trigger")?.addEventListener("click", () => {
+      openGifPicker(commentGifInput, commentGifPreview);
+    });
+    commentGifPreview?.addEventListener("click", (event) => {
+      if (!event.target.closest("[data-remove-gif]")) return;
+      commentGifInput.value = "";
+      renderGifPreview(commentGifPreview, "");
+    });
+
+    commentForm?.addEventListener("submit", async (event) => {
       event.preventDefault();
-      const input = event.currentTarget.querySelector("input");
-      const button = event.currentTarget.querySelector("button");
+      const input = commentTextInput;
+      const button = event.submitter;
       const body = input.value.trim();
-      if (!body) return;
+      const gifUrl = safeGifUrl(commentGifInput?.value);
+      if (!body && !gifUrl) return;
       button.disabled = true;
       try {
         const commentRef = doc(collection(db, "posts", postId, "comments"));
@@ -533,6 +554,7 @@ const loadComments = (postId, drawer) => {
           authorId: currentUser.uid,
           displayName: (currentProfile?.displayName || currentUser.displayName || "Member").slice(0, 40),
           body,
+          ...(gifUrl ? { gifUrl } : {}),
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         });
@@ -544,6 +566,8 @@ const loadComments = (postId, drawer) => {
         });
         await batch.commit();
         input.value = "";
+        if (commentGifInput) commentGifInput.value = "";
+        renderGifPreview(commentGifPreview, "");
         await updateSignedInUi();
       } finally {
         button.disabled = false;
