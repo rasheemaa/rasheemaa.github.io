@@ -8,5 +8,7 @@ window.SHEEMA_COMMUNITY_CONFIG = {
   storageBucket: "the-sheema-edit.firebasestorage.app",
   messagingSenderId: "196137607393",
   appId: "1:196137607393:web:8ae9f44b561d419a6e57a0",
-  measurementId: "G-9ZGC3VMF6J"
+  measurementId: "G-9ZGC3VMF6J",
+  // Public browser key for the in-app GIPHY picker. Add a GIPHY Web API key here.
+  giphyApiKey: ""
 };
