@@ -26,7 +26,7 @@ permalink: /community/
 <meta name="twitter:image" content="https://thesheemaedit.com/assets/images/social-card.png">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"CollectionPage","name":"The Edit Community","url":"https://thesheemaedit.com/community/","description":"The community side of The Sheema Edit for honest conversations about mental wellness, unmasking, motherhood, chronic illness, lifestyle, beauty, and real life.","isPartOf":{"@type":"WebSite","@id":"https://thesheemaedit.com/#website","name":"The Sheema Edit","url":"https://thesheemaedit.com/"},"about":["Mental wellness","Unmasking","Motherhood","Chronic illness","Lifestyle","Beauty"]}</script>
 <link rel="stylesheet" href="/assets/css/styles.css">
-<link rel="stylesheet" href="/assets/css/community.css?v=6">
+<link rel="stylesheet" href="/assets/css/community.css?v=7">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-C7XV3YJCZE"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-C7XV3YJCZE');</script>
 </head>
@@ -72,16 +72,21 @@ permalink: /community/
         <form id="community-post-form">
           <label class="sr-only" for="community-post-body">Write a community post</label>
           <textarea id="community-post-body" maxlength="3000" rows="3" placeholder="What’s on your mind?"></textarea>
+          <input id="community-post-gif-url" type="hidden" value="">
+          <div class="gif-preview" id="community-post-gif-preview" hidden></div>
           <div class="composer-footer">
-            <label>Post in
-              <select id="community-post-space" aria-label="Choose a community space">
-                <option value="mind">Mental Wellness & Unmasking</option>
-                <option value="motherhood">Motherhood & Family</option>
-                <option value="chronic">Chronic Illness & Real Life</option>
-                <option value="lifestyle">Lifestyle & Beauty</option>
-                <option value="chaos">Relatable Chaos</option>
-              </select>
-            </label>
+            <div class="composer-tools">
+              <button class="gif-trigger" id="community-post-gif-button" type="button" aria-haspopup="dialog">GIF</button>
+              <label>Post in
+                <select id="community-post-space" aria-label="Choose a community space">
+                  <option value="mind">Mental Wellness & Unmasking</option>
+                  <option value="motherhood">Motherhood & Family</option>
+                  <option value="chronic">Chronic Illness & Real Life</option>
+                  <option value="lifestyle">Lifestyle & Beauty</option>
+                  <option value="chaos">Relatable Chaos</option>
+                </select>
+              </label>
+            </div>
             <button class="button lime" type="submit">Post</button>
           </div>
           <p class="form-message" id="community-post-message" aria-live="polite"></p>
@@ -166,9 +171,24 @@ permalink: /community/
   </form>
 </dialog>
 
+<dialog class="community-dialog gif-dialog" id="community-gif-dialog">
+  <form method="dialog" class="dialog-close-row"><button type="submit" aria-label="Close GIF picker">×</button></form>
+  <div class="dialog-copy"><p class="community-kicker">Add a GIF</p><h2>Drop the reaction.</h2><p>Paste a direct GIF image link from GIPHY or Tenor.</p></div>
+  <form id="community-gif-form">
+    <label for="community-gif-url">GIF link</label>
+    <input id="community-gif-url" type="url" inputmode="url" autocomplete="off" placeholder="https://media.giphy.com/.../giphy.gif">
+    <div class="gif-dialog-preview" id="community-gif-dialog-preview" hidden></div>
+    <div class="gif-dialog-actions">
+      <button class="button lime" type="submit">Use GIF</button>
+      <button class="text-button" id="community-gif-remove" type="button">Remove GIF</button>
+    </div>
+    <p class="form-message" id="community-gif-message" aria-live="polite"></p>
+  </form>
+</dialog>
+
 <footer class="site-footer community-footer"><div class="site-shell"><div class="footer-grid"><div><h2>The Sheema Edit</h2><p>Soft thoughts, real life, and a community that gets it.</p></div><div class="footer-links"><h3>Explore</h3><a href="/community/">Community</a><a href="/#latest">The edits</a><a href="/shop/">Shop</a><a href="/about.html">About</a></div><div class="footer-links"><h3>Find me</h3><a href="https://www.instagram.com/_rasheemaa/" target="_blank" rel="me noopener noreferrer">Instagram @_rasheemaa</a><a href="https://www.tiktok.com/@_rasheemaa" target="_blank" rel="me noopener noreferrer">TikTok @_rasheemaa</a></div></div><div class="footer-bottom"><span>© <span data-current-year>2026</span> The Sheema Edit. All feelings reserved.</span><span>Personal stories only. Nothing here is medical advice.</span></div></div></footer>
 <script src="/assets/js/main.js?v=2" defer></script>
 <script src="/assets/js/community-config.js?v=3"></script>
-<script src="/assets/js/community.js?v=11" type="module"></script>
+<script src="/assets/js/community.js?v=12" type="module"></script>
 </body>
 </html>
