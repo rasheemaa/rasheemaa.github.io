@@ -80,12 +80,15 @@ jobs:
           response="$(curl -sS --max-time 20 \
             'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyDuhUEWhCHK0bvrN5zVzumB1Zvz11egBMY' \
             -H 'Content-Type: application/json' \
-            --data-binary '{"email":"community-ci-probe@example.invalid","password":"not-a-real-password","returnSecureToken":true}')"
+            --data-binary '{"email":"community-ci-probe@example.com","password":"not-a-real-password","returnSecureToken":true}')"
           if grep -Eq 'API_KEY_INVALID|PROJECT_NOT_FOUND|OPERATION_NOT_ALLOWED' <<<"$response"; then
             echo "$response" >&2
             exit 1
           fi
-          grep -Eq 'EMAIL_NOT_FOUND|INVALID_LOGIN_CREDENTIALS|INVALID_PASSWORD' <<<"$response"
+          if ! grep -Eq 'EMAIL_NOT_FOUND|INVALID_LOGIN_CREDENTIALS|INVALID_PASSWORD|INVALID_EMAIL' <<<"$response"; then
+            echo "$response" >&2
+            exit 1
+          fi
 
       - name: Verify member data is not anonymously readable
         shell: bash
