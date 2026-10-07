@@ -12,3 +12,16 @@ window.SHEEMA_COMMUNITY_CONFIG = {
   // Public browser key for the in-app GIPHY picker. Add a GIPHY Web API key here.
   giphyApiKey: ""
 };
+
+
+(() => {
+  const style = document.createElement("link");
+  style.rel = "stylesheet";
+  style.href = "/assets/css/community-seed.css?v=2";
+  document.head.append(style);
+
+  const script = document.createElement("script");
+  script.type = "module";
+  script.src = "/assets/js/community-seed.js?v=2";
+  document.head.append(script);
+})();
