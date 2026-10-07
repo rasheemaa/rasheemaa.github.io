@@ -97,6 +97,8 @@ let likedPostIds = new Set();
 let reactionCheckedPostIds = new Set();
 let stopFeed = null;
 let stopLeaderboard = null;
+let openCommentsPostId = null;
+const commentStops = new Map();
 
 const escapeHtml = (value = "") => String(value)
   .replaceAll("&", "&amp;")
@@ -173,6 +175,9 @@ const updateSignedOutUi = () => {
   reactionCheckedPostIds = new Set();
   stopFeed?.();
   stopLeaderboard?.();
+  commentStops.forEach((stop) => stop?.());
+  commentStops.clear();
+  openCommentsPostId = null;
   stopFeed = null;
   stopLeaderboard = null;
   authGate.hidden = false;
@@ -262,12 +267,21 @@ const postCardHtml = (post) => {
 
 const renderFeed = () => {
   if (!memberFeed) return;
+  const reopenPostId = openCommentsPostId;
+  commentStops.forEach((stop) => stop?.());
+  commentStops.clear();
   const sorted = [...lastPosts].sort((a, b) => {
     if (Boolean(a.isPinned) !== Boolean(b.isPinned)) return a.isPinned ? -1 : 1;
     return timestampToDate(b.createdAt) - timestampToDate(a.createdAt);
   });
   memberFeed.innerHTML = sorted.map(postCardHtml).join("");
   memberFeedEmpty.hidden = sorted.length > 0;
+  if (reopenPostId) {
+    const card = [...memberFeed.querySelectorAll("[data-post-id]")].find((item) => item.dataset.postId === reopenPostId);
+    const drawer = card?.querySelector("[data-comments-for]");
+    if (drawer) loadComments(reopenPostId, drawer);
+    else openCommentsPostId = null;
+  }
 };
 
 const startFeed = () => {
@@ -353,12 +367,19 @@ $("community-post-form")?.addEventListener("submit", async (event) => {
   }
 });
 
-const loadComments = async (postId, drawer) => {
+const stopComments = (postId) => {
+  commentStops.get(postId)?.();
+  commentStops.delete(postId);
+};
+
+const loadComments = (postId, drawer) => {
+  openCommentsPostId = postId;
+  stopComments(postId);
   drawer.hidden = false;
   drawer.innerHTML = '<p class="muted-copy">Loading replies…</p>';
-  try {
-    const commentsQuery = query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "asc"), limit(200));
-    const snapshot = await getDocs(commentsQuery);
+
+  const commentsQuery = query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "asc"), limit(200));
+  const stop = onSnapshot(commentsQuery, (snapshot) => {
     const comments = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
     drawer.innerHTML = `
       <div class="comments-sheet-header"><strong>Replies</strong><button class="comments-close" type="button" data-close-comments aria-label="Close replies">×</button></div>
@@ -375,6 +396,8 @@ const loadComments = async (postId, drawer) => {
       </form>`;
 
     drawer.querySelector("[data-close-comments]")?.addEventListener("click", () => {
+      stopComments(postId);
+      openCommentsPostId = null;
       drawer.hidden = true;
     });
 
@@ -403,7 +426,6 @@ const loadComments = async (postId, drawer) => {
         });
         await batch.commit();
         input.value = "";
-        await loadComments(postId, drawer);
         await updateSignedInUi();
       } finally {
         button.disabled = false;
@@ -417,14 +439,14 @@ const loadComments = async (postId, drawer) => {
         batch.delete(doc(db, "posts", postId, "comments", button.dataset.deleteComment));
         batch.update(doc(db, "posts", postId), { commentCount: increment(-1) });
         await batch.commit();
-        await loadComments(postId, drawer);
       });
     });
-  } catch {
+  }, () => {
     drawer.innerHTML = '<p class="muted-copy">Replies could not load.</p>';
-  }
-};
+  });
 
+  commentStops.set(postId, stop);
+};
 const toggleHeart = async (postId) => {
   const reactionRef = doc(db, "posts", postId, "reactions", currentUser.uid);
   const postRef = doc(db, "posts", postId);
@@ -475,8 +497,12 @@ memberFeed?.addEventListener("click", async (event) => {
 
     if (button.dataset.action === "comments") {
       const drawer = card.querySelector("[data-comments-for]");
-      if (drawer.hidden) await loadComments(postId, drawer);
-      else drawer.hidden = true;
+      if (drawer.hidden) loadComments(postId, drawer);
+      else {
+        stopComments(postId);
+        openCommentsPostId = null;
+        drawer.hidden = true;
+      }
     }
 
     if (button.dataset.action === "delete") {
@@ -515,9 +541,11 @@ $("community-auth-form")?.addEventListener("submit", async (event) => {
       if (!displayName) throw new Error("Add a display name first.");
       const credential = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(credential.user, { displayName: displayName.slice(0, 40) });
-      await ensureProfile(credential.user, displayName);
-      await sendEmailVerification(credential.user);
-      await signOut(auth);
+      try {
+        await sendEmailVerification(credential.user);
+      } finally {
+        await signOut(auth);
+      }
       setMessage($("auth-message"), "Check your email to verify your account. Then come back and sign in. ♡", "success");
       return;
     }
