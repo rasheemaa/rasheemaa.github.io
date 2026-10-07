@@ -150,7 +150,11 @@ const openAuth = () => {
   authDialog?.showModal?.();
 };
 
-[authButton, authGateButton, railAuthButton].forEach((button) => button?.addEventListener("click", openAuth));
+[authGateButton, railAuthButton].forEach((button) => button?.addEventListener("click", openAuth));
+authButton?.addEventListener("click", () => {
+  if (currentUser) $("edit-profile-button")?.click();
+  else openAuth();
+});
 
 const renderAuthMode = () => {
   const signup = authMode === "signup";
@@ -192,7 +196,10 @@ const updateSignedOutUi = () => {
   memberSection.hidden = true;
   signedOutRail.hidden = false;
   signedInRail.hidden = true;
-  if (authButton) authButton.textContent = "Join / sign in";
+  if (authButton) {
+    authButton.hidden = true;
+    authButton.textContent = "My profile";
+  }
   if (leaderboard) leaderboard.innerHTML = '<p class="muted-copy">Join the community to see member levels.</p>';
 };
 
@@ -229,7 +236,10 @@ const updateSignedInUi = async () => {
   memberSection.hidden = false;
   signedOutRail.hidden = true;
   signedInRail.hidden = false;
-  if (authButton) authButton.textContent = profile?.displayName || "My community";
+  if (authButton) {
+    authButton.hidden = false;
+    authButton.textContent = "My profile";
+  }
   $("composer-avatar").textContent = initials(profile?.displayName);
   $("rail-avatar").textContent = initials(profile?.displayName);
   $("rail-display-name").textContent = profile?.displayName || "Member";
