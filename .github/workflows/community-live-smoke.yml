@@ -67,6 +67,9 @@ jobs:
           grep -Fq 'const showAuthenticatedShell = (user) =>' assets/js/community.js
           grep -Fq 'const populateProfileEditor = (profile = currentProfile) =>' assets/js/community.js
           grep -Fq 'async function openProfileEditor()' assets/js/community.js
+          grep -Fq 'const openProfileDialog = () =>' community/index.html
+          grep -Fq 'community-auth-button' community/index.html
+          grep -Fq 'edit-profile-button' community/index.html
           grep -Fq 'Loading your profile…' assets/js/community.js
           grep -Fq 'authButton?.addEventListener("click", openProfileEditor);' assets/js/community.js
           grep -Fq 'Community profile access is blocked by the database permissions.' assets/js/community.js
@@ -82,7 +85,7 @@ jobs:
           grep -Fq 'Sparkle powered account' assets/js/community-seed.js
           grep -Fq 'AI community character powered by Sparkle' assets/js/community-seed.js
           grep -Fq '/* Social app refresh v3 */' assets/css/community.css
-          grep -Fq 'const CACHE_NAME = "sheema-edit-v47";' service-worker.js
+          grep -Fq 'const CACHE_NAME = "sheema-edit-v48";' service-worker.js
           grep -Fq '/assets/css/community.css?v=12' service-worker.js
           grep -Fq '/assets/css/community-seed.css?v=2' service-worker.js
           grep -Fq '/assets/js/community.js?v=20' service-worker.js
@@ -127,7 +130,7 @@ jobs:
               && grep -Fq 'Sparkle powered account' <<<"$seed_js" \
               && grep -Fq 'AI community character powered by Sparkle' <<<"$seed_js" \
               && grep -Fq '/* Sparkle powered Community starter layer */' <<<"$seed_css" \
-              && grep -Fq 'const CACHE_NAME = "sheema-edit-v47";' <<<"$sw" \
+              && grep -Fq 'const CACHE_NAME = "sheema-edit-v48";' <<<"$sw" \
               && grep -Fq '/assets/css/community.css?v=12' <<<"$sw" \
               && grep -Fq '/assets/css/community-seed.css?v=2' <<<"$sw" \
               && grep -Fq '/assets/js/community.js?v=20' <<<"$sw" \
