@@ -78,6 +78,15 @@ const signedInRail = $("community-account-signed-in");
 const memberFeed = $("member-feed-list");
 const memberFeedEmpty = $("member-feed-empty");
 const leaderboard = $("community-leaderboard");
+const gifDialog = $("community-gif-dialog");
+const gifForm = $("community-gif-form");
+const gifUrlInput = $("community-gif-url");
+const gifDialogPreview = $("community-gif-dialog-preview");
+const gifMessage = $("community-gif-message");
+const gifRemoveButton = $("community-gif-remove");
+const postGifInput = $("community-post-gif-url");
+const postGifPreview = $("community-post-gif-preview");
+const postGifButton = $("community-post-gif-button");
 
 const spaces = {
   mind: { name: "Mental Wellness & Unmasking", emoji: "🦋" },
@@ -99,6 +108,7 @@ let stopFeed = null;
 let stopLeaderboard = null;
 let openCommentsPostId = null;
 const commentStops = new Map();
+let activeGifTarget = null;
 
 const escapeHtml = (value = "") => String(value)
   .replaceAll("&", "&amp;")
@@ -108,6 +118,53 @@ const escapeHtml = (value = "") => String(value)
   .replaceAll("'", "&#039;");
 
 const initials = (name = "Member") => name.trim().slice(0, 1).toUpperCase() || "♡";
+
+const safeGifUrl = (value = "") => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  try {
+    const url = new URL(raw);
+    const host = url.hostname.toLowerCase();
+    const trusted = host === "giphy.com" || host.endsWith(".giphy.com") || host === "tenor.com" || host.endsWith(".tenor.com");
+    if (url.protocol !== "https:" || !trusted) return "";
+    return url.href;
+  } catch {
+    return "";
+  }
+};
+
+const gifImageHtml = (url, alt = "Shared GIF") => {
+  const safe = safeGifUrl(url);
+  if (!safe) return "";
+  return `<img class="community-gif" src="${escapeHtml(safe)}" alt="${escapeHtml(alt)}" loading="lazy" decoding="async">`;
+};
+
+const renderGifPreview = (container, url, removable = true) => {
+  if (!container) return;
+  const safe = safeGifUrl(url);
+  if (!safe) {
+    container.hidden = true;
+    container.innerHTML = "";
+    return;
+  }
+  container.hidden = false;
+  container.innerHTML = `<div class="gif-preview-frame">${gifImageHtml(safe, "GIF preview")}${removable ? '<button type="button" class="gif-remove" data-remove-gif aria-label="Remove GIF">×</button>' : ""}</div>`;
+};
+
+const openGifPicker = (input, preview) => {
+  if (!gifDialog?.showModal) return;
+  activeGifTarget = { input, preview };
+  gifUrlInput.value = input?.value || "";
+  setMessage(gifMessage, "");
+  renderGifPreview(gifDialogPreview, gifUrlInput.value, false);
+  gifDialog.showModal();
+};
+
+const clearGifTarget = () => {
+  if (!activeGifTarget) return;
+  activeGifTarget.input.value = "";
+  renderGifPreview(activeGifTarget.preview, "");
+};
 
 const timestampToDate = (value) => {
   if (!value) return new Date();
