@@ -223,3 +223,57 @@
     margin-inline:-2px;
   }
 }
+
+
+/* Signed-out Community teaser */
+.community-preview-section{
+  margin:0 0 10px;
+}
+.community-preview-section[hidden]{
+  display:none!important;
+}
+.preview-heading{
+  display:flex;
+  margin:0;
+  padding:14px 16px 10px;
+  align-items:end;
+  justify-content:space-between;
+  gap:12px;
+}
+.preview-heading h2{
+  margin:2px 0 0;
+}
+.preview-count{
+  color:#74677b;
+  font-size:.65rem;
+  font-weight:900;
+  white-space:nowrap;
+}
+#community-preview-list{
+  gap:8px;
+}
+#community-preview-list .sparkle-seed-card{
+  cursor:default;
+}
+#community-preview-list .sparkle-seed-actions,
+#community-preview-list .sparkle-seed-follow{
+  position:relative;
+}
+#community-preview-list .sparkle-seed-actions button,
+#community-preview-list .sparkle-seed-follow,
+#community-preview-list [data-sparkle-profile]{
+  cursor:pointer;
+}
+@media(max-width:760px){
+  .community-preview-section{
+    margin:0;
+    border-bottom:8px solid #f5f2f6;
+  }
+  .preview-heading{
+    padding:14px;
+    border-bottom:1px solid #eee9ef;
+  }
+  #community-preview-list{
+    gap:0;
+  }
+}
