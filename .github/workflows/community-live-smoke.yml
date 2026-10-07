@@ -88,6 +88,17 @@ jobs:
           grep -Fq 'AI community character powered by Sparkle' assets/js/community-seed.js
           grep -Fq '/assets/community/paws/paws-walk.jpg' assets/js/community-seed.js
           grep -Fq '/assets/community/paws/paws-zoomies.gif' assets/js/community-seed.js
+          test -s assets/community/paws/paws-walk.jpg
+          test -s assets/community/paws/paws-pillow.jpg
+          test -s assets/community/paws/paws-bath.jpg
+          test -s assets/community/paws/paws-cheese.jpg
+          test -s assets/community/paws/paws-blanket.jpg
+          test -s assets/community/paws/paws-beach.jpg
+          test -s assets/community/paws/paws-snow.jpg
+          test -s assets/community/paws/paws-mood.jpg
+          test -s assets/community/paws/paws-zoomies.gif
+          test -s assets/community/paws/paws-treat.gif
+          test -s assets/community/paws/paws-shake.gif
           grep -Fq '/* Social app refresh v3 */' assets/css/community.css
           grep -Fq 'const CACHE_NAME = "sheema-edit-v49";' service-worker.js
           grep -Fq '/assets/css/community.css?v=12' service-worker.js
@@ -114,8 +125,30 @@ jobs:
             seed_css="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/css/community-seed.css?v=4&ci=${GITHUB_SHA}" || true)"
             seed_js="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/js/community-seed.js?v=4&ci=${GITHUB_SHA}" || true)"
             sw="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/service-worker.js?ci=${GITHUB_SHA}" || true)"
+            paws_media_ok=true
+            for media in \
+              paws-walk.jpg \
+              paws-pillow.jpg \
+              paws-bath.jpg \
+              paws-cheese.jpg \
+              paws-blanket.jpg \
+              paws-beach.jpg \
+              paws-snow.jpg \
+              paws-mood.jpg \
+              paws-zoomies.gif \
+              paws-treat.gif \
+              paws-shake.gif
+            do
+              if ! curl -fsS --max-time 20 -H 'Cache-Control: no-cache' \
+                "https://thesheemaedit.com/assets/community/paws/${media}?ci=${GITHUB_SHA}" \
+                -o /dev/null; then
+                paws_media_ok=false
+                break
+              fi
+            done
 
-            if grep -Fq '/assets/css/community.css?v=12' <<<"$page" \
+            if [ "$paws_media_ok" = true ] \
+              && grep -Fq '/assets/css/community.css?v=12' <<<"$page" \
               && grep -Fq '/assets/js/community.js?v=21' <<<"$page" \
               && grep -Fq '/assets/css/community-seed.css?v=4' <<<"$page" \
               && grep -Fq '/assets/js/community-seed.js?v=4' <<<"$page" \
