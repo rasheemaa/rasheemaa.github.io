@@ -1,0 +1,105 @@
+name: Community live smoke
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/community-live-smoke.yml'
+      - 'community/**'
+      - 'assets/js/community.js'
+      - 'assets/js/community-config.js'
+      - 'service-worker.js'
+  pull_request:
+    paths:
+      - '.github/workflows/community-live-smoke.yml'
+      - 'community/**'
+      - 'assets/js/community.js'
+      - 'assets/js/community-config.js'
+      - 'service-worker.js'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  community-live-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout exact repository revision
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+
+      - name: Validate Community source contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check service-worker.js
+          node --input-type=module --check < assets/js/community.js
+          grep -Fq 'let reactionCheckedPostIds = new Set();' assets/js/community.js
+          grep -Fq '/assets/js/community-config.js?v=3' community/index.html
+          grep -Fq '/assets/js/community.js?v=5' community/index.html
+          grep -Fq 'const CACHE_NAME = "sheema-edit-v34";' service-worker.js
+          grep -Fq '/assets/js/community.js?v=5' service-worker.js
+          node <<'NODE'
+          const fs = require('fs');
+          const sw = fs.readFileSync('service-worker.js', 'utf8');
+          if (sw.includes('community-config.js?v=3",\\n')) {
+            throw new Error('Literal \\n remains in the Community precache list');
+          }
+          NODE
+
+      - name: Wait for corrected Community assets to be live
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 30); do
+            page="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/community/?ci=${GITHUB_SHA}" || true)"
+            cfg="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/js/community-config.js?v=3&ci=${GITHUB_SHA}" || true)"
+            js="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/js/community.js?v=5&ci=${GITHUB_SHA}" || true)"
+            sw="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/service-worker.js?ci=${GITHUB_SHA}" || true)"
+
+            if grep -Fq '/assets/js/community.js?v=5' <<<"$page" \
+              && grep -Fq 'projectId: "the-sheema-edit"' <<<"$cfg" \
+              && grep -Fq 'let reactionCheckedPostIds = new Set();' <<<"$js" \
+              && grep -Fq 'const CACHE_NAME = "sheema-edit-v34";' <<<"$sw" \
+              && grep -Fq '/assets/js/community.js?v=5' <<<"$sw"; then
+              exit 0
+            fi
+            sleep 10
+          done
+          echo 'Corrected Community assets did not become live within the verification window.' >&2
+          exit 1
+
+      - name: Verify Firebase Auth project and email password provider
+        shell: bash
+        run: |
+          set -euo pipefail
+          response="$(curl -sS --max-time 20 \
+            'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyDuhUEWhCHK0bvrN5zVzumB1Zvz11egBMY' \
+            -H 'Content-Type: application/json' \
+            --data-binary '{"email":"community-ci-probe@example.invalid","password":"not-a-real-password","returnSecureToken":true}')"
+          if grep -Eq 'API_KEY_INVALID|PROJECT_NOT_FOUND|OPERATION_NOT_ALLOWED' <<<"$response"; then
+            echo "$response" >&2
+            exit 1
+          fi
+          grep -Eq 'EMAIL_NOT_FOUND|INVALID_LOGIN_CREDENTIALS|INVALID_PASSWORD' <<<"$response"
+
+      - name: Verify member data is not anonymously readable
+        shell: bash
+        run: |
+          set -euo pipefail
+          code="$(curl -sS -o /tmp/firestore.json -w '%{http_code}' --max-time 20 \
+            'https://firestore.googleapis.com/v1/projects/the-sheema-edit/databases/(default)/documents/profiles?pageSize=1')"
+          if [ "$code" = "200" ]; then
+            echo 'Firestore profiles are anonymously readable, but the Community is members-only.' >&2
+            cat /tmp/firestore.json >&2
+            exit 1
+          fi
+          if [ "$code" != "401" ] && [ "$code" != "403" ]; then
+            echo "Unexpected Firestore response: $code" >&2
+            cat /tmp/firestore.json >&2
+            exit 1
+          fi
