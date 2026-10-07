@@ -327,6 +327,7 @@ const startFeed = () => {
 };
 
 const startLeaderboard = () => {
+  if (!leaderboard) return;
   stopLeaderboard?.();
   const boardQuery = query(collection(db, "profiles"), orderBy("points", "desc"), limit(20));
   stopLeaderboard = onSnapshot(boardQuery, (snapshot) => {
