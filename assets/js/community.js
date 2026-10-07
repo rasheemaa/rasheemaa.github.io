@@ -64,6 +64,7 @@ if (initialTab && initialTab !== "community") activateTab(initialTab, false);
 
 const config = window.SHEEMA_COMMUNITY_CONFIG || {};
 const configured = Boolean(config.apiKey && config.authDomain && config.projectId && config.appId);
+const giphyApiKey = String(config.giphyApiKey || "").trim();
 const $ = (id) => document.getElementById(id);
 
 const authDialog = $("community-auth-dialog");
@@ -81,6 +82,10 @@ const memberFeed = $("member-feed-list");
 const memberFeedEmpty = $("member-feed-empty");
 const leaderboard = $("community-leaderboard");
 const gifDialog = $("community-gif-dialog");
+const gifSearchForm = $("community-gif-search-form");
+const gifSearchInput = $("community-gif-search");
+const gifResults = $("community-gif-results");
+const gifResultsTitle = $("community-gif-results-title");
 const gifForm = $("community-gif-form");
 const gifUrlInput = $("community-gif-url");
 const gifDialogPreview = $("community-gif-dialog-preview");
@@ -151,6 +156,8 @@ let stopFollowing = null;
 let openCommentsPostId = null;
 const commentStops = new Map();
 let activeGifTarget = null;
+let gifSearchController = null;
+let gifSearchTimer = null;
 let followingIds = new Set();
 let feedMode = "all";
 const profileCache = new Map();
@@ -196,13 +203,95 @@ const renderGifPreview = (container, url, removable = true) => {
   container.innerHTML = `<div class="gif-preview-frame">${gifImageHtml(safe, "GIF preview")}${removable ? '<button type="button" class="gif-remove" data-remove-gif aria-label="Remove GIF">×</button>' : ""}</div>`;
 };
 
+const giphyImageUrl = (item) =>
+  item?.images?.fixed_width?.webp ||
+  item?.images?.fixed_width?.url ||
+  item?.images?.downsized_medium?.url ||
+  item?.images?.original?.url ||
+  "";
+
+const renderGifResults = (items = []) => {
+  if (!gifResults) return;
+  if (!items.length) {
+    gifResults.innerHTML = '<div class="gif-results-empty">No GIFs found. Try another search.</div>';
+    return;
+  }
+  gifResults.innerHTML = items.map((item) => {
+    const url = safeGifUrl(giphyImageUrl(item));
+    if (!url) return "";
+    const title = String(item.title || "GIF").trim() || "GIF";
+    return `
+      <button class="gif-result" type="button" data-gif-url="${escapeHtml(url)}" aria-label="Use ${escapeHtml(title)}">
+        <img src="${escapeHtml(url)}" alt="${escapeHtml(title)}" loading="lazy" decoding="async">
+      </button>`;
+  }).join("");
+};
+
+const loadGiphyGifs = async (queryText = "") => {
+  if (!gifResults) return;
+  const queryTextTrimmed = String(queryText || "").trim();
+  if (!giphyApiKey) {
+    gifResults.setAttribute("aria-busy", "false");
+    gifResults.innerHTML = '<div class="gif-results-empty">GIF search is ready for a GIPHY API key.</div>';
+    setMessage(gifMessage, "Add the GIPHY key once and everyone can search GIFs right here.", "error");
+    return;
+  }
+
+  gifSearchController?.abort();
+  gifSearchController = new AbortController();
+  gifResults.setAttribute("aria-busy", "true");
+  gifResults.innerHTML = '<div class="gif-results-loading">Loading GIFs…</div>';
+  if (gifResultsTitle) gifResultsTitle.textContent = queryTextTrimmed ? "Search results" : "Trending";
+  setMessage(gifMessage, "");
+
+  const endpoint = queryTextTrimmed
+    ? "https://api.giphy.com/v1/gifs/search"
+    : "https://api.giphy.com/v1/gifs/trending";
+  const params = new URLSearchParams({
+    api_key: giphyApiKey,
+    limit: "24",
+    rating: "pg-13"
+  });
+  if (queryTextTrimmed) {
+    params.set("q", queryTextTrimmed);
+    params.set("lang", "en");
+  }
+
+  try {
+    const response = await fetch(`${endpoint}?${params.toString()}`, {
+      signal: gifSearchController.signal,
+      headers: { "Accept": "application/json" }
+    });
+    if (!response.ok) throw new Error(`GIPHY request failed: ${response.status}`);
+    const payload = await response.json();
+    renderGifResults(Array.isArray(payload.data) ? payload.data : []);
+  } catch (error) {
+    if (error?.name === "AbortError") return;
+    gifResults.innerHTML = '<div class="gif-results-empty">GIFs could not load right now.</div>';
+    setMessage(gifMessage, "Try the search again in a moment.", "error");
+  } finally {
+    gifResults.setAttribute("aria-busy", "false");
+  }
+};
+
+const selectGif = (url) => {
+  const safe = safeGifUrl(url);
+  if (!safe || !activeGifTarget) return;
+  activeGifTarget.input.value = safe;
+  renderGifPreview(activeGifTarget.preview, safe);
+  gifDialog?.close();
+};
+
 const openGifPicker = (input, preview) => {
   if (!gifDialog?.showModal) return;
   activeGifTarget = { input, preview };
   gifUrlInput.value = input?.value || "";
+  if (gifSearchInput) gifSearchInput.value = "";
   setMessage(gifMessage, "");
   renderGifPreview(gifDialogPreview, gifUrlInput.value, false);
   gifDialog.showModal();
+  loadGiphyGifs("");
+  requestAnimationFrame(() => gifSearchInput?.focus());
 };
 
 const clearGifTarget = () => {
@@ -597,6 +686,31 @@ const refreshCommunity = async () => {
 };
 
 $("refresh-community")?.addEventListener("click", refreshCommunity);
+
+gifSearchForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  loadGiphyGifs(gifSearchInput?.value || "");
+});
+
+gifSearchInput?.addEventListener("input", () => {
+  clearTimeout(gifSearchTimer);
+  gifSearchTimer = setTimeout(() => {
+    const value = gifSearchInput.value.trim();
+    if (!value) loadGiphyGifs("");
+    else if (value.length >= 2) loadGiphyGifs(value);
+  }, 320);
+});
+
+gifResults?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-gif-url]");
+  if (!button) return;
+  selectGif(button.dataset.gifUrl);
+});
+
+gifDialog?.addEventListener("close", () => {
+  gifSearchController?.abort();
+  clearTimeout(gifSearchTimer);
+});
 
 postGifButton?.addEventListener("click", () => openGifPicker(postGifInput, postGifPreview));
 postGifPreview?.addEventListener("click", (event) => {
