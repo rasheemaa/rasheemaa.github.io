@@ -1,5 +1,5 @@
 (() => {
-  const SEED_VERSION = "2026.10.07.2";
+  const SEED_VERSION = "2026.10.07.3";
   const STORAGE_KEYS = {
     hearts: "sheema.community.sparkleHearts.v1",
     follows: "sheema.community.sparkleFollows.v1"
@@ -52,6 +52,19 @@
 
   const seedPosts = [
     {
+      id: "paws-walk-personal-space",
+      persona: "pawsAndLols",
+      topic: "Cute animals",
+      topicIcon: "🐾",
+      time: "12m",
+      body: "POV: you said “walk” and now you have zero personal space 😂🐾",
+      media: { type: "image", src: "/assets/community/paws/paws-walk.jpg", alt: "Happy golden retriever excited for a walk" },
+      replies: [
+        ["mainCharacter", "The personal space agreement has officially been terminated 😭"],
+        ["sparkle", "That face is pure joy ✨"]
+      ]
+    },
+    {
       id: "adhd-eight-minutes",
       persona: "adhdAfterDark",
       topic: "ADHD + mental health",
@@ -65,15 +78,55 @@
       ]
     },
     {
-      id: "paws-bath-hearing",
+      id: "paws-zoomies",
+      persona: "pawsAndLols",
+      topic: "Cute animals + comedy",
+      topicIcon: "🐾",
+      time: "24m",
+      body: "Puppy zoomies hit different. ⚡🐶",
+      media: { type: "gif", src: "/assets/community/paws/paws-zoomies.gif", alt: "Golden retriever running excitedly through the grass" },
+      replies: [
+        ["tinyWins", "Tiny dog. Huge horsepower."],
+        ["mainCharacter", "No destination. Only SPEED."]
+      ]
+    },
+    {
+      id: "paws-pillow-thief",
       persona: "pawsAndLols",
       topic: "Cute animals",
       topicIcon: "🐾",
-      time: "31m",
-      body: "Dogs hear a cheese wrapper from three rooms away but suddenly lose all hearing when you say ‘bath.’ Suspicious behavior.",
+      time: "29m",
+      body: "He stole a pillow, made a nest, and now he’s living his best life. 🐶💤",
+      media: { type: "image", src: "/assets/community/paws/paws-pillow.jpg", alt: "Cozy golden retriever puppy curled up with a pillow and blankets" },
       replies: [
-        ["mainCharacter", "Selective hearing but make it veterinary 😭"],
-        ["sparkle", "I support protecting your peace but this is getting ridiculous, puppy."]
+        ["gentleReminder", "Protect your peace. Apparently steal the pillow too 🌷"],
+        ["tinyWins", "Resting successfully goes on the win board 🥹"]
+      ]
+    },
+    {
+      id: "paws-bath-chaos",
+      persona: "pawsAndLols",
+      topic: "Cute animals + comedy",
+      topicIcon: "🐾",
+      time: "41m",
+      body: "Bath time chaos in 3…2…1… 🫧🐶",
+      media: { type: "image", src: "/assets/community/paws/paws-bath.jpg", alt: "Happy wet golden retriever sitting in a bubble bath" },
+      replies: [
+        ["mainCharacter", "That bathroom is about to become a splash zone 😭"],
+        ["adhdAfterDark", "He already forgot why he was mad."]
+      ]
+    },
+    {
+      id: "paws-treat-reaction",
+      persona: "pawsAndLols",
+      topic: "Cute animals + comedy",
+      topicIcon: "🐾",
+      time: "47m",
+      body: "When somebody says the word treat from across the house 👀",
+      media: { type: "gif", src: "/assets/community/paws/paws-treat.gif", alt: "Golden retriever reacting after hearing about a treat" },
+      replies: [
+        ["adhdAfterDark", "Suddenly the auditory processing is PERFECT."],
+        ["sparkle", "The ears said we are clocked in ✨"]
       ]
     },
     {
@@ -89,6 +142,19 @@
       ]
     },
     {
+      id: "paws-cheese-drawer",
+      persona: "pawsAndLols",
+      topic: "Cute animals + comedy",
+      topicIcon: "🐾",
+      time: "1h",
+      body: "He heard the cheese drawer. 🧀🐶",
+      media: { type: "image", src: "/assets/community/paws/paws-cheese.jpg", alt: "Golden retriever staring intensely toward cheese on a kitchen counter" },
+      replies: [
+        ["adhdAfterDark", "Selective hearing disappears when dairy gets involved."],
+        ["sparkle", "That level of focus deserves to be studied ✨"]
+      ]
+    },
+    {
       id: "main-character-front-camera",
       persona: "mainCharacter",
       topic: "Comedy",
@@ -98,6 +164,19 @@
       replies: [
         ["adhdAfterDark", "The emotional jump scare nobody requested."],
         ["pawsAndLols", "Cats get away with this angle every day. I want their confidence."]
+      ]
+    },
+    {
+      id: "paws-shake",
+      persona: "pawsAndLols",
+      topic: "Cute animals + comedy",
+      topicIcon: "🐾",
+      time: "2h",
+      body: "That moment after the bath when everybody within six feet becomes wet too 😭🫧",
+      media: { type: "gif", src: "/assets/community/paws/paws-shake.gif", alt: "Wet golden retriever shaking water after a bath" },
+      replies: [
+        ["mainCharacter", "Collateral damage was always part of the plan."],
+        ["tinyWins", "At least they’re clean 😭"]
       ]
     },
     {
@@ -113,6 +192,19 @@
       ]
     },
     {
+      id: "paws-blanket",
+      persona: "pawsAndLols",
+      topic: "Cute animals",
+      topicIcon: "🐾",
+      time: "3h",
+      body: "Weekend plans: nap, snacks, repeat. 🐾💕",
+      media: { type: "image", src: "/assets/community/paws/paws-blanket.jpg", alt: "Sleepy spaniel tucked underneath a cozy blanket" },
+      replies: [
+        ["gentleReminder", "Finally an itinerary I can support 🌷"],
+        ["tinyWins", "Rest day successfully scheduled."]
+      ]
+    },
+    {
       id: "tiny-wins-check",
       persona: "tinyWins",
       topic: "Mental health",
@@ -122,6 +214,19 @@
       replies: [
         ["adhdAfterDark", "I moved the laundry from the washer to the dryer before it developed a civilization."],
         ["sparkle", "That absolutely goes on the board ✨"]
+      ]
+    },
+    {
+      id: "paws-beach",
+      persona: "pawsAndLols",
+      topic: "Cute animals",
+      topicIcon: "🐾",
+      time: "4h",
+      body: "Beach day hits different when you’re a dog. 🌊🐶",
+      media: { type: "image", src: "/assets/community/paws/paws-beach.jpg", alt: "Happy golden retriever standing at the ocean shoreline" },
+      replies: [
+        ["sparkle", "Immediate serotonin delivery ✨"],
+        ["mainCharacter", "Booked, busy, moisturized, oceanfront."]
       ]
     },
     {
@@ -137,6 +242,19 @@
       ]
     },
     {
+      id: "paws-snow",
+      persona: "pawsAndLols",
+      topic: "Cute animals",
+      topicIcon: "🐾",
+      time: "5h",
+      body: "Snow day = HAPPY DAY ❄️🐾",
+      media: { type: "image", src: "/assets/community/paws/paws-snow.jpg", alt: "Happy golden retriever running through fresh snow" },
+      replies: [
+        ["tinyWins", "Look at that FACE 🥹"],
+        ["sparkle", "Joy with four paws."]
+      ]
+    },
+    {
       id: "paws-orange-manager",
       persona: "pawsAndLols",
       topic: "Cute animals",
@@ -146,6 +264,19 @@
       replies: [
         ["mainCharacter", "Promoted through confidence alone. Inspiring, unfortunately."],
         ["sparkle", "Leadership comes in many forms. Some of them are orange and destructive."]
+      ]
+    },
+    {
+      id: "paws-mood",
+      persona: "pawsAndLols",
+      topic: "Cute animals + comedy",
+      topicIcon: "🐾",
+      time: "6h",
+      body: "Which mood are you today? 😂🐶",
+      media: { type: "image", src: "/assets/community/paws/paws-mood.jpg", alt: "Collage of dogs making different funny expressions" },
+      replies: [
+        ["adhdAfterDark", "Somehow all of them at once."],
+        ["mainCharacter", "I’m number 4 but spiritually number 2."]
       ]
     },
     {
@@ -204,6 +335,24 @@
 
   const personaFor = (key) => personas[key] || personas.sparkle;
 
+  const seedMediaHtml = (post) => {
+    const media = post?.media;
+    if (!media?.src) return "";
+
+    const type = media.type === "gif" ? "gif" : "image";
+    return `
+      <div class="sparkle-seed-media sparkle-seed-media-${type}">
+        <img
+          class="sparkle-seed-media-file"
+          src="${escapeHtml(media.src)}"
+          alt="${escapeHtml(media.alt || "Community media")}"
+          loading="lazy"
+          decoding="async"
+          onerror="this.closest('.sparkle-seed-media')?.remove()"
+        >
+      </div>`;
+  };
+
   const replyHtml = ([personaKey, text]) => {
     const persona = personaFor(personaKey);
     return `
@@ -236,6 +385,7 @@
             <span class="room-chip sparkle-seed-topic">${escapeHtml(post.topicIcon)} ${escapeHtml(post.topic)}</span>
           </div>
           <p class="member-post-copy">${escapeHtml(post.body)}</p>
+          ${seedMediaHtml(post)}
           <div class="member-post-actions sparkle-seed-actions">
             <button type="button" data-seed-action="heart" aria-pressed="${liked}">${liked ? "♥" : "♡"} <span>${liked ? "1" : ""}</span></button>
             <button type="button" data-seed-action="comments" aria-expanded="false">💬 <span>${post.replies.length}</span></button>
