@@ -26,7 +26,7 @@ permalink: /community/
 <meta name="twitter:image" content="https://thesheemaedit.com/assets/images/social-card.png">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"CollectionPage","name":"The Edit Community","url":"https://thesheemaedit.com/community/","description":"The community side of The Sheema Edit for honest conversations about mental wellness, unmasking, motherhood, chronic illness, lifestyle, beauty, and real life.","isPartOf":{"@type":"WebSite","@id":"https://thesheemaedit.com/#website","name":"The Sheema Edit","url":"https://thesheemaedit.com/"},"about":["Mental wellness","Unmasking","Motherhood","Chronic illness","Lifestyle","Beauty"]}</script>
 <link rel="stylesheet" href="/assets/css/styles.css">
-<link rel="stylesheet" href="/assets/css/community.css?v=9">
+<link rel="stylesheet" href="/assets/css/community.css?v=10">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-C7XV3YJCZE"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-C7XV3YJCZE');</script>
 </head>
@@ -115,7 +115,7 @@ permalink: /community/
     <div class="rail-card account-rail-card" id="community-account-card">
       <p class="community-kicker">Your account</p>
       <div id="community-account-signed-out"><h3>Come on in ♡</h3><p>Join free to publish your own edits, connect, reply, react, and share.</p><button class="text-button" id="rail-auth-button" type="button">Join / sign in →</button></div>
-      <div id="community-account-signed-in" hidden><div class="account-row"><span class="mini-avatar" id="rail-avatar">S</span><div><strong id="rail-display-name">Member</strong><small id="rail-level">Level 1 · New Here</small></div></div><button class="text-button" id="edit-profile-button" type="button">Edit profile</button><button class="text-button danger-link" id="sign-out-button" type="button">Sign out</button></div>
+      <div id="community-account-signed-in" hidden><div class="account-row"><span class="mini-avatar" id="rail-avatar">S</span><div><strong id="rail-display-name">Member</strong><small id="rail-level">Level 1 · New Here</small><div class="rail-profile-tags" id="rail-profile-tags"></div></div></div><button class="text-button" id="edit-profile-button" type="button">Edit profile</button><button class="text-button danger-link" id="sign-out-button" type="button">Sign out</button></div>
     </div>
     <div class="rail-card rail-soft">
       <p class="community-kicker">Community standard</p>
@@ -153,6 +153,41 @@ permalink: /community/
   <form id="community-profile-form">
     <label for="profile-display-name">Display name</label><input id="profile-display-name" maxlength="40" required>
     <label for="profile-bio">Bio</label><textarea id="profile-bio" maxlength="280" rows="4" placeholder="A little about you..."></textarea>
+
+    <div class="profile-choice-group">
+      <label for="profile-category">How do you describe yourself?</label>
+      <select id="profile-category">
+        <option value="">Pick one if you want</option>
+        <option value="creator">Creator</option>
+        <option value="parent">Parent</option>
+        <option value="student">Student</option>
+        <option value="entrepreneur">Entrepreneur</option>
+        <option value="gamer">Gamer</option>
+        <option value="beauty-lover">Beauty lover</option>
+        <option value="lifestyle-lover">Lifestyle lover</option>
+        <option value="bookish">Bookish</option>
+        <option value="music-lover">Music lover</option>
+        <option value="here-to-connect">Here to connect</option>
+      </select>
+    </div>
+
+    <fieldset class="profile-interest-fieldset">
+      <legend>What are you into?</legend>
+      <p class="profile-field-hint">Pick up to 5. These are public on your Community profile.</p>
+      <div class="profile-interest-grid" id="profile-interest-grid">
+        <label><input type="checkbox" name="profile-interest" value="mental-wellness"><span>Mental wellness</span></label>
+        <label><input type="checkbox" name="profile-interest" value="relationships"><span>Relationships</span></label>
+        <label><input type="checkbox" name="profile-interest" value="family"><span>Family</span></label>
+        <label><input type="checkbox" name="profile-interest" value="beauty"><span>Beauty</span></label>
+        <label><input type="checkbox" name="profile-interest" value="lifestyle"><span>Lifestyle</span></label>
+        <label><input type="checkbox" name="profile-interest" value="self-growth"><span>Self growth</span></label>
+        <label><input type="checkbox" name="profile-interest" value="creativity"><span>Creativity</span></label>
+        <label><input type="checkbox" name="profile-interest" value="gaming"><span>Gaming</span></label>
+        <label><input type="checkbox" name="profile-interest" value="music"><span>Music</span></label>
+        <label><input type="checkbox" name="profile-interest" value="relatable-chaos"><span>Relatable chaos</span></label>
+      </div>
+    </fieldset>
+
     <button class="button lime" type="submit">Save profile</button>
     <p class="form-message" id="profile-message" aria-live="polite"></p>
   </form>
@@ -180,6 +215,6 @@ permalink: /community/
 <footer class="site-footer community-footer"><div class="site-shell"><div class="footer-grid"><div><h2>The Sheema Edit</h2><p>Soft thoughts, real life, and a community that gets it.</p></div><div class="footer-links"><h3>Explore</h3><a href="/community/">Community</a><a href="/#latest">The edits</a><a href="/shop/">Shop</a><a href="/about.html">About</a></div><div class="footer-links"><h3>Find me</h3><a href="https://www.instagram.com/_rasheemaa/" target="_blank" rel="me noopener noreferrer">Instagram @_rasheemaa</a><a href="https://www.tiktok.com/@_rasheemaa" target="_blank" rel="me noopener noreferrer">TikTok @_rasheemaa</a></div></div><div class="footer-bottom"><span>© <span data-current-year>2026</span> The Sheema Edit. All feelings reserved.</span><span>Personal stories only. Nothing here is medical advice.</span></div></div></footer>
 <script src="/assets/js/main.js?v=2" defer></script>
 <script src="/assets/js/community-config.js?v=3"></script>
-<script src="/assets/js/community.js?v=14" type="module"></script>
+<script src="/assets/js/community.js?v=15" type="module"></script>
 </body>
 </html>
