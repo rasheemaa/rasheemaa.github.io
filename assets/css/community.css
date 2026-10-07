@@ -698,3 +698,29 @@
     justify-self:start;
   }
 }
+
+
+/* Feed-only Community layout */
+.community-layout{
+  grid-template-columns:minmax(0,720px) 250px;
+  justify-content:center;
+}
+.community-content{
+  width:100%;
+}
+.community-footer{
+  padding-bottom:32px;
+}
+@media(max-width:1040px){
+  .community-layout{
+    grid-template-columns:minmax(0,720px);
+  }
+  .community-right-rail{
+    display:none;
+  }
+}
+@media(max-width:760px){
+  .community-footer{
+    padding-bottom:32px;
+  }
+}
