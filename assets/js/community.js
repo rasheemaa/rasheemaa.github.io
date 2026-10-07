@@ -343,6 +343,18 @@ const openAuth = () => {
 
 [authGateButton, railAuthButton].forEach((button) => button?.addEventListener("click", openAuth));
 
+const populateProfileEditor = (profile = currentProfile) => {
+  $("profile-display-name").value = profile?.displayName || currentUser?.displayName || "";
+  $("profile-bio").value = profile?.bio || "";
+  $("profile-category").value = allowedCategories.has(profile?.category) ? profile.category : "";
+  $("profile-neurotype").value = allowedNeurotypes.has(profile?.neurotype) ? profile.neurotype : "";
+
+  const selected = new Set(Array.isArray(profile?.interests) ? profile.interests : []);
+  document.querySelectorAll('input[name="profile-interest"]').forEach((input) => {
+    input.checked = selected.has(input.value);
+  });
+};
+
 async function openProfileEditor() {
   if (!currentUser) {
     openAuth();
@@ -354,28 +366,24 @@ async function openProfileEditor() {
     return;
   }
 
+  populateProfileEditor(currentProfile);
+  setMessage($("profile-message"), currentProfile ? "" : "Loading your profile…");
+  if (!profileDialog.open) profileDialog.showModal();
+
+  if (currentProfile) return;
+
   try {
-    if (!currentProfile) await loadProfile();
+    await loadProfile();
     if (!currentProfile) {
       await ensureProfile(currentUser);
       await loadProfile();
     }
     if (!currentProfile) throw new Error("Profile unavailable");
 
-    $("profile-display-name").value = currentProfile.displayName || currentUser.displayName || "";
-    $("profile-bio").value = currentProfile.bio || "";
-    $("profile-category").value = allowedCategories.has(currentProfile.category) ? currentProfile.category : "";
-    $("profile-neurotype").value = allowedNeurotypes.has(currentProfile.neurotype) ? currentProfile.neurotype : "";
-
-    const selected = new Set(Array.isArray(currentProfile.interests) ? currentProfile.interests : []);
-    document.querySelectorAll('input[name="profile-interest"]').forEach((input) => {
-      input.checked = selected.has(input.value);
-    });
-
+    populateProfileEditor(currentProfile);
     setMessage($("profile-message"), "");
-    if (!profileDialog.open) profileDialog.showModal();
   } catch (error) {
-    setMessage(systemNote, "Your profile could not open. Please refresh and try again.", "error");
+    setMessage($("profile-message"), "Your saved profile could not load. You can still try again after refreshing.", "error");
   }
 }
 
