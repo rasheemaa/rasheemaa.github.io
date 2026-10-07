@@ -622,3 +622,43 @@
     grid-column:auto;
   }
 }
+
+
+/* 18+ signup gate */
+.auth-age-field{
+  margin:5px 0 2px;
+}
+.auth-age-check{
+  display:flex!important;
+  padding:12px 13px;
+  align-items:flex-start;
+  gap:10px;
+  border:1px solid rgba(33,23,44,.12);
+  border-radius:14px;
+  background:#fff4f8;
+  cursor:pointer;
+}
+.auth-age-check input{
+  width:20px!important;
+  height:20px;
+  min-width:20px;
+  margin:1px 0 0;
+  padding:0!important;
+  accent-color:#21172c;
+}
+.auth-age-check span{
+  color:#4f4257;
+  font-size:.78rem;
+  font-weight:700;
+  line-height:1.4;
+}
+.auth-age-check strong{
+  color:#21172c;
+}
+.auth-age-check:has(input:focus-visible){
+  outline:3px solid rgba(255,79,163,.2);
+  outline-offset:2px;
+}
+.auth-age-field[hidden]{
+  display:none!important;
+}
