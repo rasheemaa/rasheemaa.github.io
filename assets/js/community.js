@@ -361,6 +361,7 @@ const loadComments = async (postId, drawer) => {
     const snapshot = await getDocs(commentsQuery);
     const comments = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
     drawer.innerHTML = `
+      <div class="comments-sheet-header"><strong>Replies</strong><button class="comments-close" type="button" data-close-comments aria-label="Close replies">×</button></div>
       <div class="comments-list">${comments.map((comment) => `
         <div class="member-comment">
           <span class="mini-avatar">${escapeHtml(initials(comment.displayName))}</span>
@@ -372,6 +373,10 @@ const loadComments = async (postId, drawer) => {
         <input maxlength="2000" placeholder="Write a reply…" required>
         <button type="submit">Reply</button>
       </form>`;
+
+    drawer.querySelector("[data-close-comments]")?.addEventListener("click", () => {
+      drawer.hidden = true;
+    });
 
     drawer.querySelector(".comment-form")?.addEventListener("submit", async (event) => {
       event.preventDefault();
