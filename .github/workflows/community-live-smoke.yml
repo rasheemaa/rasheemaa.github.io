@@ -41,15 +41,17 @@ jobs:
           node --input-type=module --check < assets/js/community.js
           grep -Fq 'let reactionCheckedPostIds = new Set();' assets/js/community.js
           grep -Fq 'id="auth-age-confirm"' community/index.html
+          grep -Fq 'id="auth-age-field" hidden' community/index.html
+          grep -Fq 'const updateAgeGateVisibility = () =>' assets/js/community.js
           grep -Fq '18+ only.' community/index.html
           grep -Fq 'You must confirm you are 18 or older to join the Community.' assets/js/community.js
           grep -Fq '/assets/js/community-config.js?v=3' community/index.html
-          grep -Fq '/assets/css/community.css?v=4' community/index.html
-          grep -Fq '/assets/js/community.js?v=8' community/index.html
+          grep -Fq '/assets/css/community.css?v=5' community/index.html
+          grep -Fq '/assets/js/community.js?v=10' community/index.html
           grep -Fq '/* Social app refresh v3 */' assets/css/community.css
-          grep -Fq 'const CACHE_NAME = "sheema-edit-v37";' service-worker.js
-          grep -Fq '/assets/css/community.css?v=4' service-worker.js
-          grep -Fq '/assets/js/community.js?v=8' service-worker.js
+          grep -Fq 'const CACHE_NAME = "sheema-edit-v39";' service-worker.js
+          grep -Fq '/assets/css/community.css?v=5' service-worker.js
+          grep -Fq '/assets/js/community.js?v=10' service-worker.js
           node <<'NODE'
           const fs = require('fs');
           const sw = fs.readFileSync('service-worker.js', 'utf8');
@@ -65,19 +67,19 @@ jobs:
           for attempt in $(seq 1 30); do
             page="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/community/?ci=${GITHUB_SHA}" || true)"
             cfg="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/js/community-config.js?v=3&ci=${GITHUB_SHA}" || true)"
-            css="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/css/community.css?v=4&ci=${GITHUB_SHA}" || true)"
-            js="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/js/community.js?v=8&ci=${GITHUB_SHA}" || true)"
+            css="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/css/community.css?v=5&ci=${GITHUB_SHA}" || true)"
+            js="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/js/community.js?v=10&ci=${GITHUB_SHA}" || true)"
             sw="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/service-worker.js?ci=${GITHUB_SHA}" || true)"
 
-            if grep -Fq '/assets/css/community.css?v=4' <<<"$page" \
-              && grep -Fq '/assets/js/community.js?v=8' <<<"$page" \
+            if grep -Fq '/assets/css/community.css?v=5' <<<"$page" \
+              && grep -Fq '/assets/js/community.js?v=10' <<<"$page" \
               && grep -Fq 'projectId: "the-sheema-edit"' <<<"$cfg" \
               && grep -Fq '/* Social app refresh v3 */' <<<"$css" \
               && grep -Fq 'let reactionCheckedPostIds = new Set();' <<<"$js" \
               && grep -Fq 'comments-sheet-header' <<<"$js" \
-              && grep -Fq 'const CACHE_NAME = "sheema-edit-v37";' <<<"$sw" \
-              && grep -Fq '/assets/css/community.css?v=4' <<<"$sw" \
-              && grep -Fq '/assets/js/community.js?v=8' <<<"$sw"; then
+              && grep -Fq 'const CACHE_NAME = "sheema-edit-v39";' <<<"$sw" \
+              && grep -Fq '/assets/css/community.css?v=5' <<<"$sw" \
+              && grep -Fq '/assets/js/community.js?v=10' <<<"$sw"; then
               exit 0
             fi
             sleep 10
@@ -89,8 +91,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          api_key="$(sed -n 's/.*apiKey: "\([^"]*\)".*/\1/p' assets/js/community-config.js | head -n1)"
+          test -n "$api_key"
           response="$(curl -sS --max-time 20 \
-            'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyDuhUEWhCHK0bvrN5zVzumB1Zvz11egBMY' \
+            "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=$api_key" \
             -H 'Content-Type: application/json' \
             --data-binary '{"email":"community-ci-probe@example.com","password":"not-a-real-password","returnSecureToken":true}')"
           if grep -Eq 'API_KEY_INVALID|PROJECT_NOT_FOUND|OPERATION_NOT_ALLOWED|CONFIGURATION_NOT_FOUND' <<<"$response"; then
