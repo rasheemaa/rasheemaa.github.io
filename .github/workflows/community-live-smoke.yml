@@ -81,7 +81,7 @@ jobs:
             'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyDuhUEWhCHK0bvrN5zVzumB1Zvz11egBMY' \
             -H 'Content-Type: application/json' \
             --data-binary '{"email":"community-ci-probe@example.com","password":"not-a-real-password","returnSecureToken":true}')"
-          if grep -Eq 'API_KEY_INVALID|PROJECT_NOT_FOUND|OPERATION_NOT_ALLOWED' <<<"$response"; then
+          if grep -Eq 'API_KEY_INVALID|PROJECT_NOT_FOUND|OPERATION_NOT_ALLOWED|CONFIGURATION_NOT_FOUND' <<<"$response"; then
             echo "$response" >&2
             exit 1
           fi
@@ -91,6 +91,7 @@ jobs:
           fi
 
       - name: Verify member data is not anonymously readable
+        if: always()
         shell: bash
         run: |
           set -euo pipefail
