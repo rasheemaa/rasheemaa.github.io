@@ -156,6 +156,13 @@ const renderAuthMode = () => {
   const signup = authMode === "signup";
   $("auth-dialog-title").textContent = signup ? "Join the community" : "Welcome back";
   $("auth-name-field").hidden = !signup;
+  const ageField = $("auth-age-field");
+  const ageConfirm = $("auth-age-confirm");
+  if (ageField) ageField.hidden = !signup;
+  if (ageConfirm) {
+    ageConfirm.required = signup;
+    ageConfirm.disabled = !signup;
+  }
   $("auth-submit").textContent = signup ? "Create free account" : "Sign in";
   $("auth-switch").textContent = signup ? "Already a member? Sign in" : "New here? Create a free account";
   $("auth-password").autocomplete = signup ? "new-password" : "current-password";
@@ -539,6 +546,7 @@ $("community-auth-form")?.addEventListener("submit", async (event) => {
   try {
     if (authMode === "signup") {
       if (!displayName) throw new Error("Add a display name first.");
+      if (!$("auth-age-confirm")?.checked) throw new Error("You must confirm you are 18 or older to join the Community.");
       const credential = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(credential.user, { displayName: displayName.slice(0, 40) });
       try {
