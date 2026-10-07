@@ -75,6 +75,7 @@ const railAuthButton = $("rail-auth-button");
 const authGate = $("community-auth-gate");
 const composer = $("community-composer");
 const memberSection = $("member-feed-section");
+const previewSection = $("community-preview-section");
 const systemNote = $("community-system-note");
 const signedOutRail = $("community-account-signed-out");
 const signedInRail = $("community-account-signed-in");
@@ -443,6 +444,7 @@ const updateSignedOutUi = () => {
   authGate.hidden = false;
   composer.hidden = true;
   memberSection.hidden = true;
+  if (previewSection) previewSection.hidden = false;
   signedOutRail.hidden = false;
   signedInRail.hidden = true;
   if (authButton) {
@@ -481,6 +483,7 @@ const showAuthenticatedShell = (user) => {
   authGate.hidden = true;
   composer.hidden = false;
   memberSection.hidden = false;
+  if (previewSection) previewSection.hidden = true;
   signedOutRail.hidden = true;
   signedInRail.hidden = false;
   if (authButton) {
@@ -500,6 +503,7 @@ const updateSignedInUi = async () => {
   authGate.hidden = true;
   composer.hidden = false;
   memberSection.hidden = false;
+  if (previewSection) previewSection.hidden = true;
   signedOutRail.hidden = true;
   signedInRail.hidden = false;
   if (authButton) {
