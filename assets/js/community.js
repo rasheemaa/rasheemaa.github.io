@@ -346,6 +346,23 @@ const loadProfile = async () => {
   return currentProfile;
 };
 
+const showAuthenticatedShell = (user) => {
+  authGate.hidden = true;
+  composer.hidden = false;
+  memberSection.hidden = false;
+  signedOutRail.hidden = true;
+  signedInRail.hidden = false;
+  if (authButton) {
+    authButton.hidden = false;
+    authButton.textContent = "My profile";
+  }
+  const fallbackName = user?.displayName || user?.email?.split("@")[0] || "Member";
+  $("composer-avatar").textContent = initials(fallbackName);
+  $("rail-avatar").textContent = initials(fallbackName);
+  $("rail-display-name").textContent = fallbackName;
+  $("rail-level").textContent = "Loading your profile…";
+};
+
 const updateSignedInUi = async () => {
   const profile = await loadProfile();
   const level = memberLevel(profile?.points || 0);
@@ -997,15 +1014,22 @@ const init = async () => {
       }
 
       currentUser = user;
+      showAuthenticatedShell(user);
+      memberFeed?.setAttribute("aria-busy", "true");
       try {
         await ensureProfile(user);
         await updateSignedInUi();
-        memberFeed?.setAttribute("aria-busy", "true");
         startFeed();
         startLeaderboard();
         setMessage(systemNote, "");
       } catch (error) {
-        setMessage(systemNote, "Your account connected, but the Community data could not load.", "error");
+        memberFeed?.removeAttribute("aria-busy");
+        const code = String(error?.code || "");
+        const message = code.includes("permission-denied")
+          ? "You’re signed in, but Community profile access is blocked by the database permissions."
+          : "You’re signed in, but your Community profile could not finish loading.";
+        setMessage(systemNote, message, "error");
+        $("rail-level").textContent = "Signed in";
       }
     });
   } catch {
