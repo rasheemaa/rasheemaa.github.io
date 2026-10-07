@@ -98,6 +98,35 @@ const spaces = {
   chaos: { name: "Relatable Chaos", emoji: "😭" }
 };
 
+const categoryLabels = {
+  creator: "Creator",
+  parent: "Parent",
+  student: "Student",
+  entrepreneur: "Entrepreneur",
+  gamer: "Gamer",
+  "beauty-lover": "Beauty lover",
+  "lifestyle-lover": "Lifestyle lover",
+  bookish: "Bookish",
+  "music-lover": "Music lover",
+  "here-to-connect": "Here to connect"
+};
+
+const interestLabels = {
+  "mental-wellness": "Mental wellness",
+  relationships: "Relationships",
+  family: "Family",
+  beauty: "Beauty",
+  lifestyle: "Lifestyle",
+  "self-growth": "Self growth",
+  creativity: "Creativity",
+  gaming: "Gaming",
+  music: "Music",
+  "relatable-chaos": "Relatable chaos"
+};
+
+const allowedCategories = new Set(Object.keys(categoryLabels));
+const allowedInterests = new Set(Object.keys(interestLabels));
+
 let auth = null;
 let db = null;
 let currentUser = null;
@@ -114,6 +143,7 @@ const commentStops = new Map();
 let activeGifTarget = null;
 let followingIds = new Set();
 let feedMode = "all";
+const profileCache = new Map();
 
 const escapeHtml = (value = "") => String(value)
   .replaceAll("&", "&amp;")
@@ -321,6 +351,32 @@ const updateSignedInUi = async () => {
   $("rail-avatar").textContent = initials(profile?.displayName);
   $("rail-display-name").textContent = profile?.displayName || "Member";
   $("rail-level").textContent = `Level ${level.level} · ${level.name}`;
+  const railTags = $("rail-profile-tags");
+  if (railTags) {
+    const category = allowedCategories.has(profile?.category) ? categoryLabels[profile.category] : "";
+    const interests = Array.isArray(profile?.interests)
+      ? profile.interests.filter((item) => allowedInterests.has(item)).slice(0, 2)
+      : [];
+    railTags.innerHTML = [
+      category ? `<span>${escapeHtml(category)}</span>` : "",
+      ...interests.map((item) => `<span>${escapeHtml(interestLabels[item])}</span>`)
+    ].join("");
+  }
+};
+
+const hydrateProfilesForPosts = async (posts) => {
+  if (!db || !currentUser) return;
+  const ids = [...new Set(posts.map((post) => post.authorId).filter(Boolean))]
+    .filter((id) => !profileCache.has(id));
+  if (!ids.length) return;
+  await Promise.all(ids.map(async (id) => {
+    try {
+      const snap = await getDoc(doc(db, "profiles", id));
+      profileCache.set(id, snap.exists() ? { id: snap.id, ...snap.data() } : null);
+    } catch {
+      profileCache.set(id, null);
+    }
+  }));
 };
 
 const hydrateLikesForPosts = async (posts) => {
@@ -338,12 +394,21 @@ const postCardHtml = (post) => {
   const space = spaces[post.spaceId] || { name: "Community", emoji: "♡" };
   const liked = likedPostIds.has(post.id);
   const mine = post.authorId === currentUser?.uid;
+  const authorProfile = profileCache.get(post.authorId);
+  const category = allowedCategories.has(authorProfile?.category) ? categoryLabels[authorProfile.category] : "";
+  const interests = Array.isArray(authorProfile?.interests)
+    ? authorProfile.interests.filter((item) => allowedInterests.has(item)).slice(0, 2)
+    : [];
   return `
     <article class="community-card member-post-card" data-post-id="${escapeHtml(post.id)}">
       <div class="post-avatar small" aria-hidden="true">${escapeHtml(initials(post.displayName))}</div>
       <div class="community-post-body">
         <div class="post-heading">
-          <div><strong>${escapeHtml(post.displayName || "Member")}</strong><span> · ${escapeHtml(relativeTime(post.createdAt))}</span></div>
+          <div>
+            <strong>${escapeHtml(authorProfile?.displayName || post.displayName || "Member")}</strong>
+            <span> · ${escapeHtml(relativeTime(post.createdAt))}</span>
+            ${category ? `<div class="member-meta-chips"><span class="member-category-chip">${escapeHtml(category)}</span>${interests.map((item) => `<span>${escapeHtml(interestLabels[item])}</span>`).join("")}</div>` : interests.length ? `<div class="member-meta-chips">${interests.map((item) => `<span>${escapeHtml(interestLabels[item])}</span>`).join("")}</div>` : ""}
+          </div>
           <span class="room-chip room-${escapeHtml(post.spaceId)}">${space.emoji} ${escapeHtml(space.name)}</span>
         </div>
         ${post.isPinned ? '<span class="pin inline-pin">PINNED</span>' : ""}
@@ -384,7 +449,10 @@ const startFeed = () => {
   const feedQuery = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(25));
   stopFeed = onSnapshot(feedQuery, async (snapshot) => {
     lastPosts = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
-    await hydrateLikesForPosts(lastPosts);
+    await Promise.all([
+      hydrateLikesForPosts(lastPosts),
+      hydrateProfilesForPosts(lastPosts)
+    ]);
     renderFeed();
     memberFeed?.removeAttribute("aria-busy");
   }, () => {
@@ -744,8 +812,25 @@ $("edit-profile-button")?.addEventListener("click", () => {
   if (!currentProfile || !profileDialog?.showModal) return;
   $("profile-display-name").value = currentProfile.displayName || "";
   $("profile-bio").value = currentProfile.bio || "";
+  $("profile-category").value = allowedCategories.has(currentProfile.category) ? currentProfile.category : "";
+  const selected = new Set(Array.isArray(currentProfile.interests) ? currentProfile.interests : []);
+  document.querySelectorAll('input[name="profile-interest"]').forEach((input) => {
+    input.checked = selected.has(input.value);
+  });
   setMessage($("profile-message"), "");
   profileDialog.showModal();
+});
+
+$("profile-interest-grid")?.addEventListener("change", (event) => {
+  const input = event.target.closest('input[name="profile-interest"]');
+  if (!input || !input.checked) return;
+  const selected = [...document.querySelectorAll('input[name="profile-interest"]:checked')];
+  if (selected.length > 5) {
+    input.checked = false;
+    setMessage($("profile-message"), "Pick up to 5 interests.", "error");
+  } else {
+    setMessage($("profile-message"), "");
+  }
 });
 
 $("community-profile-form")?.addEventListener("submit", async (event) => {
@@ -753,16 +838,27 @@ $("community-profile-form")?.addEventListener("submit", async (event) => {
   if (!db || !currentUser) return;
   const displayName = $("profile-display-name").value.trim();
   const bio = $("profile-bio").value.trim();
+  const rawCategory = $("profile-category").value;
+  const category = allowedCategories.has(rawCategory) ? rawCategory : "";
+  const interests = [...document.querySelectorAll('input[name="profile-interest"]:checked')]
+    .map((input) => input.value)
+    .filter((value) => allowedInterests.has(value))
+    .slice(0, 5);
   if (!displayName) return setMessage($("profile-message"), "Your display name cannot be blank.", "error");
   try {
     await updateDoc(doc(db, "profiles", currentUser.uid), {
       displayName: displayName.slice(0, 40),
       bio: bio.slice(0, 280),
+      category,
+      interests,
       updatedAt: serverTimestamp()
     });
     await updateProfile(currentUser, { displayName: displayName.slice(0, 40) });
+    profileCache.delete(currentUser.uid);
     setMessage($("profile-message"), "Saved ♡", "success");
     await updateSignedInUi();
+    profileCache.set(currentUser.uid, currentProfile);
+    renderFeed();
     setTimeout(() => profileDialog.close(), 350);
   } catch (error) {
     setMessage($("profile-message"), error.message || "Your profile could not be saved.", "error");
