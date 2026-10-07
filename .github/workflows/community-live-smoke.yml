@@ -8,6 +8,7 @@ on:
       - '.github/workflows/community-live-smoke.yml'
       - 'community/**'
       - 'assets/js/community.js'
+      - 'assets/css/community.css'
       - 'assets/js/community-config.js'
       - 'service-worker.js'
   pull_request:
@@ -40,9 +41,12 @@ jobs:
           node --input-type=module --check < assets/js/community.js
           grep -Fq 'let reactionCheckedPostIds = new Set();' assets/js/community.js
           grep -Fq '/assets/js/community-config.js?v=3' community/index.html
-          grep -Fq '/assets/js/community.js?v=5' community/index.html
-          grep -Fq 'const CACHE_NAME = "sheema-edit-v34";' service-worker.js
-          grep -Fq '/assets/js/community.js?v=5' service-worker.js
+          grep -Fq '/assets/css/community.css?v=3' community/index.html
+          grep -Fq '/assets/js/community.js?v=6' community/index.html
+          grep -Fq '/* Social app refresh v3 */' assets/css/community.css
+          grep -Fq 'const CACHE_NAME = "sheema-edit-v35";' service-worker.js
+          grep -Fq '/assets/css/community.css?v=3' service-worker.js
+          grep -Fq '/assets/js/community.js?v=6' service-worker.js
           node <<'NODE'
           const fs = require('fs');
           const sw = fs.readFileSync('service-worker.js', 'utf8');
@@ -58,14 +62,19 @@ jobs:
           for attempt in $(seq 1 30); do
             page="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/community/?ci=${GITHUB_SHA}" || true)"
             cfg="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/js/community-config.js?v=3&ci=${GITHUB_SHA}" || true)"
-            js="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/js/community.js?v=5&ci=${GITHUB_SHA}" || true)"
+            css="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/css/community.css?v=3&ci=${GITHUB_SHA}" || true)"
+            js="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/js/community.js?v=6&ci=${GITHUB_SHA}" || true)"
             sw="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/service-worker.js?ci=${GITHUB_SHA}" || true)"
 
-            if grep -Fq '/assets/js/community.js?v=5' <<<"$page" \
+            if grep -Fq '/assets/css/community.css?v=3' <<<"$page" \
+              && grep -Fq '/assets/js/community.js?v=6' <<<"$page" \
               && grep -Fq 'projectId: "the-sheema-edit"' <<<"$cfg" \
+              && grep -Fq '/* Social app refresh v3 */' <<<"$css" \
               && grep -Fq 'let reactionCheckedPostIds = new Set();' <<<"$js" \
-              && grep -Fq 'const CACHE_NAME = "sheema-edit-v34";' <<<"$sw" \
-              && grep -Fq '/assets/js/community.js?v=5' <<<"$sw"; then
+              && grep -Fq 'comments-sheet-header' <<<"$js" \
+              && grep -Fq 'const CACHE_NAME = "sheema-edit-v35";' <<<"$sw" \
+              && grep -Fq '/assets/css/community.css?v=3' <<<"$sw" \
+              && grep -Fq '/assets/js/community.js?v=6' <<<"$sw"; then
               exit 0
             fi
             sleep 10
