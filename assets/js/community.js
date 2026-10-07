@@ -87,6 +87,8 @@ const gifRemoveButton = $("community-gif-remove");
 const postGifInput = $("community-post-gif-url");
 const postGifPreview = $("community-post-gif-preview");
 const postGifButton = $("community-post-gif-button");
+const feedForYouButton = $("feed-for-you");
+const feedFollowingButton = $("feed-following");
 
 const spaces = {
   mind: { name: "Mental Wellness & Unmasking", emoji: "🦋" },
@@ -106,9 +108,12 @@ let likedPostIds = new Set();
 let reactionCheckedPostIds = new Set();
 let stopFeed = null;
 let stopLeaderboard = null;
+let stopFollowing = null;
 let openCommentsPostId = null;
 const commentStops = new Map();
 let activeGifTarget = null;
+let followingIds = new Set();
+let feedMode = "all";
 
 const escapeHtml = (value = "") => String(value)
   .replaceAll("&", "&amp;")
@@ -254,11 +259,15 @@ const updateSignedOutUi = () => {
   reactionCheckedPostIds = new Set();
   stopFeed?.();
   stopLeaderboard?.();
+  stopFollowing?.();
   commentStops.forEach((stop) => stop?.());
   commentStops.clear();
   openCommentsPostId = null;
   stopFeed = null;
   stopLeaderboard = null;
+  stopFollowing = null;
+  followingIds = new Set();
+  feedMode = "all";
   authGate.hidden = false;
   composer.hidden = true;
   memberSection.hidden = true;
