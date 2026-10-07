@@ -193,6 +193,7 @@
   const follows = safelyParseSet(STORAGE_KEYS.follows);
   let profileDialog = null;
   let rendering = false;
+  let feedObserver = null;
 
   const escapeHtml = (value = "") => String(value)
     .replaceAll("&", "&amp;")
@@ -307,6 +308,7 @@
     if (!feed || !section) return;
 
     rendering = true;
+    feedObserver?.disconnect();
     try {
       section.hidden = false;
       if (empty) empty.hidden = true;
@@ -341,6 +343,7 @@
       if (requestedId) requestAnimationFrame(() => document.getElementById(requestedId)?.scrollIntoView({ behavior: "smooth", block: "center" }));
     } finally {
       rendering = false;
+      feedObserver?.observe(feed, { childList: true });
     }
   };
 
@@ -426,7 +429,7 @@
     document.documentElement.dataset.sparkleSeedVersion = SEED_VERSION;
     feed.addEventListener("click", handleFeedClick, true);
 
-    const feedObserver = new MutationObserver(() => injectSeeds());
+    feedObserver = new MutationObserver(() => injectSeeds());
     feedObserver.observe(feed, { childList: true });
 
     const sectionObserver = new MutationObserver(() => {
