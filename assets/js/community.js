@@ -342,10 +342,44 @@ const openAuth = () => {
 };
 
 [authGateButton, railAuthButton].forEach((button) => button?.addEventListener("click", openAuth));
-authButton?.addEventListener("click", () => {
-  if (currentUser) $("edit-profile-button")?.click();
-  else openAuth();
-});
+
+async function openProfileEditor() {
+  if (!currentUser) {
+    openAuth();
+    return;
+  }
+
+  if (!profileDialog?.showModal) {
+    setMessage(systemNote, "Your profile editor could not open in this browser.", "error");
+    return;
+  }
+
+  try {
+    if (!currentProfile) await loadProfile();
+    if (!currentProfile) {
+      await ensureProfile(currentUser);
+      await loadProfile();
+    }
+    if (!currentProfile) throw new Error("Profile unavailable");
+
+    $("profile-display-name").value = currentProfile.displayName || currentUser.displayName || "";
+    $("profile-bio").value = currentProfile.bio || "";
+    $("profile-category").value = allowedCategories.has(currentProfile.category) ? currentProfile.category : "";
+    $("profile-neurotype").value = allowedNeurotypes.has(currentProfile.neurotype) ? currentProfile.neurotype : "";
+
+    const selected = new Set(Array.isArray(currentProfile.interests) ? currentProfile.interests : []);
+    document.querySelectorAll('input[name="profile-interest"]').forEach((input) => {
+      input.checked = selected.has(input.value);
+    });
+
+    setMessage($("profile-message"), "");
+    if (!profileDialog.open) profileDialog.showModal();
+  } catch (error) {
+    setMessage(systemNote, "Your profile could not open. Please refresh and try again.", "error");
+  }
+}
+
+authButton?.addEventListener("click", openProfileEditor);
 
 const updateAgeGateVisibility = () => {
   const signup = authMode === "signup";
@@ -1041,19 +1075,7 @@ $("sign-out-button")?.addEventListener("click", async () => {
   if (auth) await signOut(auth);
 });
 
-$("edit-profile-button")?.addEventListener("click", () => {
-  if (!currentProfile || !profileDialog?.showModal) return;
-  $("profile-display-name").value = currentProfile.displayName || "";
-  $("profile-bio").value = currentProfile.bio || "";
-  $("profile-category").value = allowedCategories.has(currentProfile.category) ? currentProfile.category : "";
-  $("profile-neurotype").value = allowedNeurotypes.has(currentProfile.neurotype) ? currentProfile.neurotype : "";
-  const selected = new Set(Array.isArray(currentProfile.interests) ? currentProfile.interests : []);
-  document.querySelectorAll('input[name="profile-interest"]').forEach((input) => {
-    input.checked = selected.has(input.value);
-  });
-  setMessage($("profile-message"), "");
-  profileDialog.showModal();
-});
+$("edit-profile-button")?.addEventListener("click", openProfileEditor);
 
 $("profile-interest-grid")?.addEventListener("change", (event) => {
   const input = event.target.closest('input[name="profile-interest"]');
