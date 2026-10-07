@@ -85,6 +85,25 @@
 .sparkle-seed-actions button[aria-pressed="true"]{
   color:#b32267;
 }
+.sparkle-seed-media{
+  position:relative;
+  width:100%;
+  margin-top:11px;
+  overflow:hidden;
+  border:1px solid rgba(33,23,44,.08);
+  border-radius:17px;
+  background:#f4f0f5;
+}
+.sparkle-seed-media-file{
+  display:block;
+  width:100%;
+  max-height:580px;
+  object-fit:cover;
+  background:#f4f0f5;
+}
+.sparkle-seed-media-gif .sparkle-seed-media-file{
+  aspect-ratio:4 / 5;
+}
 .sparkle-seed-comments{
   margin-top:11px;
   padding:11px;
@@ -221,6 +240,17 @@
   }
   .sparkle-seed-comments{
     margin-inline:-2px;
+  }
+  .sparkle-seed-media{
+    margin-right:-14px;
+    margin-left:-14px;
+    width:calc(100% + 28px);
+    border-right:0;
+    border-left:0;
+    border-radius:0;
+  }
+  .sparkle-seed-media-file{
+    max-height:72vh;
   }
 }
 
