@@ -26,7 +26,7 @@ permalink: /community/
 <meta name="twitter:image" content="https://thesheemaedit.com/assets/images/social-card.png">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"CollectionPage","name":"The Edit Community","url":"https://thesheemaedit.com/community/","description":"The community side of The Sheema Edit for honest conversations about mental wellness, unmasking, motherhood, chronic illness, lifestyle, beauty, and real life.","isPartOf":{"@type":"WebSite","@id":"https://thesheemaedit.com/#website","name":"The Sheema Edit","url":"https://thesheemaedit.com/"},"about":["Mental wellness","Unmasking","Motherhood","Chronic illness","Lifestyle","Beauty"]}</script>
 <link rel="stylesheet" href="/assets/css/styles.css">
-<link rel="stylesheet" href="/assets/css/community.css?v=8">
+<link rel="stylesheet" href="/assets/css/community.css?v=9">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-C7XV3YJCZE"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-C7XV3YJCZE');</script>
 </head>
@@ -40,7 +40,7 @@ permalink: /community/
     <div class="community-identity">
       <p class="community-kicker">✦ The Edit Community</p>
       <h1>Community</h1>
-      <p>Scroll, post, reply, and find your people.</p>
+      <p>Share your edits, join conversations, and find your people.</p>
     </div>
     <div class="community-banner-actions">
       <span class="community-live-pill"><i aria-hidden="true"></i> Community</span>
@@ -53,32 +53,32 @@ permalink: /community/
   <section class="community-content">
     <div class="community-panel is-active" data-community-panel="feed">
       <article class="community-card welcome-card">
-        <div class="post-avatar" aria-hidden="true">S</div>
+        <div class="post-avatar" aria-hidden="true">✦</div>
         <div class="community-post-body">
-          <div class="post-heading"><div><strong>Sheema</strong><span> · pinned</span></div><span class="pin">PINNED</span></div>
-          <h2>Welcome to the side of The Edit where we get to talk back. 💗</h2>
-          <p>The articles can start the conversation, but they do not have to finish it. This community is for the messy middle: unmasking, motherhood, chronic illness, beauty, family, boundaries, funny stories, and all the little things that make real life real.</p>
-          <div class="welcome-rules"><span>Be kind</span><span>Protect privacy</span><span>No pressure to perform</span><span>Advice only when it is wanted</span></div>
+          <div class="post-heading"><div><strong>The Edit Community</strong><span> · pinned</span></div><span class="pin">PINNED</span></div>
+          <h2>Your edit belongs here. 💗</h2>
+          <p>Share what is on your mind, tell your story, ask a question, drop a GIF, reply to somebody, or find people who get it. This space is built around member voices and real connection.</p>
+          <div class="welcome-rules"><span>Be kind</span><span>Protect privacy</span><span>Be yourself</span><span>Connect, do not perform</span></div>
         </div>
       </article>
 
       <section class="member-auth-gate" id="community-auth-gate">
-        <div class="auth-gate-copy"><h2>Join the Community</h2><p>Free to join · Post, reply, react, and find your people.</p></div>
+        <div class="auth-gate-copy"><h2>Join the Community</h2><p>Free to join · Share your edits, reply, react, and connect.</p></div>
         <button class="button" id="community-auth-gate-button" type="button">Join free</button>
       </section>
 
       <section class="member-composer" id="community-composer" hidden>
         <div class="composer-avatar" id="composer-avatar" aria-hidden="true">♡</div>
         <form id="community-post-form">
-          <label class="sr-only" for="community-post-body">Write a community post</label>
-          <textarea id="community-post-body" maxlength="3000" rows="3" placeholder="What’s on your mind?"></textarea>
+          <label class="sr-only" for="community-post-body">Write your edit</label>
+          <textarea id="community-post-body" maxlength="3000" rows="3" placeholder="Share your edit…"></textarea>
           <input id="community-post-gif-url" type="hidden" value="">
           <div class="gif-preview" id="community-post-gif-preview" hidden></div>
           <div class="composer-footer">
             <div class="composer-tools">
               <button class="gif-trigger" id="community-post-gif-button" type="button" aria-haspopup="dialog">GIF</button>
-              <label>Post in
-                <select id="community-post-space" aria-label="Choose a community space">
+              <label>Topic
+                <select id="community-post-space" aria-label="Choose a topic for your edit">
                   <option value="mind">Mental Wellness & Unmasking</option>
                   <option value="motherhood">Motherhood & Family</option>
                   <option value="chronic">Chronic Illness & Real Life</option>
@@ -87,38 +87,25 @@ permalink: /community/
                 </select>
               </label>
             </div>
-            <button class="button lime" type="submit">Post</button>
+            <button class="button lime" type="submit">Publish edit</button>
           </div>
           <p class="form-message" id="community-post-message" aria-live="polite"></p>
         </form>
       </section>
 
       <section class="member-feed-section" id="member-feed-section" hidden>
-        <div class="feed-heading"><div><p class="community-kicker">From the community</p><h2>What everybody’s talking about</h2></div><button class="text-button" id="refresh-community" type="button">Refresh ↻</button></div>
+        <div class="social-feed-bar">
+          <div class="feed-filter-tabs" role="tablist" aria-label="Choose feed">
+            <button class="is-active" id="feed-for-you" type="button" role="tab" aria-selected="true">For You</button>
+            <button id="feed-following" type="button" role="tab" aria-selected="false">Following</button>
+          </div>
+          <button class="text-button" id="refresh-community" type="button">Refresh ↻</button>
+        </div>
+        <div class="feed-heading"><div><p class="community-kicker">Member edits</p><h2>Latest from the community</h2></div></div>
         <div class="community-feed" id="member-feed-list"></div>
-        <div class="empty-state compact" id="member-feed-empty" hidden><span class="empty-icon">♡</span><h3>It’s quiet in here.</h3><p>Be the first person to start a conversation.</p></div>
+        <div class="empty-state compact" id="member-feed-empty" hidden><span class="empty-icon">♡</span><h3>No edits here yet.</h3><p>Publish one or connect with somebody to start building your feed.</p></div>
       </section>
 
-      <div class="feed-heading creator-feed-heading"><div><p class="community-kicker">From Sheema</p><h2>Keep scrolling</h2></div><a href="/#latest">All edits →</a></div>
-      <div class="community-feed">
-        {% assign edits = site.edits | sort: "date" | reverse %}
-        {% for edit in edits limit:5 %}
-        {% assign room = "Mind & Unmasking" %}
-        {% assign room_class = "room-mind" %}
-        {% if edit.category contains "Chronic" %}{% assign room = "Chronic Illness & Real Life" %}{% assign room_class = "room-chronic" %}
-        {% elsif edit.category contains "Motherhood" %}{% assign room = "Motherhood & Family" %}{% assign room_class = "room-motherhood" %}
-        {% elsif edit.category contains "Lifestyle" %}{% assign room = "Lifestyle, Beauty & Laughs" %}{% assign room_class = "room-lifestyle" %}{% endif %}
-        <article class="community-card edit-feed-card">
-          <div class="post-avatar small" aria-hidden="true">S</div>
-          <div class="community-post-body">
-            <div class="post-heading"><div><strong>Sheema</strong><span> · {{ edit.date | date: "%b %-d" }}</span></div><span class="room-chip {{ room_class }}">{{ room }}</span></div>
-            <h3><a href="{{ edit.url }}">{{ edit.title }}</a></h3>
-            <p>{{ edit.description }}</p>
-            <div class="post-actions"><a href="{{ edit.url }}">Read the edit</a><span>♡ Talk about what it brought up for you</span></div>
-          </div>
-        </article>
-        {% endfor %}
-      </div>
       <p class="community-system-note" id="community-system-note" aria-live="polite"></p>
     </div>
 
@@ -127,7 +114,7 @@ permalink: /community/
   <aside class="community-right-rail">
     <div class="rail-card account-rail-card" id="community-account-card">
       <p class="community-kicker">Your account</p>
-      <div id="community-account-signed-out"><h3>Come on in ♡</h3><p>Join free to post, comment, react, and build your level.</p><button class="text-button" id="rail-auth-button" type="button">Join / sign in →</button></div>
+      <div id="community-account-signed-out"><h3>Come on in ♡</h3><p>Join free to publish your own edits, connect, reply, react, and share.</p><button class="text-button" id="rail-auth-button" type="button">Join / sign in →</button></div>
       <div id="community-account-signed-in" hidden><div class="account-row"><span class="mini-avatar" id="rail-avatar">S</span><div><strong id="rail-display-name">Member</strong><small id="rail-level">Level 1 · New Here</small></div></div><button class="text-button" id="edit-profile-button" type="button">Edit profile</button><button class="text-button danger-link" id="sign-out-button" type="button">Sign out</button></div>
     </div>
     <div class="rail-card rail-soft">
@@ -193,6 +180,6 @@ permalink: /community/
 <footer class="site-footer community-footer"><div class="site-shell"><div class="footer-grid"><div><h2>The Sheema Edit</h2><p>Soft thoughts, real life, and a community that gets it.</p></div><div class="footer-links"><h3>Explore</h3><a href="/community/">Community</a><a href="/#latest">The edits</a><a href="/shop/">Shop</a><a href="/about.html">About</a></div><div class="footer-links"><h3>Find me</h3><a href="https://www.instagram.com/_rasheemaa/" target="_blank" rel="me noopener noreferrer">Instagram @_rasheemaa</a><a href="https://www.tiktok.com/@_rasheemaa" target="_blank" rel="me noopener noreferrer">TikTok @_rasheemaa</a></div></div><div class="footer-bottom"><span>© <span data-current-year>2026</span> The Sheema Edit. All feelings reserved.</span><span>Personal stories only. Nothing here is medical advice.</span></div></div></footer>
 <script src="/assets/js/main.js?v=2" defer></script>
 <script src="/assets/js/community-config.js?v=3"></script>
-<script src="/assets/js/community.js?v=13" type="module"></script>
+<script src="/assets/js/community.js?v=14" type="module"></script>
 </body>
 </html>
