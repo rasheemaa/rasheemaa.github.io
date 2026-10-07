@@ -1,0 +1,60 @@
+name: Install Paws Community media
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/install-paws-media.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+
+      - name: Download optimized Paws media
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p assets/community/paws
+          curl -fL --retry 3 --max-time 90 \
+            'https://at.adobe.com/Cmk012LhudStq5AE' \
+            -o /tmp/paws-community-media.zip
+          unzip -oq /tmp/paws-community-media.zip -d assets/community/paws
+
+          for file in \
+            paws-walk.jpg \
+            paws-pillow.jpg \
+            paws-bath.jpg \
+            paws-cheese.jpg \
+            paws-blanket.jpg \
+            paws-beach.jpg \
+            paws-snow.jpg \
+            paws-mood.jpg \
+            paws-zoomies.gif \
+            paws-treat.gif \
+            paws-shake.gif
+          do
+            test -s "assets/community/paws/$file"
+          done
+
+      - name: Commit media to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/community/paws
+          if git diff --cached --quiet; then
+            echo "Paws media is already installed."
+            exit 0
+          fi
+          git commit -m "Add Paws and LOLs Community media"
+          git push origin HEAD:main
