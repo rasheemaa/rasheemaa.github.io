@@ -5,6 +5,16 @@ on:
     branches:
       - main
     paths:
+      - index.html
+      - about.html
+      - sitemap.xml
+      - robots.txt
+      - _config.yml
+      - _layouts/post.html
+      - _edits/**
+      - community/**
+      - shop/**
+      - what-do-i-say/index.html
       - .github/workflows/indexnow.yml
 
 permissions:
@@ -17,20 +27,23 @@ jobs:
       - name: Wait for GitHub Pages deployment
         run: sleep 60
 
-      - name: Submit recently updated public URLs
+      - name: Submit public sitemap URLs
         shell: bash
         run: |
           set -euo pipefail
+
           KEY="b7158b3e51c146fa8bb04efdce4dd21f"
-          URLS=(
-            "https://thesheemaedit.com/"
-            "https://thesheemaedit.com/about.html"
-            "https://thesheemaedit.com/shop/"
-            "https://thesheemaedit.com/posts/we-really-need-to-touch-some-grass.html"
-            "https://thesheemaedit.com/shop/reflection-journal-product.html"
-            "https://thesheemaedit.com/shop/gentle-weekly-planner.html"
-            "https://thesheemaedit.com/shop/reset-bundle.html"
-          )
+          SITEMAP_URL="https://thesheemaedit.com/sitemap.xml"
+
+          SITEMAP="$(curl --fail --silent --show-error "${SITEMAP_URL}")"
+          mapfile -t URLS < <(printf '%s' "${SITEMAP}" | grep -oE '<loc>[^<]+</loc>' | sed -E 's#</?loc>##g')
+
+          if [[ "${#URLS[@]}" -eq 0 ]]; then
+            echo "No public URLs found in sitemap."
+            exit 1
+          fi
+
+          echo "Submitting ${#URLS[@]} public URLs from sitemap."
 
           for URL in "${URLS[@]}"; do
             STATUS=$(curl --silent --show-error --output /tmp/indexnow-response --write-out "%{http_code}" \
