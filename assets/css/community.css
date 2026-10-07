@@ -662,3 +662,39 @@
 .auth-age-field[hidden]{
   display:none!important;
 }
+
+
+/* Simplified entry flow */
+.member-composer[hidden],
+.member-feed-section[hidden],
+.member-auth-gate[hidden],
+#community-auth-button[hidden]{
+  display:none!important;
+}
+.member-auth-gate{
+  grid-template-columns:minmax(0,1fr) auto;
+}
+.auth-gate-copy h2{
+  margin:0 0 3px;
+}
+.community-banner h1{
+  font-size:clamp(1.6rem,2.6vw,2.2rem);
+}
+@media(max-width:760px){
+  .member-auth-gate{
+    grid-template-columns:1fr auto;
+    align-items:center;
+  }
+  .member-auth-gate .button{
+    grid-column:auto;
+    justify-self:end;
+  }
+}
+@media(max-width:520px){
+  .member-auth-gate{
+    grid-template-columns:1fr;
+  }
+  .member-auth-gate .button{
+    justify-self:start;
+  }
+}
