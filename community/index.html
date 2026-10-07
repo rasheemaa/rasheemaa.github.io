@@ -15,7 +15,7 @@ permalink: /community/
 <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
 <link rel="stylesheet" href="/assets/css/styles.css">
-<link rel="stylesheet" href="/assets/css/community.css?v=2">
+<link rel="stylesheet" href="/assets/css/community.css?v=3">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-C7XV3YJCZE"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-C7XV3YJCZE');</script>
 </head>
@@ -26,16 +26,15 @@ permalink: /community/
 <main id="community-main" class="community-app">
 <section class="community-banner">
   <div class="site-shell community-banner-inner">
-    <div>
+    <div class="community-identity">
       <p class="community-kicker">✦ The Edit Community</p>
-      <h1>Come sit with us.</h1>
-      <p>A softer corner of the internet for the conversations The Sheema Edit already starts. No performing. No pretending you have it all together.</p>
-      <div class="community-banner-actions">
-        <button class="button lime" id="community-auth-button" type="button">Join / sign in</button>
-        <span class="free-note">♡ Free to join</span>
-      </div>
+      <h1>The group chat got its own place.</h1>
+      <p>Real people, real life, quick thoughts, deeper conversations, and absolutely no pressure to have a polished answer.</p>
     </div>
-    <div class="community-badge" aria-label="Five community spaces"><strong>5</strong><span>rooms to land in</span></div>
+    <div class="community-banner-actions">
+      <span class="community-live-pill"><i aria-hidden="true"></i> Community</span>
+      <button class="button lime" id="community-auth-button" type="button">Join / sign in</button>
+    </div>
   </div>
 </section>
 
@@ -57,6 +56,11 @@ permalink: /community/
 
   <section class="community-content">
     <div class="community-panel is-active" data-community-panel="feed">
+      <div class="feed-mode-tabs" aria-label="Community shortcuts">
+        <span class="feed-mode-active">For you</span>
+        <button type="button" data-jump-tab="spaces">Spaces</button>
+        <button type="button" data-jump-tab="levels">Top voices</button>
+      </div>
       <article class="community-card welcome-card">
         <div class="post-avatar" aria-hidden="true">S</div>
         <div class="community-post-body">
@@ -68,8 +72,9 @@ permalink: /community/
       </article>
 
       <section class="member-auth-gate" id="community-auth-gate">
-        <div><p class="community-kicker">Members only</p><h2>The real group chat lives right here.</h2><p>Create a free account to see member posts, join conversations, react, and earn community levels.</p></div>
-        <button class="button" id="community-auth-gate-button" type="button">Join the community →</button>
+        <div class="auth-gate-avatars" aria-hidden="true"><span>S</span><span>♡</span><span>✦</span></div>
+        <div class="auth-gate-copy"><p class="community-kicker">Your feed starts here</p><h2>Come join the conversation.</h2><p>Create a free account to post, reply, react, build your profile, and see the live community feed.</p></div>
+        <button class="button" id="community-auth-gate-button" type="button">Join free</button>
       </section>
 
       <section class="member-composer" id="community-composer" hidden>
@@ -99,7 +104,7 @@ permalink: /community/
         <div class="empty-state compact" id="member-feed-empty" hidden><span class="empty-icon">♡</span><h3>It’s quiet in here.</h3><p>Be the first person to start a conversation.</p></div>
       </section>
 
-      <div class="feed-heading"><div><p class="community-kicker">Fresh from The Edit</p><h2>Start with an edit</h2></div><a href="/#latest">See all edits →</a></div>
+      <div class="feed-heading creator-feed-heading"><div><p class="community-kicker">From Sheema</p><h2>Keep scrolling</h2></div><a href="/#latest">All edits →</a></div>
       <div class="community-feed">
         {% assign edits = site.edits | sort: "date" | reverse %}
         {% for edit in edits limit:5 %}
@@ -191,10 +196,10 @@ permalink: /community/
 </div>
 
 <nav class="community-mobile-tabs" aria-label="Community mobile navigation">
-  <button class="is-active" type="button" data-community-tab="feed" aria-pressed="true"><span>♡</span><small>Community</small></button>
+  <button class="is-active" type="button" data-community-tab="feed" aria-pressed="true"><span>♡</span><small>Home</small></button>
   <button type="button" data-community-tab="spaces" aria-pressed="false"><span>✦</span><small>Spaces</small></button>
   <button type="button" data-community-tab="library" aria-pressed="false"><span>▣</span><small>Library</small></button>
-  <button type="button" data-community-tab="calendar" aria-pressed="false"><span>◷</span><small>Calendar</small></button>
+  <button type="button" data-community-tab="calendar" aria-pressed="false"><span>◷</span><small>Events</small></button>
   <button type="button" data-community-tab="levels" aria-pressed="false"><span>☆</span><small>Levels</small></button>
 </nav>
 </main>
@@ -226,6 +231,6 @@ permalink: /community/
 <footer class="site-footer community-footer"><div class="site-shell"><div class="footer-grid"><div><h2>The Sheema Edit</h2><p>Soft thoughts, real life, and a community that gets it.</p></div><div class="footer-links"><h3>Explore</h3><a href="/community/">Community</a><a href="/#latest">The edits</a><a href="/shop/">Shop</a><a href="/about.html">About</a></div><div class="footer-links"><h3>Find me</h3><a href="https://www.instagram.com/_rasheemaa/" target="_blank" rel="me noopener noreferrer">Instagram @_rasheemaa</a><a href="https://www.tiktok.com/@_rasheemaa" target="_blank" rel="me noopener noreferrer">TikTok @_rasheemaa</a></div></div><div class="footer-bottom"><span>© <span data-current-year>2026</span> The Sheema Edit. All feelings reserved.</span><span>Personal stories only. Nothing here is medical advice.</span></div></div></footer>
 <script src="/assets/js/main.js?v=2" defer></script>
 <script src="/assets/js/community-config.js?v=3"></script>
-<script src="/assets/js/community.js?v=5" type="module"></script>
+<script src="/assets/js/community.js?v=6" type="module"></script>
 </body>
 </html>
