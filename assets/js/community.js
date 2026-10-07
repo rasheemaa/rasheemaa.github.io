@@ -338,7 +338,8 @@ const postCardHtml = (post) => {
           <span class="room-chip room-${escapeHtml(post.spaceId)}">${space.emoji} ${escapeHtml(space.name)}</span>
         </div>
         ${post.isPinned ? '<span class="pin inline-pin">PINNED</span>' : ""}
-        <p class="member-post-copy">${escapeHtml(post.body).replaceAll("\n", "<br>")}</p>
+        ${post.body ? `<p class="member-post-copy">${escapeHtml(post.body).replaceAll("\n", "<br>")}</p>` : ""}
+        ${post.gifUrl ? `<div class="community-gif-wrap">${gifImageHtml(post.gifUrl, "GIF shared by " + (post.displayName || "Member"))}</div>` : ""}
         <div class="member-post-actions">
           <button type="button" data-action="heart" aria-pressed="${liked}">${liked ? "♥" : "♡"} <span>${Math.max(0, post.reactionCount || 0)}</span></button>
           <button type="button" data-action="comments">💬 <span>${Math.max(0, post.commentCount || 0)}</span></button>
@@ -411,12 +412,40 @@ const refreshCommunity = async () => {
 
 $("refresh-community")?.addEventListener("click", refreshCommunity);
 
+postGifButton?.addEventListener("click", () => openGifPicker(postGifInput, postGifPreview));
+postGifPreview?.addEventListener("click", (event) => {
+  if (!event.target.closest("[data-remove-gif]")) return;
+  postGifInput.value = "";
+  renderGifPreview(postGifPreview, "");
+});
+
+gifUrlInput?.addEventListener("input", () => {
+  renderGifPreview(gifDialogPreview, gifUrlInput.value, false);
+  setMessage(gifMessage, "");
+});
+
+gifForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const safe = safeGifUrl(gifUrlInput.value);
+  if (!safe) return setMessage(gifMessage, "Paste a direct GIPHY or Tenor GIF image link.", "error");
+  if (!activeGifTarget) return;
+  activeGifTarget.input.value = safe;
+  renderGifPreview(activeGifTarget.preview, safe);
+  gifDialog.close();
+});
+
+gifRemoveButton?.addEventListener("click", () => {
+  clearGifTarget();
+  gifDialog.close();
+});
+
 $("community-post-form")?.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!db || !currentUser) return openAuth();
   const body = $("community-post-body").value.trim();
+  const gifUrl = safeGifUrl(postGifInput?.value);
   const spaceId = $("community-post-space").value;
-  if (!body) return setMessage($("community-post-message"), "Write something first ♡", "error");
+  if (!body && !gifUrl) return setMessage($("community-post-message"), "Write something or add a GIF ♡", "error");
 
   const submit = event.submitter;
   if (submit) submit.disabled = true;
@@ -431,6 +460,7 @@ $("community-post-form")?.addEventListener("submit", async (event) => {
       displayName: (currentProfile?.displayName || currentUser.displayName || "Member").slice(0, 40),
       spaceId,
       body,
+      ...(gifUrl ? { gifUrl } : {}),
       isPinned: false,
       commentCount: 0,
       reactionCount: 0,
@@ -444,6 +474,8 @@ $("community-post-form")?.addEventListener("submit", async (event) => {
     });
     await batch.commit();
     $("community-post-body").value = "";
+    if (postGifInput) postGifInput.value = "";
+    renderGifPreview(postGifPreview, "");
     setMessage($("community-post-message"), "Posted ♡", "success");
     await updateSignedInUi();
   } catch (error) {
