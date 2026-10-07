@@ -25,6 +25,8 @@ import {
   onSnapshot,
   serverTimestamp,
   increment,
+  arrayUnion,
+  arrayRemove,
   writeBatch,
   runTransaction
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
@@ -124,8 +126,16 @@ const interestLabels = {
   "relatable-chaos": "Relatable chaos"
 };
 
+const neurotypeLabels = {
+  neurodivergent: "Neurodivergent",
+  neurotypical: "Neurotypical",
+  "figuring-it-out": "Still figuring it out",
+  "prefer-not-to-say": "Prefer not to say"
+};
+
 const allowedCategories = new Set(Object.keys(categoryLabels));
 const allowedInterests = new Set(Object.keys(interestLabels));
+const allowedNeurotypes = new Set(Object.keys(neurotypeLabels));
 
 let auth = null;
 let db = null;
@@ -298,6 +308,7 @@ const updateSignedOutUi = () => {
   stopFollowing = null;
   followingIds = new Set();
   feedMode = "all";
+  profileCache.clear();
   authGate.hidden = false;
   composer.hidden = true;
   memberSection.hidden = true;
@@ -351,14 +362,19 @@ const updateSignedInUi = async () => {
   $("rail-avatar").textContent = initials(profile?.displayName);
   $("rail-display-name").textContent = profile?.displayName || "Member";
   $("rail-level").textContent = `Level ${level.level} · ${level.name}`;
+  followingIds = new Set(Array.isArray(profile?.followingIds) ? profile.followingIds.filter(Boolean) : []);
   const railTags = $("rail-profile-tags");
   if (railTags) {
     const category = allowedCategories.has(profile?.category) ? categoryLabels[profile.category] : "";
+    const neurotype = allowedNeurotypes.has(profile?.neurotype) && profile.neurotype !== "prefer-not-to-say"
+      ? neurotypeLabels[profile.neurotype]
+      : "";
     const interests = Array.isArray(profile?.interests)
       ? profile.interests.filter((item) => allowedInterests.has(item)).slice(0, 2)
       : [];
     railTags.innerHTML = [
       category ? `<span>${escapeHtml(category)}</span>` : "",
+      neurotype ? `<span>${escapeHtml(neurotype)}</span>` : "",
       ...interests.map((item) => `<span>${escapeHtml(interestLabels[item])}</span>`)
     ].join("");
   }
@@ -396,18 +412,25 @@ const postCardHtml = (post) => {
   const mine = post.authorId === currentUser?.uid;
   const authorProfile = profileCache.get(post.authorId);
   const category = allowedCategories.has(authorProfile?.category) ? categoryLabels[authorProfile.category] : "";
+  const neurotype = allowedNeurotypes.has(authorProfile?.neurotype) && authorProfile.neurotype !== "prefer-not-to-say"
+    ? neurotypeLabels[authorProfile.neurotype]
+    : "";
   const interests = Array.isArray(authorProfile?.interests)
     ? authorProfile.interests.filter((item) => allowedInterests.has(item)).slice(0, 2)
     : [];
+  const connected = followingIds.has(post.authorId);
   return `
-    <article class="community-card member-post-card" data-post-id="${escapeHtml(post.id)}">
-      <div class="post-avatar small" aria-hidden="true">${escapeHtml(initials(post.displayName))}</div>
+    <article class="community-card member-post-card" id="edit-${escapeHtml(post.id)}" data-post-id="${escapeHtml(post.id)}" data-author-id="${escapeHtml(post.authorId || "")}">
+      <div class="post-avatar small" aria-hidden="true">${escapeHtml(initials(authorProfile?.displayName || post.displayName))}</div>
       <div class="community-post-body">
         <div class="post-heading">
-          <div>
-            <strong>${escapeHtml(authorProfile?.displayName || post.displayName || "Member")}</strong>
-            <span> · ${escapeHtml(relativeTime(post.createdAt))}</span>
-            ${category ? `<div class="member-meta-chips"><span class="member-category-chip">${escapeHtml(category)}</span>${interests.map((item) => `<span>${escapeHtml(interestLabels[item])}</span>`).join("")}</div>` : interests.length ? `<div class="member-meta-chips">${interests.map((item) => `<span>${escapeHtml(interestLabels[item])}</span>`).join("")}</div>` : ""}
+          <div class="post-author-block">
+            <div class="post-author-line">
+              <strong>${escapeHtml(authorProfile?.displayName || post.displayName || "Member")}</strong>
+              <span> · ${escapeHtml(relativeTime(post.createdAt))}</span>
+              ${!mine ? `<button class="connect-button${connected ? " is-connected" : ""}" type="button" data-action="connect" data-author-id="${escapeHtml(post.authorId || "")}" aria-pressed="${connected}">${connected ? "Connected" : "Connect"}</button>` : ""}
+            </div>
+            ${category || neurotype || interests.length ? `<div class="member-meta-chips">${category ? `<span class="member-category-chip">${escapeHtml(category)}</span>` : ""}${neurotype ? `<span class="member-neurotype-chip">${escapeHtml(neurotype)}</span>` : ""}${interests.map((item) => `<span>${escapeHtml(interestLabels[item])}</span>`).join("")}</div>` : ""}
           </div>
           <span class="room-chip room-${escapeHtml(post.spaceId)}">${space.emoji} ${escapeHtml(space.name)}</span>
         </div>
@@ -417,6 +440,7 @@ const postCardHtml = (post) => {
         <div class="member-post-actions">
           <button type="button" data-action="heart" aria-pressed="${liked}">${liked ? "♥" : "♡"} <span>${Math.max(0, post.reactionCount || 0)}</span></button>
           <button type="button" data-action="comments">💬 <span>${Math.max(0, post.commentCount || 0)}</span></button>
+          <button type="button" data-action="share">↗ Share</button>
           <button type="button" data-action="report">Report</button>
           ${mine ? '<button class="danger-link" type="button" data-action="delete">Delete</button>' : ""}
         </div>
@@ -430,12 +454,26 @@ const renderFeed = () => {
   const reopenPostId = openCommentsPostId;
   commentStops.forEach((stop) => stop?.());
   commentStops.clear();
-  const sorted = [...lastPosts].sort((a, b) => {
+  const visiblePosts = feedMode === "following"
+    ? lastPosts.filter((post) => post.authorId === currentUser?.uid || followingIds.has(post.authorId))
+    : lastPosts;
+  const sorted = [...visiblePosts].sort((a, b) => {
     if (Boolean(a.isPinned) !== Boolean(b.isPinned)) return a.isPinned ? -1 : 1;
     return timestampToDate(b.createdAt) - timestampToDate(a.createdAt);
   });
   memberFeed.innerHTML = sorted.map(postCardHtml).join("");
   memberFeedEmpty.hidden = sorted.length > 0;
+  if (memberFeedEmpty) {
+    const title = memberFeedEmpty.querySelector("h3");
+    const copy = memberFeedEmpty.querySelector("p");
+    if (feedMode === "following") {
+      if (title) title.textContent = "Your Following feed is quiet.";
+      if (copy) copy.textContent = "Connect with people from Explore and their edits will show up here.";
+    } else {
+      if (title) title.textContent = "No edits here yet.";
+      if (copy) copy.textContent = "Publish one and start the conversation.";
+    }
+  }
   if (reopenPostId) {
     const card = [...memberFeed.querySelectorAll("[data-post-id]")].find((item) => item.dataset.postId === reopenPostId);
     const drawer = card?.querySelector("[data-comments-for]");
@@ -455,6 +493,10 @@ const startFeed = () => {
     ]);
     renderFeed();
     memberFeed?.removeAttribute("aria-busy");
+    const sharedId = location.hash.startsWith("#edit-") ? location.hash.slice(1) : "";
+    if (sharedId) {
+      requestAnimationFrame(() => document.getElementById(sharedId)?.scrollIntoView({ behavior: "smooth", block: "center" }));
+    }
   }, () => {
     memberFeed?.removeAttribute("aria-busy");
     setMessage(systemNote, "The member feed could not load. Please try again.", "error");
@@ -478,6 +520,56 @@ const startLeaderboard = () => {
         </div>`;
     }).join("") || '<p class="muted-copy">No points yet. The first conversation starts the board.</p>';
   });
+};
+
+const setFeedMode = (mode) => {
+  feedMode = mode === "following" ? "following" : "all";
+  const following = feedMode === "following";
+  feedForYouButton?.classList.toggle("is-active", !following);
+  feedFollowingButton?.classList.toggle("is-active", following);
+  feedForYouButton?.setAttribute("aria-selected", String(!following));
+  feedFollowingButton?.setAttribute("aria-selected", String(following));
+  renderFeed();
+};
+
+feedForYouButton?.addEventListener("click", () => setFeedMode("all"));
+feedFollowingButton?.addEventListener("click", () => setFeedMode("following"));
+
+const toggleConnection = async (authorId) => {
+  if (!currentUser || !authorId || authorId === currentUser.uid) return;
+  const profileRef = doc(db, "profiles", currentUser.uid);
+  const connected = followingIds.has(authorId);
+  if (!connected && followingIds.size >= 250) {
+    setMessage(systemNote, "You have reached the current connection limit.", "error");
+    return;
+  }
+  await updateDoc(profileRef, {
+    followingIds: connected ? arrayRemove(authorId) : arrayUnion(authorId),
+    updatedAt: serverTimestamp()
+  });
+  if (connected) followingIds.delete(authorId);
+  else followingIds.add(authorId);
+  if (currentProfile) currentProfile.followingIds = [...followingIds];
+  renderFeed();
+};
+
+const shareEdit = async (postId) => {
+  const url = `${location.origin}${location.pathname}#edit-${encodeURIComponent(postId)}`;
+  const shareData = { title: "Community edit", text: "Check out this Community edit.", url };
+  try {
+    if (navigator.share) {
+      await navigator.share(shareData);
+      return;
+    }
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(url);
+      setMessage(systemNote, "Edit link copied.", "success");
+      return;
+    }
+  } catch (error) {
+    if (error?.name === "AbortError") return;
+  }
+  prompt("Copy this edit link:", url);
 };
 
 const refreshCommunity = async () => {
@@ -714,6 +806,16 @@ memberFeed?.addEventListener("click", async (event) => {
       button.disabled = false;
     }
 
+    if (button.dataset.action === "connect") {
+      button.disabled = true;
+      await toggleConnection(button.dataset.authorId || card.dataset.authorId);
+      button.disabled = false;
+    }
+
+    if (button.dataset.action === "share") {
+      await shareEdit(postId);
+    }
+
     if (button.dataset.action === "comments") {
       const drawer = card.querySelector("[data-comments-for]");
       if (drawer.hidden) loadComments(postId, drawer);
@@ -813,6 +915,7 @@ $("edit-profile-button")?.addEventListener("click", () => {
   $("profile-display-name").value = currentProfile.displayName || "";
   $("profile-bio").value = currentProfile.bio || "";
   $("profile-category").value = allowedCategories.has(currentProfile.category) ? currentProfile.category : "";
+  $("profile-neurotype").value = allowedNeurotypes.has(currentProfile.neurotype) ? currentProfile.neurotype : "";
   const selected = new Set(Array.isArray(currentProfile.interests) ? currentProfile.interests : []);
   document.querySelectorAll('input[name="profile-interest"]').forEach((input) => {
     input.checked = selected.has(input.value);
@@ -840,6 +943,8 @@ $("community-profile-form")?.addEventListener("submit", async (event) => {
   const bio = $("profile-bio").value.trim();
   const rawCategory = $("profile-category").value;
   const category = allowedCategories.has(rawCategory) ? rawCategory : "";
+  const rawNeurotype = $("profile-neurotype").value;
+  const neurotype = allowedNeurotypes.has(rawNeurotype) ? rawNeurotype : "";
   const interests = [...document.querySelectorAll('input[name="profile-interest"]:checked')]
     .map((input) => input.value)
     .filter((value) => allowedInterests.has(value))
@@ -850,6 +955,7 @@ $("community-profile-form")?.addEventListener("submit", async (event) => {
       displayName: displayName.slice(0, 40),
       bio: bio.slice(0, 280),
       category,
+      neurotype,
       interests,
       updatedAt: serverTimestamp()
     });
