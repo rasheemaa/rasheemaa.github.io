@@ -1,0 +1,225 @@
+/* Sparkle powered Community starter layer */
+.sparkle-feed-disclosure{
+  margin:0 0 8px;
+  padding:10px 12px;
+  border:1px solid rgba(255,79,163,.16);
+  border-radius:14px;
+  background:#fff8fb;
+  color:#66586d;
+  font-size:.69rem;
+  line-height:1.45;
+}
+.sparkle-feed-disclosure summary{
+  cursor:pointer;
+  color:#8d2458;
+  font-weight:900;
+}
+.sparkle-feed-disclosure p{
+  margin:7px 0 0;
+}
+.sparkle-seed-card{
+  position:relative;
+}
+.sparkle-seed-card::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  border-radius:inherit;
+  box-shadow:inset 3px 0 0 rgba(255,79,163,.18);
+}
+.sparkle-seed-avatar{
+  background:linear-gradient(145deg,#fff0f7,#f2f8e5);
+  font-size:1.1rem;
+}
+.sparkle-seed-author{
+  padding:0;
+  border:0;
+  background:transparent;
+  color:inherit;
+  cursor:pointer;
+  font:inherit;
+}
+.sparkle-seed-author:hover strong,
+.sparkle-seed-author:focus-visible strong{
+  text-decoration:underline;
+  text-decoration-color:rgba(255,79,163,.55);
+  text-underline-offset:3px;
+}
+.sparkle-powered-badge,
+.sparkle-powered-inline{
+  display:inline-flex;
+  min-height:22px;
+  padding:0 8px;
+  align-items:center;
+  border:1px solid rgba(255,79,163,.18);
+  border-radius:999px;
+  background:#fff0f7;
+  color:#8d2458;
+  cursor:pointer;
+  font:inherit;
+  font-size:.59rem;
+  font-weight:900;
+  white-space:nowrap;
+}
+.sparkle-powered-inline{
+  min-height:19px;
+  padding:0 6px;
+  border-color:transparent;
+  background:transparent;
+  font-size:.56rem;
+}
+.sparkle-powered-badge:hover,
+.sparkle-powered-badge:focus-visible,
+.sparkle-powered-inline:hover,
+.sparkle-powered-inline:focus-visible{
+  outline:2px solid rgba(255,79,163,.18);
+  outline-offset:2px;
+}
+.sparkle-seed-follow{
+  min-height:24px!important;
+}
+.sparkle-seed-topic{
+  background:#f7f4f8;
+}
+.sparkle-seed-actions button[aria-pressed="true"]{
+  color:#b32267;
+}
+.sparkle-seed-comments{
+  margin-top:11px;
+  padding:11px;
+  border-radius:14px;
+  background:#f8f5f8;
+}
+.sparkle-seed-comments[hidden]{
+  display:none!important;
+}
+.sparkle-seed-comments-heading{
+  display:flex;
+  margin-bottom:9px;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  color:#6d6074;
+  font-size:.62rem;
+}
+.sparkle-seed-comments-heading strong{
+  color:#35283d;
+  font-size:.67rem;
+}
+.sparkle-seed-reply{
+  display:grid;
+  padding:8px 0;
+  grid-template-columns:30px minmax(0,1fr);
+  gap:8px;
+  border-top:1px solid rgba(33,23,44,.07);
+}
+.sparkle-seed-reply:first-of-type{
+  border-top:0;
+}
+.sparkle-seed-reply-avatar{
+  display:grid;
+  width:30px;
+  height:30px;
+  place-items:center;
+  border-radius:50%;
+  background:#fff;
+}
+.sparkle-seed-reply p{
+  display:flex;
+  margin:0 0 3px;
+  align-items:center;
+  gap:5px;
+  flex-wrap:wrap;
+  font-size:.69rem;
+}
+.sparkle-seed-reply>div>div{
+  color:#4e4355;
+  font-size:.76rem;
+  line-height:1.45;
+}
+.sparkle-profile-dialog{
+  width:min(calc(100% - 28px),500px);
+}
+.sparkle-profile-hero{
+  display:flex;
+  align-items:center;
+  gap:13px;
+}
+.sparkle-profile-avatar{
+  display:grid;
+  width:58px;
+  height:58px;
+  place-items:center;
+  border:1px solid rgba(255,79,163,.16);
+  border-radius:18px;
+  background:linear-gradient(145deg,#fff0f7,#f2f8e5);
+  font-size:1.7rem;
+}
+.sparkle-profile-hero h2{
+  margin:1px 0 7px;
+}
+.sparkle-powered-profile-badge{
+  display:inline-flex;
+  min-height:26px;
+  padding:0 9px;
+  align-items:center;
+  border-radius:999px;
+  background:#fff0f7;
+  color:#8d2458;
+  font-size:.65rem;
+  font-weight:900;
+}
+.sparkle-profile-bio{
+  margin:16px 0;
+  color:#4d4154;
+  line-height:1.6;
+}
+.sparkle-profile-lane{
+  display:flex;
+  padding:10px 12px;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  border-radius:13px;
+  background:#f7f4f8;
+  font-size:.73rem;
+}
+.sparkle-profile-lane span{
+  color:#6d6074;
+  text-align:right;
+}
+.sparkle-profile-disclosure{
+  margin-top:14px;
+  padding:13px;
+  border:1px solid rgba(255,79,163,.16);
+  border-radius:14px;
+  background:#fff8fb;
+}
+.sparkle-profile-disclosure strong{
+  font-size:.73rem;
+}
+.sparkle-profile-disclosure p{
+  margin:5px 0 0;
+  color:#66586d;
+  font-size:.69rem;
+  line-height:1.5;
+}
+@media(max-width:760px){
+  .sparkle-feed-disclosure{
+    margin:0;
+    border-width:0 0 1px;
+    border-radius:0;
+  }
+  .sparkle-seed-card::after{
+    border-radius:0;
+  }
+  .sparkle-powered-badge{
+    min-height:20px;
+    padding:0 6px;
+    font-size:.55rem;
+  }
+  .sparkle-seed-comments{
+    margin-inline:-2px;
+  }
+}
