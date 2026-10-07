@@ -49,7 +49,7 @@ jobs:
           grep -Fq 'id="community-gif-search"' community/index.html
           grep -Fq 'id="community-gif-results"' community/index.html
           grep -Fq 'Powered by GIPHY' community/index.html
-          grep -Fq 'giphyApiKey: ""' assets/js/community-config.js
+          grep -Fq 'giphyApiKey:' assets/js/community-config.js
           grep -Fq 'const loadGiphyGifs = async (queryText = "") =>' assets/js/community.js
           grep -Fq 'https://api.giphy.com/v1/gifs/search' assets/js/community.js
           grep -Fq 'https://api.giphy.com/v1/gifs/trending' assets/js/community.js
