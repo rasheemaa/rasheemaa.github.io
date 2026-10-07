@@ -26,7 +26,7 @@ permalink: /community/
 <meta name="twitter:image" content="https://thesheemaedit.com/assets/images/social-card.png">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"CollectionPage","name":"The Edit Community","url":"https://thesheemaedit.com/community/","description":"The community side of The Sheema Edit for honest conversations about mental wellness, unmasking, motherhood, chronic illness, lifestyle, beauty, and real life.","isPartOf":{"@type":"WebSite","@id":"https://thesheemaedit.com/#website","name":"The Sheema Edit","url":"https://thesheemaedit.com/"},"about":["Mental wellness","Unmasking","Motherhood","Chronic illness","Lifestyle","Beauty"]}</script>
 <link rel="stylesheet" href="/assets/css/styles.css">
-<link rel="stylesheet" href="/assets/css/community.css?v=11">
+<link rel="stylesheet" href="/assets/css/community.css?v=12">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-C7XV3YJCZE"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-C7XV3YJCZE');</script>
 </head>
@@ -207,26 +207,45 @@ permalink: /community/
 
 <dialog class="community-dialog gif-dialog" id="community-gif-dialog">
   <form method="dialog" class="dialog-close-row"><button type="submit" aria-label="Close GIF picker">×</button></form>
-  <div class="dialog-copy"><p class="community-kicker">Add a GIF</p><h2>Drop the reaction.</h2><p>Paste a direct GIF image link from GIPHY or Tenor.</p></div>
-<div class="gif-source-links" aria-label="GIF sources">
-  <a href="https://giphy.com/" target="_blank" rel="noopener noreferrer">Find on GIPHY ↗</a>
-  <a href="https://tenor.com/" target="_blank" rel="noopener noreferrer">Find on Tenor ↗</a>
-</div>
-  <form id="community-gif-form">
-    <label for="community-gif-url">GIF link</label>
-    <input id="community-gif-url" type="url" inputmode="url" autocomplete="off" placeholder="https://media.giphy.com/.../giphy.gif">
-    <div class="gif-dialog-preview" id="community-gif-dialog-preview" hidden></div>
-    <div class="gif-dialog-actions">
-      <button class="button lime" type="submit">Use GIF</button>
-      <button class="text-button" id="community-gif-remove" type="button">Remove GIF</button>
+  <div class="dialog-copy">
+    <p class="community-kicker">Add a GIF</p>
+    <h2>Find the reaction.</h2>
+    <p>Search without leaving the Community.</p>
+  </div>
+
+  <form class="gif-search-form" id="community-gif-search-form" role="search">
+    <label class="sr-only" for="community-gif-search">Search GIFs</label>
+    <div class="gif-search-box">
+      <span aria-hidden="true">⌕</span>
+      <input id="community-gif-search" type="search" autocomplete="off" enterkeyhint="search" placeholder="Search GIFs">
+      <button type="submit">Search</button>
     </div>
-    <p class="form-message" id="community-gif-message" aria-live="polite"></p>
   </form>
+
+  <div class="gif-picker-heading">
+    <strong id="community-gif-results-title">Trending</strong>
+    <span class="gif-powered">Powered by GIPHY</span>
+  </div>
+  <div class="gif-results-grid" id="community-gif-results" aria-live="polite" aria-busy="false"></div>
+  <p class="form-message" id="community-gif-message" aria-live="polite"></p>
+
+  <details class="gif-fallback">
+    <summary>Have a direct GIF link?</summary>
+    <form id="community-gif-form">
+      <label for="community-gif-url">GIF link</label>
+      <input id="community-gif-url" type="url" inputmode="url" autocomplete="off" placeholder="https://media.giphy.com/...">
+      <div class="gif-dialog-preview" id="community-gif-dialog-preview" hidden></div>
+      <div class="gif-dialog-actions">
+        <button class="button lime" type="submit">Use GIF</button>
+        <button class="text-button" id="community-gif-remove" type="button">Remove GIF</button>
+      </div>
+    </form>
+  </details>
 </dialog>
 
 <footer class="site-footer community-footer"><div class="site-shell"><div class="footer-grid"><div><h2>The Sheema Edit</h2><p>Soft thoughts, real life, and a community that gets it.</p></div><div class="footer-links"><h3>Explore</h3><a href="/community/">Community</a><a href="/#latest">The edits</a><a href="/shop/">Shop</a><a href="/about.html">About</a></div><div class="footer-links"><h3>Find me</h3><a href="https://www.instagram.com/_rasheemaa/" target="_blank" rel="me noopener noreferrer">Instagram @_rasheemaa</a><a href="https://www.tiktok.com/@_rasheemaa" target="_blank" rel="me noopener noreferrer">TikTok @_rasheemaa</a></div></div><div class="footer-bottom"><span>© <span data-current-year>2026</span> The Sheema Edit. All feelings reserved.</span><span>Personal stories only. Nothing here is medical advice.</span></div></div></footer>
 <script src="/assets/js/main.js?v=2" defer></script>
-<script src="/assets/js/community-config.js?v=3"></script>
-<script src="/assets/js/community.js?v=17" type="module"></script>
+<script src="/assets/js/community-config.js?v=4"></script>
+<script src="/assets/js/community.js?v=18" type="module"></script>
 </body>
 </html>
