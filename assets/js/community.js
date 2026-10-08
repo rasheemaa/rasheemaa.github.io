@@ -489,6 +489,7 @@ $("auth-password")?.addEventListener("change", updateAgeGateVisibility);
 renderAuthMode();
 
 const updateSignedOutUi = () => {
+  delete document.documentElement.dataset.communityUid;
   currentUser = null;
   currentProfile = null;
   likedPostIds = new Set();
@@ -545,6 +546,7 @@ const loadProfile = async () => {
 };
 
 const showAuthenticatedShell = (user) => {
+  document.documentElement.dataset.communityUid = user.uid;
   authGate.hidden = true;
   composer.hidden = false;
   memberSection.hidden = false;
@@ -567,6 +569,7 @@ const showAuthenticatedShell = (user) => {
 
 const updateSignedInUi = async () => {
   const profile = await loadProfile();
+  if (currentUser?.uid) document.documentElement.dataset.communityUid = currentUser.uid;
   authGate.hidden = true;
   composer.hidden = false;
   memberSection.hidden = false;
