@@ -379,7 +379,7 @@
     const following = follows.has(persona.id);
     return `
       <article class="community-card member-post-card sparkle-seed-card" id="${escapeHtml(idPrefix)}-${escapeHtml(post.id)}" data-sparkle-seed="true" data-seed-post-id="${escapeHtml(post.id)}" data-seed-persona-id="${escapeHtml(persona.id)}">
-        <div class="post-avatar small sparkle-seed-avatar" aria-hidden="true">${escapeHtml(persona.avatar)}</div>
+        <div class="post-avatar small sparkle-seed-avatar" aria-hidden="true">${persona.id === "paws-and-lols" ? '<img src="/assets/community/paws/paws-walk.jpg" alt="" width="48" height="48" loading="lazy">' : escapeHtml(persona.avatar)}</div>
         <div class="community-post-body">
           <div class="post-heading">
             <div class="post-author-block">
