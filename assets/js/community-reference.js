@@ -249,6 +249,13 @@
       case "logout": menuDialog.close(); $("sign-out-button")?.click(); break;
     }
   }));
-  // Access the extra menu with a long-press is intentionally omitted to keep it discoverable.
-  // The visible profile button opens the full profile instead of a second editor shortcut.
+  // Auth can initialize before this deferred script in a cached browser.
+  // Rehydrate the already verified session instead of requiring a refresh.
+  const alreadyVerifiedUid = document.documentElement.dataset.communityUid;
+  if (alreadyVerifiedUid) {
+    document.dispatchEvent(new CustomEvent("community:session", {
+      detail: { uid: alreadyVerifiedUid, displayName: $("rail-display-name")?.textContent || "Community member",
+        bio: "", postCount: 0, followingCount: 0 }
+    }));
+  }
 })();
