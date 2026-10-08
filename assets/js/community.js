@@ -639,8 +639,8 @@ const showAuthenticatedShell = (user) => {
     authButton.textContent = "My profile";
   }
   const fallbackName = user?.displayName || user?.email?.split("@")[0] || "Member";
-  $("composer-avatar").textContent = initials(fallbackName);
-  $("rail-avatar").textContent = initials(fallbackName);
+  applyAvatarTo($("composer-avatar"), {}, fallbackName, user.uid);
+  applyAvatarTo($("rail-avatar"), {}, fallbackName, user.uid);
   $("rail-display-name").textContent = fallbackName;
   $("rail-level").textContent = "Loading your profile…";
   document.dispatchEvent(new CustomEvent("community:session", {
@@ -661,8 +661,8 @@ const updateSignedInUi = async () => {
     authButton.hidden = false;
     authButton.textContent = "My profile";
   }
-  $("composer-avatar").textContent = initials(profile?.displayName);
-  $("rail-avatar").textContent = initials(profile?.displayName);
+  applyAvatarTo($("composer-avatar"), profile, profile?.displayName || "M", currentUser.uid);
+  applyAvatarTo($("rail-avatar"), profile, profile?.displayName || "M", currentUser.uid);
   $("rail-display-name").textContent = profile?.displayName || "Member";
   $("rail-level").textContent = "Community member";
   followingIds = new Set([
@@ -690,7 +690,8 @@ const updateSignedInUi = async () => {
       displayName: profile?.displayName || "Community member",
       bio: profile?.bio || "",
       postCount: Math.max(0, Number(profile?.postCount) || 0),
-      followingCount: followingIds.size
+      followingCount: followingIds.size,
+      avatarData: avatarForProfile(profile, currentUser?.uid)
     }
   }));
 };
@@ -738,7 +739,7 @@ const postCardHtml = (post) => {
   const connected = followingIds.has(post.authorId);
   return `
     <article class="community-card member-post-card" id="edit-${escapeHtml(post.id)}" data-post-id="${escapeHtml(post.id)}" data-author-id="${escapeHtml(post.authorId || "")}">
-      <div class="post-avatar small" aria-hidden="true">${escapeHtml(initials(authorProfile?.displayName || post.displayName))}</div>
+      <div class="post-avatar small" aria-hidden="true">${avatarHtml(authorProfile, authorProfile?.displayName || post.displayName, post.authorId)}</div>
       <div class="community-post-body">
         <div class="post-heading">
           <div class="post-author-block">
@@ -1213,7 +1214,7 @@ const openMemberProfile = (authorId) => {
   const neurotype = allowedNeurotypes.has(profile?.neurotype) && profile.neurotype !== "prefer-not-to-say"
     ? neurotypeLabels[profile.neurotype] : "";
   detail.innerHTML = `
-    <div class="community-member-hero"><span class="mini-avatar">${escapeHtml(initials(name))}</span>
+    <div class="community-member-hero"><span class="mini-avatar">${avatarHtml(profile, name, authorId)}</span>
     <div><p class="community-kicker">Community member</p><h2>${escapeHtml(name)}</h2></div></div>
     <p class="community-member-bio">${escapeHtml(intro)}</p>
     <div class="member-meta-chips">${category ? `<span>${escapeHtml(category)}</span>` : ""}
@@ -1374,14 +1375,17 @@ $("community-profile-form")?.addEventListener("submit", async (event) => {
     .slice(0, 5);
   if (!displayName) return setMessage($("profile-message"), "Your display name cannot be blank.", "error");
   try {
+    const avatarToSave = avatarDraft !== null ? avatarDraft : avatarForProfile(currentProfile, currentUser.uid);
     await updateDoc(doc(db, "profiles", currentUser.uid), {
       displayName: displayName.slice(0, 40),
       bio: bio.slice(0, 280),
       category,
       neurotype,
       interests,
+      avatarData: avatarToSave,
       updatedAt: serverTimestamp()
     });
+    rememberLocalAvatar(currentUser.uid, "");
     await updateProfile(currentUser, { displayName: displayName.slice(0, 40) });
     profileCache.delete(currentUser.uid);
     setMessage($("profile-message"), "Saved ♡", "success");
@@ -1401,11 +1405,15 @@ $("community-profile-form")?.addEventListener("submit", async (event) => {
           updatedAt: serverTimestamp()
         });
         await updateProfile(currentUser, { displayName: displayName.slice(0, 40) });
+        if (avatarDraft !== null) rememberLocalAvatar(currentUser.uid, avatarDraft);
         profileCache.delete(currentUser.uid);
         await updateSignedInUi();
         profileCache.set(currentUser.uid, currentProfile);
         renderFeed();
-        setMessage($("profile-message"), "Name and bio saved. Interests and identity choices still need the Community permissions update.");
+        const localPhoto = avatarDraft !== null;
+        setMessage($("profile-message"), localPhoto
+          ? "Name and bio saved. Your photo is visible on this device only until updated Firestore rules are published."
+          : "Name and bio saved. Full profile options still need the Community permissions update.");
         return;
       } catch {
         // Use the original error so no restricted profile changes are misrepresented as saved.
