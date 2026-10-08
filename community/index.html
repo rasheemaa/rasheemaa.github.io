@@ -41,7 +41,7 @@ permalink: /community/
     <div class="community-identity">
       <p class="community-kicker">✦ The Edit Community</p>
       <h1>Community</h1>
-      <p>Share your edits, join conversations, and find your people.</p>
+      <p>Come for the laughs, stay for the people. Share your thoughts, GIFs, and everyday chaos. ♡</p>
     </div>
     <div class="community-banner-actions">
       <span class="community-live-pill"><i aria-hidden="true"></i> Community</span>
@@ -53,26 +53,17 @@ permalink: /community/
 <div class="site-shell community-layout">
   <section class="community-content">
     <div class="community-panel is-active" data-community-panel="feed">
-      <article class="community-card welcome-card">
-        <div class="post-avatar" aria-hidden="true">✦</div>
-        <div class="community-post-body">
-          <div class="post-heading"><div><strong>The Edit Community</strong><span> · pinned</span></div><span class="pin">PINNED</span></div>
-          <h2>Your edit belongs here. 💗</h2>
-          <p>Share what is on your mind, tell your story, ask a question, drop a GIF, reply to somebody, or find people who get it. This space is built around member voices and real connection.</p>
-          <div class="welcome-rules"><span>Be kind</span><span>Protect privacy</span><span>Be yourself</span><span>Connect, do not perform</span></div>
-        </div>
-      </article>
 
       <section class="community-preview-section" id="community-preview-section">
         <div class="feed-heading preview-heading">
-          <div><p class="community-kicker">Community preview</p><h2>A peek inside</h2></div>
+          <div><p class="community-kicker">A little preview</p><h2>See what’s happening</h2></div>
           <span class="preview-count">First 3 posts</span>
         </div>
         <div class="community-feed" id="community-preview-list" aria-label="Preview of the first three Community posts"></div>
       </section>
 
       <section class="member-auth-gate" id="community-auth-gate">
-        <div class="auth-gate-copy"><h2>Want the rest of the feed?</h2><p>Create a free account or sign in to see every post, reply, react, and connect.</p></div>
+        <div class="auth-gate-copy"><h2>There’s more where that came from. ♡</h2><p>Join free to unlock the full feed, share posts, reply, and find your people. You must be 18 or older.</p></div>
         <button class="button" id="community-auth-gate-button" type="button">Join / sign in</button>
       </section>
 
@@ -110,7 +101,7 @@ permalink: /community/
           </div>
           <button class="text-button" id="refresh-community" type="button">Refresh ↻</button>
         </div>
-        <div class="feed-heading"><div><p class="community-kicker">Member edits</p><h2>Latest from the community</h2></div></div>
+        <div class="feed-heading"><div><p class="community-kicker">Real conversations</p><h2>Your Community feed</h2></div></div>
         <div class="community-feed" id="member-feed-list"></div>
         <div class="empty-state compact" id="member-feed-empty" hidden><span class="empty-icon">♡</span><h3>No edits here yet.</h3><p>Publish one or connect with somebody to start building your feed.</p></div>
       </section>
@@ -123,8 +114,8 @@ permalink: /community/
   <aside class="community-right-rail">
     <div class="rail-card account-rail-card" id="community-account-card">
       <p class="community-kicker">Your account</p>
-      <div id="community-account-signed-out"><h3>Come on in ♡</h3><p>Join free to publish your own edits, connect, reply, react, and share.</p><button class="text-button" id="rail-auth-button" type="button">Join / sign in →</button></div>
-      <div id="community-account-signed-in" hidden><div class="account-row"><span class="mini-avatar" id="rail-avatar">S</span><div><strong id="rail-display-name">Member</strong><small id="rail-level">Level 1 · New Here</small><div class="rail-profile-tags" id="rail-profile-tags"></div></div></div><button class="text-button" id="edit-profile-button" type="button">Edit profile</button><button class="text-button danger-link" id="sign-out-button" type="button">Sign out</button></div>
+      <div id="community-account-signed-out"><h3>Find your people ♡</h3><p>Funny moments, cute animals, honest conversations, and a little encouragement for the day.</p></div>
+      <div id="community-account-signed-in" hidden><div class="account-row"><span class="mini-avatar" id="rail-avatar">S</span><div><strong id="rail-display-name">Member</strong><small id="rail-level">Community member</small><div class="rail-profile-tags" id="rail-profile-tags"></div></div></div><button class="text-button" id="edit-profile-button" type="button">Edit profile</button><button class="text-button danger-link" id="sign-out-button" type="button">Sign out</button></div>
     </div>
     <div class="rail-card rail-soft">
       <p class="community-kicker">Community standard</p>
@@ -233,7 +224,7 @@ permalink: /community/
 
   <div class="gif-picker-heading">
     <strong id="community-gif-results-title">Trending</strong>
-    <span class="gif-powered">Powered by GIPHY</span>
+    <span class="gif-powered" id="community-gif-source">Community GIFs</span>
   </div>
   <div class="gif-results-grid" id="community-gif-results" aria-live="polite" aria-busy="false"></div>
   <p class="form-message" id="community-gif-message" aria-live="polite"></p>
