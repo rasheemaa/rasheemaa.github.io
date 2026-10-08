@@ -15,6 +15,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  getCountFromServer,
   setDoc,
   updateDoc,
   deleteDoc,
@@ -405,9 +406,89 @@ const openAuth = () => {
 
 [authGateButton, railAuthButton].forEach((button) => button?.addEventListener("click", openAuth));
 
+const AVATAR_LIMIT = 20000;
+const safeAvatarData = (value) => typeof value === "string"
+  && value.length <= AVATAR_LIMIT
+  && /^data:image\/jpeg;base64,[A-Za-z0-9+/=]{200,19976}$/.test(value) ? value : "";
+const localAvatarKey = (uid) => "sheema.community.localAvatar.v1." + uid;
+const readLocalAvatar = (uid) => {
+  if (!uid) return "";
+  try { return safeAvatarData(localStorage.getItem(localAvatarKey(uid)) || ""); }
+  catch { return ""; }
+};
+const rememberLocalAvatar = (uid, value) => {
+  if (!uid) return;
+  try {
+    if (value) localStorage.setItem(localAvatarKey(uid), value);
+    else localStorage.removeItem(localAvatarKey(uid));
+  } catch { setMessage($("profile-avatar-message"), "Browser storage is unavailable; this picture won't stay on this device.", "error"); }
+};
+const avatarForProfile = (profile, uid) => safeAvatarData(profile?.avatarData)
+  || (uid && uid === currentUser?.uid ? readLocalAvatar(uid) : "");
+const avatarHtml = (profile, fallbackName = "M", uid = "") => {
+  const image = avatarForProfile(profile, uid);
+  return image ? `<img src="${image}" alt="" width="48" height="48" decoding="async">`
+    : escapeHtml(initials(fallbackName));
+};
+const applyAvatarTo = (element, profile, name, uid) => {
+  if (element) element.innerHTML = avatarHtml(profile, name, uid);
+};
+let avatarDraft = null;
+const resizePhoto = (file) => new Promise((resolve, reject) => {
+  if (!file || !["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024) {
+    reject(new Error("Choose a JPEG, PNG, or WebP image under 5 MB."));
+    return;
+  }
+  const blobUrl = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    URL.revokeObjectURL(blobUrl);
+    try {
+      const canvas = document.createElement("canvas");
+      canvas.width = 112; canvas.height = 112;
+      const context = canvas.getContext("2d");
+      if (!context) throw new Error("This browser can't resize a picture.");
+      const crop = Math.min(img.naturalWidth, img.naturalHeight);
+      const x = Math.floor((img.naturalWidth - crop) / 2);
+      const y = Math.floor((img.naturalHeight - crop) / 2);
+      context.fillStyle = "#fff";
+      context.fillRect(0, 0, 112, 112);
+      context.drawImage(img, x, y, crop, crop, 0, 0, 112, 112);
+      const compressed = canvas.toDataURL("image/jpeg", 0.62);
+      if (!safeAvatarData(compressed)) throw new Error("This photo couldn't fit the small profile-picture size. Try another picture.");
+      resolve(compressed);
+    } catch (e) { reject(e); }
+  };
+  img.onerror = () => { URL.revokeObjectURL(blobUrl); reject(new Error("This picture couldn't be opened.")); };
+  img.src = blobUrl;
+});
+const avatarInput = $("profile-avatar-input");
+const avatarPreview = $("profile-avatar-preview");
+avatarInput?.addEventListener("change", async () => {
+  if (!avatarInput.files?.length) return;
+  setMessage($("profile-avatar-message"), "Preparing your picture…");
+  try {
+    avatarDraft = await resizePhoto(avatarInput.files[0]);
+    applyAvatarTo(avatarPreview, { avatarData: avatarDraft }, currentProfile?.displayName || "M");
+    setMessage($("profile-avatar-message"), "Photo ready. Tap Save profile to keep it.", "success");
+  } catch (error) {
+    avatarDraft = null;
+    setMessage($("profile-avatar-message"), error.message, "error");
+  }
+});
+$("profile-avatar-remove")?.addEventListener("click", () => {
+  avatarDraft = "";
+  if (avatarInput) avatarInput.value = "";
+  applyAvatarTo(avatarPreview, {}, currentProfile?.displayName || "M");
+  setMessage($("profile-avatar-message"), "Picture will be removed when you save.");
+});
 const populateProfileEditor = (profile = currentProfile) => {
   $("profile-display-name").value = profile?.displayName || currentUser?.displayName || "";
   $("profile-bio").value = profile?.bio || "";
+  avatarDraft = null;
+  if (avatarInput) avatarInput.value = "";
+  applyAvatarTo(avatarPreview, profile, profile?.displayName || currentUser?.displayName || "M", currentUser?.uid);
+  setMessage($("profile-avatar-message"), "");
   $("profile-category").value = allowedCategories.has(profile?.category) ? profile.category : "";
   $("profile-neurotype").value = allowedNeurotypes.has(profile?.neurotype) ? profile.neurotype : "";
 
