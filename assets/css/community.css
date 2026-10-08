@@ -1213,3 +1213,17 @@
     margin-top:4px;
   }
 }
+
+/* Community cleanup Oct 2026: quieter entry, feed-first layout. */
+.community-banner-inner{min-height:156px;padding-block:26px}
+.community-banner h1{font-size:clamp(2.7rem,5.7vw,4.8rem)}
+.community-banner p:not(.community-kicker){font-size:.97rem;font-weight:600;line-height:1.55}
+.community-layout{grid-template-columns:minmax(0,1fr) 260px;max-width:1160px;gap:24px}
+.community-right-rail{top:88px}
+.community-preview-section .feed-heading{margin-top:4px}
+.member-feed-section .feed-heading{margin-top:12px;margin-bottom:14px}
+.community-feed{gap:15px}
+.member-composer{margin-top:0}
+.account-rail-card{box-shadow:none;border-color:rgba(33,23,44,.17)}
+@media(max-width:1040px){.community-layout{grid-template-columns:minmax(0,1fr) 235px}.community-right-rail{display:grid}}
+@media(max-width:760px){.community-layout{display:block;padding-top:16px}.community-right-rail{display:none}.community-banner-inner{min-height:0;padding-block:21px}.community-banner h1{font-size:clamp(2.6rem,11vw,3.7rem)}.community-banner p:not(.community-kicker){font-size:.85rem}.community-banner-actions{margin-top:9px}.community-preview-section .feed-heading{margin-top:2px}.community-feed{gap:11px}.member-composer{margin-top:0}}
