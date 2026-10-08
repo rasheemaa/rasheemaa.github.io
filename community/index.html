@@ -33,18 +33,17 @@ permalink: /community/
 </head>
 <body class="community-page">
 <a class="skip-link" href="#community-main">Skip to the community</a>
-<header class="site-header"><div class="site-shell header-inner"><a class="brand" href="/" aria-label="The Sheema Edit home"><span class="brand-mark" aria-hidden="true"></span><span>The Sheema Edit</span></a><button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-navigation" aria-label="Open navigation menu"><span></span></button><nav class="site-nav" id="site-navigation" aria-label="Main navigation" data-open="false"><a href="/">Home</a><a href="/community/" aria-current="page">Community</a><a href="/#latest">The edits</a><a href="/shop/">Shop</a><a href="/about.html">About</a></nav></div></header>
+<header class="site-header"><div class="site-shell header-inner"><a class="brand" href="/" aria-label="The Sheema Edit home"><span class="brand-mark" aria-hidden="true"></span><span>The Sheema Edit</span></a><button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-navigation" aria-label="Open navigation menu"><span></span></button><nav class="site-nav" id="site-navigation" aria-label="Main navigation" data-open="false"><a href="/">Home</a><a href="/community/" aria-current="page">Community</a><a href="/#latest">Read</a><a href="/what-do-i-say/">Sparkle ✨</a><a href="/shop/">Shop</a></nav></div></header>
 
 <main id="community-main" class="community-app">
 <section class="community-banner">
   <div class="site-shell community-banner-inner">
     <div class="community-identity">
-      <p class="community-kicker">✦ The Edit Community</p>
+      <p class="community-kicker">✦ Your corner of the internet</p>
       <h1>Community</h1>
       <p>Come for the laughs, stay for the people. Share your thoughts, GIFs, and everyday chaos. ♡</p>
     </div>
     <div class="community-banner-actions">
-      <span class="community-live-pill"><i aria-hidden="true"></i> Community</span>
       <button class="button lime" id="community-auth-button" type="button" hidden>My profile</button>
     </div>
   </div>
@@ -70,8 +69,8 @@ permalink: /community/
       <section class="member-composer" id="community-composer" hidden>
         <div class="composer-avatar" id="composer-avatar" aria-hidden="true">♡</div>
         <form id="community-post-form">
-          <label class="sr-only" for="community-post-body">Write your edit</label>
-          <textarea id="community-post-body" maxlength="3000" rows="3" placeholder="Share your edit…"></textarea>
+          <label class="sr-only" for="community-post-body">Write a post</label>
+          <textarea id="community-post-body" maxlength="3000" rows="3" placeholder="What’s on your mind?"></textarea>
           <input id="community-post-gif-url" type="hidden" value="">
           <div class="gif-preview" id="community-post-gif-preview" hidden></div>
           <div class="composer-footer">
@@ -87,7 +86,7 @@ permalink: /community/
                 </select>
               </label>
             </div>
-            <button class="button lime" type="submit">Publish edit</button>
+            <button class="button lime" type="submit">Post</button>
           </div>
           <p class="form-message" id="community-post-message" aria-live="polite"></p>
         </form>
@@ -103,7 +102,7 @@ permalink: /community/
         </div>
         <div class="feed-heading"><div><p class="community-kicker">Real conversations</p><h2>Your Community feed</h2></div></div>
         <div class="community-feed" id="member-feed-list"></div>
-        <div class="empty-state compact" id="member-feed-empty" hidden><span class="empty-icon">♡</span><h3>No edits here yet.</h3><p>Publish one or connect with somebody to start building your feed.</p></div>
+        <div class="empty-state compact" id="member-feed-empty" hidden><span class="empty-icon">♡</span><h3>No posts here yet.</h3><p>Share a moment or follow somebody to get things moving.</p></div>
       </section>
 
       <p class="community-system-note" id="community-system-note" aria-live="polite"></p>
@@ -113,15 +112,11 @@ permalink: /community/
 
   <aside class="community-right-rail">
     <div class="rail-card account-rail-card" id="community-account-card">
-      <p class="community-kicker">Your account</p>
+      <p class="community-kicker">Your space</p>
       <div id="community-account-signed-out"><h3>Find your people ♡</h3><p>Funny moments, cute animals, honest conversations, and a little encouragement for the day.</p></div>
       <div id="community-account-signed-in" hidden><div class="account-row"><span class="mini-avatar" id="rail-avatar">S</span><div><strong id="rail-display-name">Member</strong><small id="rail-level">Community member</small><div class="rail-profile-tags" id="rail-profile-tags"></div></div></div><button class="text-button" id="edit-profile-button" type="button">Edit profile</button><button class="text-button danger-link" id="sign-out-button" type="button">Sign out</button></div>
     </div>
-    <div class="rail-card rail-soft">
-      <p class="community-kicker">Community standard</p>
-      <h3>Human first.</h3>
-      <p>We can disagree without getting cruel. Protect people’s privacy. Do not diagnose strangers. Ask before unloading advice.</p>
-    </div>
+    <div class="rail-card rail-soft"><p class="community-kicker">Community basics</p><h3>Human first. ♡</h3><p>Protect privacy, be kind, and let people tell their own stories.</p></div>
   </aside>
 </div>
 
@@ -130,7 +125,7 @@ permalink: /community/
 
 <dialog class="community-dialog" id="community-auth-dialog">
   <form method="dialog" class="dialog-close-row"><button type="submit" aria-label="Close">×</button></form>
-  <div class="dialog-copy"><p class="community-kicker">The Edit Community</p><h2 id="auth-dialog-title">Join the community</h2><p>One free account. No paid membership required.</p></div>
+  <div class="dialog-copy"><p class="community-kicker">Your people are here ♡</p><h2 id="auth-dialog-title">Join the community</h2><p>One free account. No paid membership required.</p></div>
   <form id="community-auth-form">
     <div class="auth-name-field" id="auth-name-field"><label for="auth-display-name">Display name</label><input id="auth-display-name" autocomplete="name" maxlength="40" placeholder="What should we call you?"></div>
     <label for="auth-email">Email</label><input id="auth-email" type="email" autocomplete="email" required placeholder="you@example.com">
