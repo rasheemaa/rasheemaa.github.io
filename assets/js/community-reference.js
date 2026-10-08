@@ -16,6 +16,8 @@
   let bio = "";
   let followingCount = 0;
   let totalPosts = 0;
+  let ownAvatar = "";
+  let confirmedFollowers = null;
   let currentProfileTab = "posts";
   const validFeedNames = new Set(["all", "personal", "following"]);
   const savedKey = () => "sheema.community.saved.v2." + uid;
@@ -127,10 +129,25 @@
   };
   const drawProfile = () => {
     $("reference-self-name").textContent = username || "Community member";
-    $("reference-self-avatar").textContent = (username || "♡").trim().slice(0, 1).toUpperCase();
+    const selfAvatar = $("reference-self-avatar");
+    if (selfAvatar) {
+      selfAvatar.replaceChildren();
+      if (/^data:image\/jpeg;base64,[A-Za-z0-9+/=]{200,19976}$/.test(ownAvatar) && ownAvatar.length <= 20000) {
+        const img = document.createElement("img");
+        img.src = ownAvatar;
+        img.alt = "";
+        img.width = 98;
+        img.height = 98;
+        selfAvatar.append(img);
+      } else selfAvatar.textContent = (username || "♡").trim().slice(0, 1).toUpperCase();
+    }
     $("reference-self-bio").textContent = bio || "Here for the laughs, the little wins, and the real conversations. ♡";
     $("reference-post-count").textContent = String(Math.max(totalPosts, ownPosts().length));
     $("reference-follow-count").textContent = String(followingCount);
+    $("reference-follower-count").textContent = confirmedFollowers === null ? "—" : String(confirmedFollowers);
+    $("reference-follower-note").textContent = confirmedFollowers === null
+      ? "Follower count is unavailable. Only confirmed connections are counted when available."
+      : "Only confirmed connections are counted. Follows saved just on a device are not included.";
     $("reference-save-count").textContent = String(getSaved().length);
     document.querySelectorAll("[data-ui-profile-tab]").forEach((button) => button.classList.toggle(
       "is-active", button.dataset.uiProfileTab === currentProfileTab));
@@ -140,8 +157,10 @@
     if (!signedIn()) return join();
     if (menuDialog?.open) menuDialog.close();
     currentProfileTab = ["posts", "saved", "media"].includes(tab) ? tab : "posts";
+    confirmedFollowers = null;
     drawProfile();
     if (!selfDialog.open) selfDialog.showModal();
+    document.dispatchEvent(new CustomEvent("community:request-follower-count", { detail: { uid } }));
   };
   const openMenu = () => {
     if (!signedIn()) return join();
@@ -204,6 +223,7 @@
     bio = event.detail?.bio || "";
     followingCount = event.detail?.followingCount || 0;
     totalPosts = event.detail?.postCount || 0;
+    ownAvatar = event.detail?.avatarData || "";
     updateSavedButtons(feed);
     updateSavedButtons(preview);
     if (!uid) {
@@ -211,6 +231,11 @@
       if (menuDialog?.open) menuDialog.close();
       if (searchDialog?.open) closeSearch();
     } else if (selfDialog?.open) drawProfile();
+  });
+  document.addEventListener("community:follower-count", (event) => {
+    if (event.detail?.uid !== uid || !uid) return;
+    confirmedFollowers = event.detail.confirmed ? event.detail.count : null;
+    if (selfDialog?.open) drawProfile();
   });
   document.addEventListener("community:open-my-profile", () => openProfile());
   $("community-search-trigger")?.addEventListener("click", openSearch);
