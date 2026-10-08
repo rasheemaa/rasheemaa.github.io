@@ -80,7 +80,7 @@ jobs:
           grep -Fq 'id="feed-personal"' community/index.html
           grep -Fq 'data-community-vibe="animals"' community/index.html
           grep -Fq 'community:filter-change' assets/js/community-seed.js
-          grep -Fq 'realCards.length ? seedPosts.slice(0, 4)' assets/js/community-seed.js
+          grep -Fq 'realCards.length ? topicPosts.slice(0, 4)' assets/js/community-seed.js
           grep -Fq "request.resource.data.get('interests', [])" community/firestore.rules
           grep -Fq "request.resource.data.get('followingIds', [])" community/firestore.rules
           grep -Fq 'community-auth-button' community/index.html
