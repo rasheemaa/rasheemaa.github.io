@@ -65,6 +65,12 @@ if (initialTab && initialTab !== "community") activateTab(initialTab, false);
 const config = window.SHEEMA_COMMUNITY_CONFIG || {};
 const configured = Boolean(config.apiKey && config.authDomain && config.projectId && config.appId);
 const giphyApiKey = String(config.giphyApiKey || "").trim();
+// Built-in animated GIFs remain free and available without a third-party API key.
+const LOCAL_GIFS = [
+  { url: "/assets/community/paws/paws-zoomies.gif", title: "Zoomies", keywords: "dog puppy running zoomies funny cute pet animal" },
+  { url: "/assets/community/paws/paws-treat.gif", title: "Treat reaction", keywords: "dog treat reaction excited hungry funny cute pet animal" },
+  { url: "/assets/community/paws/paws-shake.gif", title: "Shake it off", keywords: "dog shake wet bath water funny cute pet animal" }
+];
 const $ = (id) => document.getElementById(id);
 
 const authDialog = $("community-auth-dialog");
@@ -176,9 +182,12 @@ const safeGifUrl = (value = "") => {
   const raw = String(value || "").trim();
   if (!raw) return "";
   try {
-    const url = new URL(raw);
+    const url = new URL(raw, location.origin);
     const host = url.hostname.toLowerCase();
+    const trustedLocalGif = url.origin === location.origin && !url.search && !url.hash
+      && LOCAL_GIFS.some((item) => item.url === url.pathname);
     const trusted = host === "giphy.com" || host.endsWith(".giphy.com") || host === "tenor.com" || host.endsWith(".tenor.com");
+    if (trustedLocalGif) return url.href;
     if (url.protocol !== "https:" || !trusted) return "";
     return url.href;
   } catch {
@@ -218,7 +227,7 @@ const renderGifResults = (items = []) => {
     return;
   }
   gifResults.innerHTML = items.map((item) => {
-    const url = safeGifUrl(giphyImageUrl(item));
+    const url = safeGifUrl(item.url || giphyImageUrl(item));
     if (!url) return "";
     const title = String(item.title || "GIF").trim() || "GIF";
     return `
@@ -231,10 +240,18 @@ const renderGifResults = (items = []) => {
 const loadGiphyGifs = async (queryText = "") => {
   if (!gifResults) return;
   const queryTextTrimmed = String(queryText || "").trim();
+  const source = $("community-gif-source");
+  if (source) source.textContent = giphyApiKey ? "Powered by GIPHY" : "Community GIFs";
   if (!giphyApiKey) {
     gifResults.setAttribute("aria-busy", "false");
-    gifResults.innerHTML = '<div class="gif-results-empty">GIF search is ready for a GIPHY API key.</div>';
-    setMessage(gifMessage, "Add the GIPHY key once and everyone can search GIFs right here.", "error");
+    if (gifResultsTitle) gifResultsTitle.textContent = queryTextTrimmed ? "Matching GIFs" : "Pick a reaction";
+    const term = queryTextTrimmed.toLowerCase();
+    const matching = LOCAL_GIFS.filter((item) =>
+      !term || (item.title + " " + item.keywords).toLowerCase().includes(term));
+    renderGifResults(matching);
+    setMessage(gifMessage, matching.length
+      ? "Tap a GIF to add it to your post or reply."
+      : "Try dog, treat, or funny.");
     return;
   }
 
