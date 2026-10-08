@@ -57,6 +57,7 @@ jobs:
           grep -Fq 'id="community-search-dialog"' community/index.html
           grep -Fq 'id="community-menu-trigger"' community/index.html
           grep -Fq 'community:session' assets/js/community.js
+          grep -Fq 'dataset.communityUid' assets/js/community.js
           grep -Fq 'const openProfile = (tab = "posts") =>' assets/js/community-reference.js
           grep -Fq '/* Approved reference direction:' assets/css/community-reference.css
           grep -Fq 'let reactionCheckedPostIds = new Set();' assets/js/community.js
@@ -107,7 +108,7 @@ jobs:
           grep -Fq 'You must confirm you are 18 or older to join the Community.' assets/js/community.js
           grep -Fq '/assets/js/community-config.js?v=4' community/index.html
           grep -Fq '/assets/css/community.css?v=14' community/index.html
-          grep -Fq '/assets/js/community.js?v=25' community/index.html
+          grep -Fq '/assets/js/community.js?v=26' community/index.html
           grep -Fq '/assets/css/community-seed.css?v=4' community/index.html
           grep -Fq '/assets/js/community-seed.js?v=7' community/index.html
           grep -Fq 'Sparkle powered account' assets/js/community-seed.js
@@ -126,12 +127,12 @@ jobs:
           test -s assets/community/paws/paws-treat.gif
           test -s assets/community/paws/paws-shake.gif
           grep -Fq '/* Social app refresh v3 */' assets/css/community.css
-          grep -Fq 'const CACHE_NAME = "sheema-edit-v54";' service-worker.js
+          grep -Fq 'const CACHE_NAME = "sheema-edit-v55";' service-worker.js
           grep -Fq '/assets/css/community.css?v=14' service-worker.js
           grep -Fq '/assets/css/community-seed.css?v=4' service-worker.js
-          grep -Fq '/assets/js/community.js?v=25' service-worker.js
+          grep -Fq '/assets/js/community.js?v=26' service-worker.js
           grep -Fq '/assets/js/community-seed.js?v=7' service-worker.js
-          grep -Fq '/assets/js/community-reference.js?v=2' service-worker.js
+          grep -Fq '/assets/js/community-reference.js?v=3' service-worker.js
           grep -Fq '/assets/css/community-reference.css?v=2' service-worker.js
           node <<'NODE'
           const fs = require('fs');
@@ -149,11 +150,11 @@ jobs:
             page="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/community/?ci=${GITHUB_SHA}" || true)"
             cfg="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/js/community-config.js?v=4&ci=${GITHUB_SHA}" || true)"
             css="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/css/community.css?v=14&ci=${GITHUB_SHA}" || true)"
-            js="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/js/community.js?v=25&ci=${GITHUB_SHA}" || true)"
+            js="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/js/community.js?v=26&ci=${GITHUB_SHA}" || true)"
             seed_css="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/css/community-seed.css?v=4&ci=${GITHUB_SHA}" || true)"
             seed_js="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/js/community-seed.js?v=7&ci=${GITHUB_SHA}" || true)"
             reference_css="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/css/community-reference.css?v=2&ci=${GITHUB_SHA}" || true)"
-            reference_js="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/js/community-reference.js?v=2&ci=${GITHUB_SHA}" || true)"
+            reference_js="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/assets/js/community-reference.js?v=3&ci=${GITHUB_SHA}" || true)"
             sw="$(curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "https://thesheemaedit.com/service-worker.js?ci=${GITHUB_SHA}" || true)"
             paws_media_ok=true
             for media in \
@@ -179,10 +180,10 @@ jobs:
 
             if [ "$paws_media_ok" = true ] \
               && grep -Fq '/assets/css/community.css?v=14' <<<"$page" \
-              && grep -Fq '/assets/js/community.js?v=25' <<<"$page" \
+              && grep -Fq '/assets/js/community.js?v=26' <<<"$page" \
               && grep -Fq '/assets/css/community-seed.css?v=4' <<<"$page" \
               && grep -Fq '/assets/js/community-seed.js?v=7' <<<"$page" \
-              && grep -Fq '/assets/js/community-reference.js?v=2' <<<"$page" \
+              && grep -Fq '/assets/js/community-reference.js?v=3' <<<"$page" \
               && grep -Fq '/assets/css/community-reference.css?v=2' <<<"$page" \
               && grep -Fq 'id="community-self-profile-dialog"' <<<"$page" \
               && grep -Fq 'class="reference-bottom-nav"' <<<"$page" \
@@ -203,12 +204,12 @@ jobs:
               && grep -Fq 'Sparkle powered account' <<<"$seed_js" \
               && grep -Fq 'AI community character powered by Sparkle' <<<"$seed_js" \
               && grep -Fq '/* Sparkle powered Community starter layer */' <<<"$seed_css" \
-              && grep -Fq 'const CACHE_NAME = "sheema-edit-v54";' <<<"$sw" \
+              && grep -Fq 'const CACHE_NAME = "sheema-edit-v55";' <<<"$sw" \
               && grep -Fq '/assets/css/community.css?v=14' <<<"$sw" \
               && grep -Fq '/assets/css/community-seed.css?v=4' <<<"$sw" \
-              && grep -Fq '/assets/js/community.js?v=25' <<<"$sw" \
+              && grep -Fq '/assets/js/community.js?v=26' <<<"$sw" \
               && grep -Fq '/assets/js/community-seed.js?v=7' <<<"$sw" \
-              && grep -Fq '/assets/js/community-reference.js?v=2' <<<"$sw" \
+              && grep -Fq '/assets/js/community-reference.js?v=3' <<<"$sw" \
               && grep -Fq '/assets/css/community-reference.css?v=2' <<<"$sw"; then
               exit 0
             fi
