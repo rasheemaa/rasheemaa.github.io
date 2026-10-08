@@ -9,7 +9,7 @@ for (let attempt = 0; attempt < 28; attempt++) {
     const res = await fetch(SITE + '?visual_ci=' + sha + '&attempt=' + attempt, { cache: 'no-store' });
     const html = await res.text();
     if (res.ok && html.includes('community-reference.css?v=2') &&
-        html.includes('community-reference.js?v=2') && html.includes('reference-bottom-nav')) {
+        html.includes('community-reference.js?v=3') && html.includes('reference-bottom-nav')) {
       ready = true;
       break;
     }
