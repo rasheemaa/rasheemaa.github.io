@@ -50,6 +50,8 @@ Start in production mode.
 
 ## 5. Publish security rules
 
+**After the October 2026 Community cleanup:** GitHub Pages deploys the website, but it does not publish Firestore rules. To make the public Community profile choices and Following feature work, the latest `community/firestore.rules` must be published separately in Firebase Console. A green GitHub build alone does not confirm this step.
+
 Copy the full contents of:
 
 `/community/firestore.rules`
@@ -109,6 +111,7 @@ Reactions do not add points in the first release so the leaderboard does not enc
 
 ## Current free-first design choices
 
+- Animated GIF reactions can use the three bundled Community GIFs even without a GIPHY API key.
 - No image uploads yet, so Cloud Storage is not required.
 - No Cloud Functions.
 - No paid moderation service.
