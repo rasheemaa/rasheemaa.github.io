@@ -163,3 +163,23 @@
 .community-page .community-vibe-filters{padding-inline:0}
 }
 @media(prefers-reduced-motion:reduce){.reference-community *, .reference-bottom-nav *{scroll-behavior:auto}}
+
+/* Mockup fidelity polish v3: put reactions in the first mobile viewport. */
+.community-page .member-post-card .post-heading .post-author-block{padding-right:84px}
+.community-page .member-post-card .post-heading .connect-button{position:absolute;top:2px;right:0;margin-left:0!important}
+.community-page .member-post-card .post-heading .post-author-line{row-gap:2px}
+.community-page .member-post-card .member-post-copy{margin:6px 0 9px!important}
+.reference-account-menu{position:fixed;top:78px;right:max(12px,calc((100vw - 1100px)/2));left:auto;margin:0;width:min(320px,calc(100% - 24px))}
+@media(max-width:760px){
+.community-page .community-preview-section .preview-heading{display:none}
+.community-page .member-post-card .room-chip{display:none}
+.community-page .member-post-card .post-heading{min-height:44px;margin-bottom:2px}
+.community-page .member-post-card .member-post-copy{margin:5px 0 9px!important;font-size:.9rem}
+.community-page .member-post-card .sparkle-seed-media{margin:8px 0 2px}
+.community-page .member-post-card .sparkle-seed-media-file{aspect-ratio:1.43;max-height:275px;object-fit:cover}
+.community-page .member-post-card .sparkle-seed-media-gif .sparkle-seed-media-file{aspect-ratio:1.43}
+.community-page .member-post-actions{margin-top:5px}
+.community-page .member-post-card .post-heading .post-author-block{padding-right:77px}
+.reference-account-menu{top:65px;right:10px}
+.reference-bottom-nav button>span svg,.reference-bottom-nav a>span svg{width:23px;height:23px;display:block}
+}
