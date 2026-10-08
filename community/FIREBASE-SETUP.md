@@ -50,7 +50,7 @@ Start in production mode.
 
 ## 5. Publish security rules
 
-**After the October 2026 Community cleanup:** GitHub Pages deploys the website, but it does not publish Firestore rules. To make the public Community profile choices and Following feature work, the latest `community/firestore.rules` must be published separately in Firebase Console. A green GitHub build alone does not confirm this step.
+**After the October 2026 Community cleanup:** GitHub Pages deploys the website, but it does not publish Firestore rules. To make public Community profile choices, cross-device Following, and real member photo thumbnails work, the latest `community/firestore.rules` must be published separately in Firebase Console. A green GitHub build alone does not confirm this step.
 
 Copy the full contents of:
 
@@ -112,7 +112,9 @@ Reactions do not add points in the first release so the leaderboard does not enc
 ## Current free-first design choices
 
 - Animated GIF reactions can use the three bundled Community GIFs even without a GIPHY API key.
-- No image uploads yet, so Cloud Storage is not required.
+- Member profile pictures are **112 × 112 JPEG thumbnails capped at 20,000 characters**, written in the member's Firestore profile. Original full-size photos are not uploaded, and no Cloud Storage subscription is required. Firestore's free usage limits still apply.
+- **Publishing the current Firestore rules is required for photos to appear to other members and sync across devices.** Until then, photo selections are kept only in that member's browser, with an explicit notice. Do not call these photos publicly saved until the rule publication is confirmed.
+- Follower counts come from a live Firestore aggregation over saved `followingIds`. If the query cannot run, the UI displays an unavailable state, never an invented number. Local-only follows are not counted as server-confirmed followers.
 - No Cloud Functions.
 - No paid moderation service.
 - No SMS or phone authentication.
