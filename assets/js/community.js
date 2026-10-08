@@ -198,6 +198,17 @@ let activeGifTarget = null;
 let gifSearchController = null;
 let gifSearchTimer = null;
 let followingIds = new Set();
+const followingKey = (uid) => "sheema.community.localFollowing." + uid;
+const locallyFollowed = (uid) => {
+  try {
+    const ids = JSON.parse(localStorage.getItem(followingKey(uid)) || "[]");
+    return Array.isArray(ids) ? ids.filter((id) => typeof id === "string").slice(0, 250) : [];
+  } catch { return []; }
+};
+const saveLocalFollowing = (uid) => {
+  try { localStorage.setItem(followingKey(uid), JSON.stringify([...followingIds])); }
+  catch { setMessage(systemNote, "Could not store follows on this device.", "error"); }
+};
 let feedMode = "all";
 let activeVibe = "all";
 const profileCache = new Map();
@@ -563,7 +574,10 @@ const updateSignedInUi = async () => {
   $("rail-avatar").textContent = initials(profile?.displayName);
   $("rail-display-name").textContent = profile?.displayName || "Member";
   $("rail-level").textContent = "Community member";
-  followingIds = new Set(Array.isArray(profile?.followingIds) ? profile.followingIds.filter(Boolean) : []);
+  followingIds = new Set([
+    ...(Array.isArray(profile?.followingIds) ? profile.followingIds.filter(Boolean) : []),
+    ...locallyFollowed(currentUser.uid)
+  ]);
   const railTags = $("rail-profile-tags");
   if (railTags) {
     const category = allowedCategories.has(profile?.category) ? categoryLabels[profile.category] : "";
@@ -788,19 +802,29 @@ const toggleConnection = async (authorId) => {
     setMessage(systemNote, "You have reached the current connection limit.", "error");
     return;
   }
-  await updateDoc(profileRef, {
-    followingIds: connected ? arrayRemove(authorId) : arrayUnion(authorId),
-    updatedAt: serverTimestamp()
-  });
+  let deviceOnly = false;
+  try {
+    await updateDoc(profileRef, {
+      followingIds: connected ? arrayRemove(authorId) : arrayUnion(authorId),
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    if (!String(error?.code || "").includes("permission-denied")) throw error;
+    deviceOnly = true;
+  }
   if (connected) followingIds.delete(authorId);
   else followingIds.add(authorId);
-  if (currentProfile) currentProfile.followingIds = [...followingIds];
+  saveLocalFollowing(currentUser.uid);
+  if (!deviceOnly && currentProfile) currentProfile.followingIds = [...followingIds];
+  setMessage(systemNote, deviceOnly
+    ? "Following saved in this browser. Syncing across devices will work after the Community permissions update."
+    : "", deviceOnly ? "" : "success");
   renderFeed();
 };
 
 const shareEdit = async (postId) => {
   const url = `${location.origin}${location.pathname}#edit-${encodeURIComponent(postId)}`;
-  const shareData = { title: "Community edit", text: "Check out this Community edit.", url };
+  const shareData = { title: "Community post", text: "Check out this Community post.", url };
   try {
     if (navigator.share) {
       await navigator.share(shareData);
@@ -808,13 +832,13 @@ const shareEdit = async (postId) => {
     }
     if (navigator.clipboard?.writeText) {
       await navigator.clipboard.writeText(url);
-      setMessage(systemNote, "Edit link copied.", "success");
+      setMessage(systemNote, "Post link copied.", "success");
       return;
     }
   } catch (error) {
     if (error?.name === "AbortError") return;
   }
-  prompt("Copy this edit link:", url);
+  prompt("Copy this post link:", url);
 };
 
 const refreshCommunity = async () => {
