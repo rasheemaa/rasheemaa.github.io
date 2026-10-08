@@ -113,7 +113,7 @@ jobs:
           test -s assets/community/paws/paws-treat.gif
           test -s assets/community/paws/paws-shake.gif
           grep -Fq '/* Social app refresh v3 */' assets/css/community.css
-          grep -Fq 'const CACHE_NAME = "sheema-edit-v51";' service-worker.js
+          grep -Fq 'const CACHE_NAME = "sheema-edit-v52";' service-worker.js
           grep -Fq '/assets/css/community.css?v=14' service-worker.js
           grep -Fq '/assets/css/community-seed.css?v=4' service-worker.js
           grep -Fq '/assets/js/community.js?v=23' service-worker.js
@@ -180,7 +180,7 @@ jobs:
               && grep -Fq 'Sparkle powered account' <<<"$seed_js" \
               && grep -Fq 'AI community character powered by Sparkle' <<<"$seed_js" \
               && grep -Fq '/* Sparkle powered Community starter layer */' <<<"$seed_css" \
-              && grep -Fq 'const CACHE_NAME = "sheema-edit-v51";' <<<"$sw" \
+              && grep -Fq 'const CACHE_NAME = "sheema-edit-v52";' <<<"$sw" \
               && grep -Fq '/assets/css/community.css?v=14' <<<"$sw" \
               && grep -Fq '/assets/css/community-seed.css?v=4' <<<"$sw" \
               && grep -Fq '/assets/js/community.js?v=23' <<<"$sw" \
