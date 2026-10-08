@@ -8,8 +8,8 @@ for (let attempt = 0; attempt < 28; attempt++) {
   try {
     const res = await fetch(SITE + '?visual_ci=' + sha + '&attempt=' + attempt, { cache: 'no-store' });
     const html = await res.text();
-    if (res.ok && html.includes('community-reference.css?v=3') &&
-        html.includes('community-reference.js?v=3') && html.includes('reference-bottom-nav')) {
+    if (res.ok && html.includes('community-reference.css?v=4') &&
+        html.includes('community-reference.js?v=4') && html.includes('reference-bottom-nav')) {
       ready = true;
       break;
     }
@@ -29,6 +29,9 @@ assert.equal(await page.locator('#community-preview-list .member-post-card').cou
 assert(await page.locator('.reference-app-header').isVisible(), 'Compact Community app header renders');
 assert(await page.locator('.reference-stories').isVisible(), 'Story bubbles render');
 assert(await page.locator('.reference-bottom-nav').isVisible(), 'Fixed bottom navigation renders on mobile');
+assert.equal(await page.locator('#profile-avatar-input').count(), 1, 'Member avatar photo selector is present');
+assert.equal(await page.locator('#reference-follower-count').count(), 1, 'Real follower counter is present');
+assert.equal(await page.locator('#community-profile-form').count(), 1, 'Existing verified profile edit form retained');
 const header = await page.locator('.reference-app-header').boundingBox();
 const story = await page.locator('.reference-stories').boundingBox();
 const bottom = await page.locator('.reference-bottom-nav').boundingBox();
