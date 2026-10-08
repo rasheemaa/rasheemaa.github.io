@@ -192,7 +192,7 @@ permalink: /community/
   <div class="reference-self-avatar" id="reference-self-avatar" aria-hidden="true">♡</div>
   <h2 id="reference-self-name">Community member</h2>
   <p id="reference-self-bio">Welcome to your corner of the internet. ♡</p>
-  <div class="reference-profile-stats"><div><strong id="reference-post-count">0</strong><span>Posts</span></div><div><strong id="reference-follow-count">0</strong><span>Following</span></div><div><strong id="reference-save-count">0</strong><span>Saved</span></div></div>
+  <div class="reference-profile-stats"><div><strong id="reference-post-count">0</strong><span>Posts</span></div><div><strong id="reference-follower-count">—</strong><span>Followers</span></div><div><strong id="reference-follow-count">0</strong><span>Following</span></div></div><p class="reference-count-note" id="reference-follower-note" aria-live="polite">Follower totals show confirmed Community connections only.</p>
   <div class="reference-profile-actions"><button type="button" id="reference-edit-profile">Edit Profile</button><button type="button" id="reference-profile-create">Create Post</button></div>
   <div class="reference-profile-tabs"><button type="button" data-ui-profile-tab="posts" class="is-active">Posts</button><button type="button" data-ui-profile-tab="saved">Saved</button><button type="button" data-ui-profile-tab="media">Media</button></div>
   <div id="reference-profile-posts" class="reference-profile-content"><p>Your posts will show up here.</p></div>
@@ -223,6 +223,15 @@ permalink: /community/
   <form id="community-profile-form">
     <label for="profile-display-name">Display name</label><input id="profile-display-name" maxlength="40" required>
     <label for="profile-bio">Bio</label><textarea id="profile-bio" maxlength="280" rows="4" placeholder="A little about you..."></textarea>
+    <fieldset class="profile-avatar-choice">
+      <legend>Profile picture</legend>
+      <div class="profile-avatar-upload-row">
+        <div class="profile-avatar-preview" id="profile-avatar-preview" aria-hidden="true">♡</div>
+        <div><label for="profile-avatar-input" class="profile-avatar-upload-label">Choose a photo</label><input id="profile-avatar-input" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="profile-avatar-help"><button type="button" id="profile-avatar-remove" class="profile-avatar-remove">Remove picture</button></div>
+      </div>
+      <p id="profile-avatar-help" class="profile-field-hint">Your photo is reduced to a small square thumbnail. No paid media storage required. Until updated Community database rules are published, only you will see it on this device.</p>
+      <p class="form-message" id="profile-avatar-message" aria-live="polite"></p>
+    </fieldset>
 
     <div class="profile-choice-group">
       <label for="profile-category">How do you describe yourself?</label>
