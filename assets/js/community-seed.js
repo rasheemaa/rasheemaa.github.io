@@ -477,33 +477,23 @@
     rendering = true;
     feedObserver?.disconnect();
     try {
-      if (empty) empty.hidden = true;
       ensureDisclosure();
-
       feed.querySelectorAll('[data-sparkle-seed="true"]').forEach((node) => node.remove());
-
+      const realCards = [...feed.querySelectorAll(".member-post-card:not([data-sparkle-seed])")];
       const postsToShow = isFollowingMode()
         ? seedPosts.filter((post) => follows.has(personaFor(post.persona).id))
-        : seedPosts;
+        : realCards.length ? seedPosts.slice(0, 4) : seedPosts;
 
+      if (empty) empty.hidden = realCards.length > 0 || postsToShow.length > 0;
       if (!postsToShow.length) return;
-
-      const realCards = [...feed.querySelectorAll(".member-post-card:not([data-sparkle-seed])")];
       const cards = postsToShow.map((post) => {
         const template = document.createElement("template");
         template.innerHTML = seedCardHtml(post).trim();
         return template.content.firstElementChild;
       });
 
-      if (!realCards.length) {
-        cards.forEach((card) => feed.append(card));
-      } else {
-        cards.forEach((card, index) => {
-          const anchor = realCards[index % realCards.length];
-          if (index === 0) feed.prepend(card);
-          else anchor.insertAdjacentElement("afterend", card);
-        });
-      }
+      // Genuine member posts lead the feed. AI starters fill the empty state or follow afterward.
+      cards.forEach((card) => feed.append(card));
 
       const requestedId = location.hash.startsWith("#sparkle-seed-") ? location.hash.slice(1) : "";
       if (requestedId) requestAnimationFrame(() => document.getElementById(requestedId)?.scrollIntoView({ behavior: "smooth", block: "center" }));
