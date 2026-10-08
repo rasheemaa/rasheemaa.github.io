@@ -110,7 +110,7 @@ assert(refunds.includes('Lifetime Access'), 'refund policy uses Lifetime Access'
 assert(!refunds.includes('Founding Member'), 'refund policy has no stale Founding Member copy');
 assert(terms.includes('Lifetime Access'), 'terms use Lifetime Access');
 assert(!terms.includes('Founding Member'), 'terms have no stale Founding Member copy');
-assert(rootServiceWorker.includes("sheema-edit-v53"), 'public site is serving cache v53');
+assert(rootServiceWorker.includes("sheema-edit-v56"), 'public site is serving cache v53');
 assert(rootServiceWorker.includes('/assets/js/main.js?v=3'), 'public cache stores the cache-busted main script');
 assert(!rootServiceWorker.includes('/assets/js/wdis-launch-popup.js?v=2'), 'public cache no longer ships the obsolete modal');
 assert(paidTrialAccess.includes('Choose Lifetime Access to keep using Sparkle.'), 'post-trial state points customers to Lifetime Access');

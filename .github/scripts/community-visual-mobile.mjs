@@ -8,7 +8,7 @@ for (let attempt = 0; attempt < 28; attempt++) {
   try {
     const res = await fetch(SITE + '?visual_ci=' + sha + '&attempt=' + attempt, { cache: 'no-store' });
     const html = await res.text();
-    if (res.ok && html.includes('community-reference.css?v=2') &&
+    if (res.ok && html.includes('community-reference.css?v=3') &&
         html.includes('community-reference.js?v=3') && html.includes('reference-bottom-nav')) {
       ready = true;
       break;
@@ -37,6 +37,8 @@ assert(header && header.height < 90 && header.y <= 5, 'Mobile header is compact'
 assert(story && story.height > 65, 'Story circles occupy visible space');
 assert(bottom && bottom.y > 700 && bottom.height < 140, 'Bottom nav stays at foot of screen');
 assert(media && media.width >= 290 && media.height >= 170, 'Dog post displays as a proper image-first card');
+const actions = await page.locator('#community-preview-list .member-post-actions').first().boundingBox();
+assert(actions && actions.y + actions.height < bottom.y, 'Reactions remain visible above fixed mobile navigation');
 assert.equal(await page.locator('#member-feed-section').isVisible(), false, 'Full member feed remains gated');
 assert.equal(errors.length, 0, 'No runtime page errors: ' + errors.join('; '));
 const screenshot = await page.screenshot({animations:'disabled'});
