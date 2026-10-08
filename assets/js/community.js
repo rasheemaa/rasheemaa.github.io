@@ -516,7 +516,6 @@ const showAuthenticatedShell = (user) => {
 
 const updateSignedInUi = async () => {
   const profile = await loadProfile();
-  const level = memberLevel(profile?.points || 0);
   authGate.hidden = true;
   composer.hidden = false;
   memberSection.hidden = false;
@@ -530,7 +529,7 @@ const updateSignedInUi = async () => {
   $("composer-avatar").textContent = initials(profile?.displayName);
   $("rail-avatar").textContent = initials(profile?.displayName);
   $("rail-display-name").textContent = profile?.displayName || "Member";
-  $("rail-level").textContent = `Level ${level.level} · ${level.name}`;
+  $("rail-level").textContent = "Community member";
   followingIds = new Set(Array.isArray(profile?.followingIds) ? profile.followingIds.filter(Boolean) : []);
   const railTags = $("rail-profile-tags");
   if (railTags) {
@@ -805,8 +804,8 @@ gifRemoveButton?.addEventListener("click", () => {
 $("community-post-form")?.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!db || !currentUser) return openAuth();
-  const body = $("community-post-body").value.trim();
   const gifUrl = safeGifUrl(postGifInput?.value);
+  const body = $("community-post-body").value.trim() || (gifUrl ? "🎞️" : "");
   const spaceId = $("community-post-space").value;
   if (!body && !gifUrl) return setMessage($("community-post-message"), "Write something or add a GIF ♡", "error");
 
@@ -906,8 +905,8 @@ const loadComments = (postId, drawer) => {
       event.preventDefault();
       const input = commentTextInput;
       const button = event.submitter;
-      const body = input.value.trim();
       const gifUrl = safeGifUrl(commentGifInput?.value);
+      const body = input.value.trim() || (gifUrl ? "🎞️" : "");
       if (!body && !gifUrl) return;
       button.disabled = true;
       try {
@@ -1149,7 +1148,10 @@ $("community-profile-form")?.addEventListener("submit", async (event) => {
     renderFeed();
     setTimeout(() => profileDialog.close(), 350);
   } catch (error) {
-    setMessage($("profile-message"), error.message || "Your profile could not be saved.", "error");
+    const permission = String(error?.code || "").includes("permission-denied");
+    setMessage($("profile-message"), permission
+      ? "Profile settings are waiting on the Community database permissions update."
+      : (error.message || "Your profile could not be saved."), "error");
   }
 });
 
