@@ -15,6 +15,7 @@
   let username = "Community member";
   let bio = "";
   let followingCount = 0;
+  let totalPosts = 0;
   let currentProfileTab = "posts";
   const validFeedNames = new Set(["all", "personal", "following"]);
   const savedKey = () => "sheema.community.saved.v2." + uid;
@@ -128,7 +129,7 @@
     $("reference-self-name").textContent = username || "Community member";
     $("reference-self-avatar").textContent = (username || "♡").trim().slice(0, 1).toUpperCase();
     $("reference-self-bio").textContent = bio || "Here for the laughs, the little wins, and the real conversations. ♡";
-    $("reference-post-count").textContent = String(ownPosts().length);
+    $("reference-post-count").textContent = String(Math.max(totalPosts, ownPosts().length));
     $("reference-follow-count").textContent = String(followingCount);
     $("reference-save-count").textContent = String(getSaved().length);
     document.querySelectorAll("[data-ui-profile-tab]").forEach((button) => button.classList.toggle(
@@ -202,6 +203,7 @@
     username = event.detail?.displayName || "Community member";
     bio = event.detail?.bio || "";
     followingCount = event.detail?.followingCount || 0;
+    totalPosts = event.detail?.postCount || 0;
     updateSavedButtons(feed);
     updateSavedButtons(preview);
     if (!uid) {
