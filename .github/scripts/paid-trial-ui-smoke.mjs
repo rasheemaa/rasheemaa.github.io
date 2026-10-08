@@ -83,18 +83,18 @@ async function waitForShopOffer() {
 
 await waitForShopOffer();
 
-const [homepage, shopPage, mainScript, launchPopup, refunds, terms, rootServiceWorker, paidTrialAccess, scopedServiceWorker] = await Promise.all([
+const [homepage, shopPage, mainScript, refunds, terms, rootServiceWorker, paidTrialAccess, scopedServiceWorker] = await Promise.all([
   fetchLiveText(''),
   fetchLiveText('shop/'),
-  fetchLiveText('assets/js/main.js?v=2'),
-  fetchLiveText('assets/js/wdis-launch-popup.js?v=2'),
+  fetchLiveText('assets/js/main.js?v=3'),
   fetchLiveText('what-do-i-say/refunds/'),
   fetchLiveText('what-do-i-say/terms/'),
   fetchLiveText('service-worker.js'),
   fetchLiveText('what-do-i-say/paid-trial-access.js?v=3'),
   fetchLiveText('what-do-i-say/service-worker.js')
 ]);
-assert(homepage.includes('/assets/js/main.js?v=2'), 'homepage loads the cache-busted main script');
+assert(homepage.includes('/assets/js/main.js?v=3'), 'homepage loads the cache-busted main script');
+assert(homepage.includes('edit-hub-pathways'), 'homepage shows the new reading, Community, and Sparkle pathways');
 assert(shopPage.includes('3 days · $1'), 'shop card shows the $1 three-day trial');
 assert(shopPage.includes('no automatic renewal'), 'shop card states no automatic renewal');
 assert(shopPage.includes('Lifetime Access $19.99 once'), 'shop card shows Lifetime Access pricing');
@@ -103,22 +103,16 @@ assert(!shopPage.includes('3 days free'), 'shop card has no stale free-trial pri
 assert(!shopPage.includes('No card required'), 'shop card has no stale no-card-required copy');
 assert(!shopPage.includes('Founding Members'), 'shop card has no stale Founding Members copy');
 assert(!shopPage.includes('Start the free trial'), 'shop card has no stale free-trial CTA');
-assert(shopPage.includes('/assets/js/main.js?v=2'), 'shop page loads the cache-busted main script');
-assert(mainScript.includes('/assets/js/wdis-launch-popup.js?v=2'), 'main script loads the cache-busted launch popup');
-assert(launchPopup.includes('Lifetime Access'), 'launch popup uses Lifetime Access');
-assert(launchPopup.includes('3 days for $1 once'), 'launch popup advertises the $1 three-day paid trial');
-assert(launchPopup.includes('No automatic renewal'), 'launch popup states there is no automatic renewal');
-assert(!launchPopup.includes('3-day free trial'), 'launch popup has no stale free-trial sentence');
-assert(!launchPopup.includes('3 days free'), 'launch popup has no stale free-trial badge');
-assert(!launchPopup.includes('No card required'), 'launch popup has no stale no-card-required badge');
-assert(!launchPopup.includes('Founding Member'), 'launch popup has no stale Founding Member copy');
+assert(shopPage.includes('/assets/js/main.js?v=3'), 'shop page loads the cache-busted main script');
+assert(!mainScript.includes('launchPopupScript'), 'site no longer injects intrusive launch modals');
+assert(shopPage.includes('shop-studio-hero'), 'shop uses the editorial layout');
 assert(refunds.includes('Lifetime Access'), 'refund policy uses Lifetime Access');
 assert(!refunds.includes('Founding Member'), 'refund policy has no stale Founding Member copy');
 assert(terms.includes('Lifetime Access'), 'terms use Lifetime Access');
 assert(!terms.includes('Founding Member'), 'terms have no stale Founding Member copy');
-assert(rootServiceWorker.includes("sheema-edit-v28"), 'public site is serving cache v28');
-assert(rootServiceWorker.includes('/assets/js/main.js?v=2'), 'public cache stores the cache-busted main script');
-assert(rootServiceWorker.includes('/assets/js/wdis-launch-popup.js?v=2'), 'public cache stores the cache-busted paid-trial popup');
+assert(rootServiceWorker.includes("sheema-edit-v53"), 'public site is serving cache v53');
+assert(rootServiceWorker.includes('/assets/js/main.js?v=3'), 'public cache stores the cache-busted main script');
+assert(!rootServiceWorker.includes('/assets/js/wdis-launch-popup.js?v=2'), 'public cache no longer ships the obsolete modal');
 assert(paidTrialAccess.includes('Choose Lifetime Access to keep using Sparkle.'), 'post-trial state points customers to Lifetime Access');
 assert(!paidTrialAccess.includes('Founding Member'), 'post-trial access script has no stale Founding Member copy');
 assert(scopedServiceWorker.includes("wdis-v41"), 'What Do I Say scoped cache is refreshed to v41');
