@@ -629,7 +629,7 @@ const postCardHtml = (post) => {
         <div class="post-heading">
           <div class="post-author-block">
             <div class="post-author-line">
-              <strong>${escapeHtml(authorProfile?.displayName || post.displayName || "Member")}</strong>
+              <button type="button" class="community-author-name" data-action="profile" data-author-id="${escapeHtml(post.authorId || "")}"><strong>${escapeHtml(authorProfile?.displayName || post.displayName || "Member")}</strong></button>
               <span> · ${escapeHtml(relativeTime(post.createdAt))}</span>
               ${!mine ? `<button class="connect-button${connected ? " is-connected" : ""}" type="button" data-action="connect" data-author-id="${escapeHtml(post.authorId || "")}" aria-pressed="${connected}">${connected ? "Connected" : "Connect"}</button>` : ""}
             </div>
@@ -1069,6 +1069,36 @@ const deletePostAndChildren = async (postId) => {
   await batch.commit();
 };
 
+const openMemberProfile = (authorId) => {
+  if (!authorId) return;
+  if (authorId === currentUser?.uid) {
+    openProfileEditor();
+    return;
+  }
+  const dialog = $("community-member-dialog");
+  const detail = $("community-member-detail");
+  if (!dialog?.showModal || !detail) return;
+  const profile = profileCache.get(authorId);
+  const fromPost = lastPosts.find((post) => post.authorId === authorId);
+  const name = profile?.displayName || fromPost?.displayName || "Community member";
+  const intro = typeof profile?.bio === "string" && profile.bio.trim()
+    ? profile.bio.trim() : "Here to connect and share a little everyday life.";
+  const interests = Array.isArray(profile?.interests)
+    ? profile.interests.filter((item) => allowedInterests.has(item)).slice(0, 5) : [];
+  const category = allowedCategories.has(profile?.category) ? categoryLabels[profile.category] : "";
+  const neurotype = allowedNeurotypes.has(profile?.neurotype) && profile.neurotype !== "prefer-not-to-say"
+    ? neurotypeLabels[profile.neurotype] : "";
+  detail.innerHTML = `
+    <div class="community-member-hero"><span class="mini-avatar">${escapeHtml(initials(name))}</span>
+    <div><p class="community-kicker">Community member</p><h2>${escapeHtml(name)}</h2></div></div>
+    <p class="community-member-bio">${escapeHtml(intro)}</p>
+    <div class="member-meta-chips">${category ? `<span>${escapeHtml(category)}</span>` : ""}
+    ${neurotype ? `<span>${escapeHtml(neurotype)}</span>` : ""}
+    ${interests.map((item) => `<span>${escapeHtml(interestLabels[item])}</span>`).join("")}</div>
+    <p class="community-member-footnote">People first. Be respectful, and never share anyone's private information.</p>`;
+  if (!dialog.open) dialog.showModal();
+};
+
 memberFeed?.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-action]");
   if (!button || !db || !currentUser) return;
@@ -1077,6 +1107,10 @@ memberFeed?.addEventListener("click", async (event) => {
   if (!postId) return;
 
   try {
+    if (button.dataset.action === "profile") {
+      openMemberProfile(button.dataset.authorId || card.dataset.authorId);
+      return;
+    }
     if (button.dataset.action === "heart") {
       button.disabled = true;
       await toggleHeart(postId);
