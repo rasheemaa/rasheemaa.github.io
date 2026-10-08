@@ -1149,6 +1149,26 @@ $("community-profile-form")?.addEventListener("submit", async (event) => {
     setTimeout(() => profileDialog.close(), 350);
   } catch (error) {
     const permission = String(error?.code || "").includes("permission-denied");
+    if (permission) {
+      // Older live Firestore rules permit display name and bio but not newer
+      // public identity fields. Preserve basic editing until rules are published.
+      try {
+        await updateDoc(doc(db, "profiles", currentUser.uid), {
+          displayName: displayName.slice(0, 40),
+          bio: bio.slice(0, 280),
+          updatedAt: serverTimestamp()
+        });
+        await updateProfile(currentUser, { displayName: displayName.slice(0, 40) });
+        profileCache.delete(currentUser.uid);
+        await updateSignedInUi();
+        profileCache.set(currentUser.uid, currentProfile);
+        renderFeed();
+        setMessage($("profile-message"), "Name and bio saved. Interests and identity choices still need the Community permissions update.");
+        return;
+      } catch {
+        // Use the original error so no restricted profile changes are misrepresented as saved.
+      }
+    }
     setMessage($("profile-message"), permission
       ? "Profile settings are waiting on the Community database permissions update."
       : (error.message || "Your profile could not be saved."), "error");
