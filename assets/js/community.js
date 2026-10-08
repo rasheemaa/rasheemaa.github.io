@@ -102,7 +102,39 @@ const postGifInput = $("community-post-gif-url");
 const postGifPreview = $("community-post-gif-preview");
 const postGifButton = $("community-post-gif-button");
 const feedForYouButton = $("feed-for-you");
+const feedPersonalButton = $("feed-personal");
 const feedFollowingButton = $("feed-following");
+const postVideoInput = $("community-post-video-url");
+const vibeFilterButtons = [...document.querySelectorAll("[data-community-vibe]")];
+const vibes = {
+  comedy: { name: "Comedy", emoji: "😂", legacySpace: "chaos" },
+  animals: { name: "Cute animals", emoji: "🐾", legacySpace: "lifestyle" },
+  motivation: { name: "Motivation", emoji: "✨", legacySpace: "chronic" },
+  adhd: { name: "ADHD & mental wellness", emoji: "🧠", legacySpace: "mind" }
+};
+const validVibes = new Set(Object.keys(vibes));
+const safeVideoId = (raw = "") => {
+  try {
+    const url = new URL(String(raw).trim());
+    if (url.protocol !== "https:") return "";
+    const host = url.hostname.toLowerCase();
+    let id = "";
+    if (host === "youtu.be" || host === "www.youtu.be") {
+      id = url.pathname.split("/")[1] || "";
+    } else if (["youtube.com", "www.youtube.com", "m.youtube.com"].includes(host)) {
+      id = url.pathname === "/watch" ? (url.searchParams.get("v") || "")
+        : /^\/(shorts|embed|live)\//.test(url.pathname) ? (url.pathname.split("/")[2] || "") : "";
+    }
+    return /^[a-zA-Z0-9_-]{11}$/.test(id) ? id : "";
+  } catch { return ""; }
+};
+const videoCardHtml = (id) => {
+  if (!/^[a-zA-Z0-9_-]{11}$/.test(String(id || ""))) return "";
+  return `<div class="community-video-wrap"><iframe src="https://www.youtube-nocookie.com/embed/${id}"
+    title="Shared YouTube video" loading="lazy" allowfullscreen
+    referrerpolicy="strict-origin-when-cross-origin"
+    allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe></div>`;
+};
 
 const spaces = {
   mind: { name: "Mental Wellness & Unmasking", emoji: "🦋" },
@@ -167,6 +199,7 @@ let gifSearchController = null;
 let gifSearchTimer = null;
 let followingIds = new Set();
 let feedMode = "all";
+let activeVibe = "all";
 const profileCache = new Map();
 
 const escapeHtml = (value = "") => String(value)
@@ -575,7 +608,9 @@ const hydrateLikesForPosts = async (posts) => {
 };
 
 const postCardHtml = (post) => {
-  const space = spaces[post.spaceId] || { name: "Community", emoji: "♡" };
+  const space = validVibes.has(post.vibe)
+    ? vibes[post.vibe]
+    : spaces[post.spaceId] || { name: "Community", emoji: "♡" };
   const liked = likedPostIds.has(post.id);
   const mine = post.authorId === currentUser?.uid;
   const authorProfile = profileCache.get(post.authorId);
@@ -605,6 +640,7 @@ const postCardHtml = (post) => {
         ${post.isPinned ? '<span class="pin inline-pin">PINNED</span>' : ""}
         ${post.body ? `<p class="member-post-copy">${escapeHtml(post.body).replaceAll("\n", "<br>")}</p>` : ""}
         ${post.gifUrl ? `<div class="community-gif-wrap">${gifImageHtml(post.gifUrl, "GIF shared by " + (post.displayName || "Member"))}</div>` : ""}
+        ${post.videoId ? videoCardHtml(post.videoId) : ""}
         <div class="member-post-actions">
           <button type="button" data-action="heart" aria-pressed="${liked}">${liked ? "♥" : "♡"} <span>${Math.max(0, post.reactionCount || 0)}</span></button>
           <button type="button" data-action="comments">💬 <span>${Math.max(0, post.commentCount || 0)}</span></button>
