@@ -168,6 +168,8 @@
         actions.append(button);
       }
       const isSaved = saved.has(card.id);
+      if (button.dataset.savedState === String(isSaved)) continue;
+      button.dataset.savedState = String(isSaved);
       button.setAttribute("aria-label", isSaved ? "Remove saved post" : "Save post");
       button.setAttribute("aria-pressed", String(isSaved));
       button.title = isSaved ? "Remove saved post" : "Save post";
@@ -211,7 +213,6 @@
   document.addEventListener("community:open-my-profile", () => openProfile());
   $("community-search-trigger")?.addEventListener("click", openSearch);
   $("community-create-trigger")?.addEventListener("click", createPost);
-  $("community-auth-button")?.addEventListener("click", () => openProfile());
   document.querySelectorAll("[data-visual-feed]").forEach((btn) =>
     btn.addEventListener("click", () => switchFeed(btn.dataset.visualFeed)));
   document.querySelectorAll("[data-ui-topic]").forEach((btn) =>
