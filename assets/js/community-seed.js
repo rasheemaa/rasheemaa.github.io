@@ -1,5 +1,13 @@
 (() => {
   const SEED_VERSION = "2026.10.07.3";
+  let activeVibe = "all";
+  const seedVibe = (post) => {
+    const topic = String(post.topic || "").toLowerCase();
+    if (topic.includes("animal")) return "animals";
+    if (topic.includes("adhd") || topic.includes("mental health")) return "adhd";
+    if (topic.includes("motivation") || topic.includes("inspiration")) return "motivation";
+    return "comedy";
+  };
   const STORAGE_KEYS = {
     hearts: "sheema.community.sparkleHearts.v1",
     follows: "sheema.community.sparkleFollows.v1"
@@ -480,9 +488,10 @@
       ensureDisclosure();
       feed.querySelectorAll('[data-sparkle-seed="true"]').forEach((node) => node.remove());
       const realCards = [...feed.querySelectorAll(".member-post-card:not([data-sparkle-seed])")];
+      const topicPosts = seedPosts.filter((post) => activeVibe === "all" || seedVibe(post) === activeVibe);
       const postsToShow = isFollowingMode()
-        ? seedPosts.filter((post) => follows.has(personaFor(post.persona).id))
-        : realCards.length ? seedPosts.slice(0, 4) : seedPosts;
+        ? topicPosts.filter((post) => follows.has(personaFor(post.persona).id))
+        : realCards.length ? topicPosts.slice(0, 4) : topicPosts;
 
       if (empty) empty.hidden = realCards.length > 0 || postsToShow.length > 0;
       if (!postsToShow.length) return;
@@ -590,6 +599,11 @@
     feedObserver = new MutationObserver(() => injectSeeds());
     feedObserver.observe(feed, { childList: true });
 
+    document.addEventListener("community:filter-change", (event) => {
+      activeVibe = ["comedy", "animals", "motivation", "adhd"].includes(event.detail?.vibe)
+        ? event.detail.vibe : "all";
+      injectSeeds();
+    });
     const sectionObserver = new MutationObserver(() => {
       if (!section.hidden) {
         ensureDisclosure();
