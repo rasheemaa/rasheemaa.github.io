@@ -882,9 +882,13 @@ $("community-post-form")?.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!db || !currentUser) return openAuth();
   const gifUrl = safeGifUrl(postGifInput?.value);
-  const body = $("community-post-body").value.trim() || (gifUrl ? "🎞️" : "");
-  const spaceId = $("community-post-space").value;
-  if (!body && !gifUrl) return setMessage($("community-post-message"), "Write something or add a GIF ♡", "error");
+  const videoRaw = postVideoInput?.value.trim() || "";
+  const videoId = videoRaw ? safeVideoId(videoRaw) : "";
+  if (videoRaw && !videoId) return setMessage($("community-post-message"), "Use a valid YouTube or YouTube Shorts link.", "error");
+  const body = $("community-post-body").value.trim() || (gifUrl ? "🎞️" : videoId ? "🎬" : "");
+  const vibe = validVibes.has($("community-post-space").value) ? $("community-post-space").value : "comedy";
+  const spaceId = vibes[vibe].legacySpace;
+  if (!body) return setMessage($("community-post-message"), "Write something, add a GIF, or share a video ♡", "error");
 
   const submit = event.submitter;
   if (submit) submit.disabled = true;
@@ -898,8 +902,10 @@ $("community-post-form")?.addEventListener("submit", async (event) => {
       authorId: currentUser.uid,
       displayName: (currentProfile?.displayName || currentUser.displayName || "Member").slice(0, 40),
       spaceId,
+      vibe,
       body,
       ...(gifUrl ? { gifUrl } : {}),
+      ...(videoId ? { videoId } : {}),
       isPinned: false,
       commentCount: 0,
       reactionCount: 0,
@@ -914,6 +920,7 @@ $("community-post-form")?.addEventListener("submit", async (event) => {
     await batch.commit();
     $("community-post-body").value = "";
     if (postGifInput) postGifInput.value = "";
+    if (postVideoInput) postVideoInput.value = "";
     renderGifPreview(postGifPreview, "");
     setMessage($("community-post-message"), "Posted ♡", "success");
     await updateSignedInUi();
