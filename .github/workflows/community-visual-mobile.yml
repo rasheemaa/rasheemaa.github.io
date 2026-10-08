@@ -1,0 +1,39 @@
+name: Community visual mobile smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'community/index.html'
+      - 'assets/js/community-reference.js'
+      - 'assets/css/community-reference.css'
+      - 'assets/js/community.js'
+      - 'assets/js/community-seed.js'
+      - '.github/workflows/community-visual-mobile.yml'
+      - '.github/scripts/community-visual-mobile.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: community-visual-mobile
+  cancel-in-progress: true
+
+jobs:
+  visual-mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+      - name: Install isolated browser test runtime
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Verify Community against mobile visual layout contract
+        run: node .github/scripts/community-visual-mobile.mjs
