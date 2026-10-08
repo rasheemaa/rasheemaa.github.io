@@ -449,7 +449,10 @@ async function openProfileEditor() {
   }
 }
 
-authButton?.addEventListener("click", openProfileEditor);
+// The social-app My Profile button opens a public-facing profile screen.
+authButton?.addEventListener("click", () => {
+  document.dispatchEvent(new CustomEvent("community:open-my-profile"));
+});
 
 const updateAgeGateVisibility = () => {
   const signup = authMode === "signup";
@@ -513,6 +516,7 @@ const updateSignedOutUi = () => {
     authButton.textContent = "My profile";
   }
   if (leaderboard) leaderboard.innerHTML = '<p class="muted-copy">Join the community to see member levels.</p>';
+  document.dispatchEvent(new CustomEvent("community:session", { detail: { uid: "" } }));
 };
 
 const ensureProfile = async (user, displayName = "") => {
@@ -556,6 +560,9 @@ const showAuthenticatedShell = (user) => {
   $("rail-avatar").textContent = initials(fallbackName);
   $("rail-display-name").textContent = fallbackName;
   $("rail-level").textContent = "Loading your profile…";
+  document.dispatchEvent(new CustomEvent("community:session", {
+    detail: { uid: user.uid, displayName: fallbackName, bio: "", followingCount: 0 }
+  }));
 };
 
 const updateSignedInUi = async () => {
@@ -593,6 +600,14 @@ const updateSignedInUi = async () => {
       ...interests.map((item) => `<span>${escapeHtml(interestLabels[item])}</span>`)
     ].join("");
   }
+  document.dispatchEvent(new CustomEvent("community:session", {
+    detail: {
+      uid: currentUser?.uid || "",
+      displayName: profile?.displayName || "Community member",
+      bio: profile?.bio || "",
+      followingCount: followingIds.size
+    }
+  }));
 };
 
 const hydrateProfilesForPosts = async (posts) => {
