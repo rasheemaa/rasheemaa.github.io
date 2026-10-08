@@ -213,6 +213,7 @@
   document.addEventListener("community:open-my-profile", () => openProfile());
   $("community-search-trigger")?.addEventListener("click", openSearch);
   $("community-create-trigger")?.addEventListener("click", createPost);
+  $("community-menu-trigger")?.addEventListener("click", openMenu);
   document.querySelectorAll("[data-visual-feed]").forEach((btn) =>
     btn.addEventListener("click", () => switchFeed(btn.dataset.visualFeed)));
   document.querySelectorAll("[data-ui-topic]").forEach((btn) =>
