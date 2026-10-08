@@ -61,8 +61,12 @@ jobs:
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const html = fs.readFileSync('what-do-i-say/index.html', 'utf8');
-          if (/<script(?![^>]*\bsrc=)[^>]*>/i.test(html)) {
-            throw new Error('Inline script block detected in What Do I Say');
+          const scripts = html.match(/<script\b[^>]*>/gi) || [];
+          for (const tag of scripts) {
+            if (/\bsrc\s*=/.test(tag)) continue;
+            // JSON-LD is structured metadata, never executable JavaScript.
+            if (/\btype\s*=\s*["']application\/ld\+json["']/i.test(tag)) continue;
+            throw new Error('Executable inline script block detected in What Do I Say');
           }
           if (/\son(?:click|load|error|submit|focus|mouseover)\s*=/i.test(html)) {
             throw new Error('Inline event handler detected in What Do I Say');
