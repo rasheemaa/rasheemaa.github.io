@@ -183,3 +183,19 @@
 .reference-account-menu{top:65px;right:10px}
 .reference-bottom-nav button>span svg,.reference-bottom-nav a>span svg{width:23px;height:23px;display:block}
 }
+
+/* Real member photos and follower metrics */
+.profile-avatar-choice{margin:16px 0 19px;padding:14px 15px;border:1px solid #e9dce7;border-radius:16px;background:#fff7fb}
+.profile-avatar-choice legend{padding:0 6px;color:#492a42;font-size:.82rem;font-weight:950}
+.profile-avatar-upload-row{display:flex;align-items:center;gap:17px;min-width:0}
+.profile-avatar-preview{display:grid;flex:0 0 76px;width:76px;height:76px;place-items:center;overflow:hidden;border:3px solid #fff;border-radius:50%;outline:2px solid #ff67a6;background:#fce2ed;font-size:1.6rem}
+.profile-avatar-preview img,.reference-self-avatar img,.community-page .post-avatar img,.community-page .mini-avatar img,.community-page .composer-avatar img{display:block;width:100%;height:100%;border-radius:50%;object-fit:cover}
+.profile-avatar-upload-row>div:last-child{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0}
+.profile-avatar-upload-row input[type=file]{width:100%;max-width:260px;color:#584958;font-size:.72rem}
+.profile-avatar-upload-label{font-size:.78rem!important;font-weight:950}
+.profile-avatar-remove{border:0;padding:3px 0;background:none;color:#a2286f;font-size:.73rem;text-decoration:underline;cursor:pointer}
+.profile-avatar-choice .profile-field-hint{max-width:58ch;margin:12px 0 0;line-height:1.55}
+.reference-self-avatar{overflow:hidden}
+.reference-count-note{max-width:350px;margin:0 auto 13px!important;color:#806d80;font-size:.67rem;line-height:1.4}
+.community-public-metrics{margin:12px 0;color:#9e2d69;font-size:.76rem;font-weight:850}
+@media(max-width:760px){.profile-avatar-upload-row{gap:12px}.profile-avatar-preview{flex-basis:68px;width:68px;height:68px}.profile-avatar-upload-row input[type=file]{max-width:235px}}
