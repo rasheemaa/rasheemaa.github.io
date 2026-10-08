@@ -696,6 +696,31 @@ const updateSignedInUi = async () => {
   }));
 };
 
+const confirmedFollowersCache = new Map();
+const publishFollowerCount = async (uid) => {
+  if (!uid || !db || !currentUser) return;
+  const cached = confirmedFollowersCache.get(uid);
+  let count = cached && Date.now() - cached.checkedAt < 15000 ? cached.count : null;
+  if (count === null) {
+    try {
+      const summary = await getCountFromServer(query(
+        collection(db, "profiles"), where("followingIds", "array-contains", uid)
+      ));
+      count = Math.max(0, summary.data().count || 0);
+      confirmedFollowersCache.set(uid, { count, checkedAt: Date.now() });
+    } catch {
+      // Never invent a follower total if Firestore does not permit a real count.
+      count = null;
+    }
+  }
+  document.dispatchEvent(new CustomEvent("community:follower-count", {
+    detail: { uid, count, confirmed: count !== null }
+  }));
+};
+document.addEventListener("community:request-follower-count", (event) => {
+  const uid = event.detail?.uid;
+  if (uid && currentUser && db) void publishFollowerCount(uid);
+});
 const hydrateProfilesForPosts = async (posts) => {
   if (!db || !currentUser) return;
   const ids = [...new Set(posts.map((post) => post.authorId).filter(Boolean))]
@@ -1160,6 +1185,14 @@ const loadComments = (postId, drawer) => {
 
   commentStops.set(postId, stop);
 };
+document.addEventListener("community:follower-count", (event) => {
+  const metric = $("community-member-detail")?.querySelector("[data-follower-profile]");
+  if (metric && metric.dataset.followerProfile === event.detail?.uid) {
+    metric.textContent = event.detail.confirmed
+      ? `Followers: ${event.detail.count}`
+      : "Followers: unavailable until database permissions are updated";
+  }
+});
 const toggleHeart = async (postId) => {
   const reactionRef = doc(db, "posts", postId, "reactions", currentUser.uid);
   const postRef = doc(db, "posts", postId);
@@ -1217,11 +1250,15 @@ const openMemberProfile = (authorId) => {
     <div class="community-member-hero"><span class="mini-avatar">${avatarHtml(profile, name, authorId)}</span>
     <div><p class="community-kicker">Community member</p><h2>${escapeHtml(name)}</h2></div></div>
     <p class="community-member-bio">${escapeHtml(intro)}</p>
+    <p class="community-public-metrics" data-follower-profile="${escapeHtml(authorId)}">Followers: checking…</p>
     <div class="member-meta-chips">${category ? `<span>${escapeHtml(category)}</span>` : ""}
     ${neurotype ? `<span>${escapeHtml(neurotype)}</span>` : ""}
     ${interests.map((item) => `<span>${escapeHtml(interestLabels[item])}</span>`).join("")}</div>
     <p class="community-member-footnote">People first. Be respectful, and never share anyone's private information.</p>`;
+  const metrics = detail.querySelector(".community-public-metrics");
+  if (metrics) metrics.textContent = "Followers: checking…";
   if (!dialog.open) dialog.showModal();
+  void publishFollowerCount(authorId);
 };
 
 memberFeed?.addEventListener("click", async (event) => {
