@@ -77,17 +77,22 @@ permalink: /community/
             <div class="composer-tools">
               <button class="gif-trigger" id="community-post-gif-button" type="button" aria-haspopup="dialog">GIF</button>
               <label>Topic
-                <select id="community-post-space" aria-label="Choose a topic for your edit">
-                  <option value="mind">Mental Wellness & Unmasking</option>
-                  <option value="motherhood">Motherhood & Family</option>
-                  <option value="chronic">Chronic Illness & Real Life</option>
-                  <option value="lifestyle">Lifestyle & Beauty</option>
-                  <option value="chaos">Relatable Chaos</option>
+                <select id="community-post-space" aria-label="Choose a topic for your post">
+                  <option value="comedy">😂 Comedy</option>
+                  <option value="animals">🐾 Cute animals</option>
+                  <option value="motivation">✨ Motivation</option>
+                  <option value="adhd">🧠 ADHD &amp; mental wellness</option>
                 </select>
               </label>
             </div>
             <button class="button lime" type="submit">Post</button>
           </div>
+          <details class="community-video-field">
+            <summary>🎬 Share a YouTube video or Short</summary>
+            <label class="sr-only" for="community-post-video-url">YouTube video URL</label>
+            <input id="community-post-video-url" type="url" inputmode="url" maxlength="300" placeholder="Paste a YouTube link here">
+            <small>Videos play in the feed. No uploads or billing needed.</small>
+          </details>
           <p class="form-message" id="community-post-message" aria-live="polite"></p>
         </form>
       </section>
@@ -96,11 +101,23 @@ permalink: /community/
         <div class="social-feed-bar">
           <div class="feed-filter-tabs" role="tablist" aria-label="Choose feed">
             <button class="is-active" id="feed-for-you" type="button" role="tab" aria-selected="true">Explore</button>
+            <button id="feed-personal" type="button" role="tab" aria-selected="false">For you</button>
             <button id="feed-following" type="button" role="tab" aria-selected="false">Following</button>
           </div>
           <button class="text-button" id="refresh-community" type="button">Refresh ↻</button>
         </div>
+        <div class="community-daily-prompt" id="community-daily-prompt">
+          <div><span class="community-prompt-icon" aria-hidden="true">💬</span><div><strong>Today's conversation</strong><p id="community-prompt-text">What made you smile today?</p></div></div>
+          <button id="community-use-prompt" type="button">Join in ↗</button>
+        </div>
         <div class="feed-heading"><div><p class="community-kicker">Real conversations</p><h2>Your Community feed</h2></div></div>
+        <div class="community-vibe-filters" id="community-vibe-filters" aria-label="Filter posts by topic">
+          <button type="button" data-community-vibe="all" aria-pressed="true">For everyone</button>
+          <button type="button" data-community-vibe="comedy" aria-pressed="false">😂 Comedy</button>
+          <button type="button" data-community-vibe="animals" aria-pressed="false">🐾 Cute animals</button>
+          <button type="button" data-community-vibe="motivation" aria-pressed="false">✨ Good energy</button>
+          <button type="button" data-community-vibe="adhd" aria-pressed="false">🧠 ADHD &amp; mind</button>
+        </div>
         <div class="community-feed" id="member-feed-list"></div>
         <div class="empty-state compact" id="member-feed-empty" hidden><span class="empty-icon">♡</span><h3>No posts here yet.</h3><p>Share a moment or follow somebody to get things moving.</p></div>
       </section>
