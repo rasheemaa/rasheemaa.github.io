@@ -658,11 +658,23 @@ const renderFeed = () => {
   const reopenPostId = openCommentsPostId;
   commentStops.forEach((stop) => stop?.());
   commentStops.clear();
-  const visiblePosts = feedMode === "following"
-    ? lastPosts.filter((post) => post.authorId === currentUser?.uid || followingIds.has(post.authorId))
-    : lastPosts;
+  const visiblePosts = lastPosts.filter((post) => {
+    const modeMatch = feedMode !== "following" || post.authorId === currentUser?.uid || followingIds.has(post.authorId);
+    return modeMatch && (activeVibe === "all" || post.vibe === activeVibe);
+  });
+  const interests = new Set(Array.isArray(currentProfile?.interests) ? currentProfile.interests : []);
+  const favorites = new Set([
+    ...(interests.has("mental-wellness") ? ["adhd"] : []),
+    ...(interests.has("self-growth") ? ["motivation"] : []),
+    ...(interests.has("relatable-chaos") ? ["comedy"] : []),
+    ...(interests.has("family") ? ["animals"] : [])
+  ]);
   const sorted = [...visiblePosts].sort((a, b) => {
     if (Boolean(a.isPinned) !== Boolean(b.isPinned)) return a.isPinned ? -1 : 1;
+    if (feedMode === "personal" && favorites.size) {
+      const score = Number(favorites.has(b.vibe)) - Number(favorites.has(a.vibe));
+      if (score) return score;
+    }
     return timestampToDate(b.createdAt) - timestampToDate(a.createdAt);
   });
   memberFeed.innerHTML = sorted.map(postCardHtml).join("");
@@ -670,12 +682,15 @@ const renderFeed = () => {
   if (memberFeedEmpty) {
     const title = memberFeedEmpty.querySelector("h3");
     const copy = memberFeedEmpty.querySelector("p");
-    if (feedMode === "following") {
+    if (activeVibe !== "all") {
+      if (title) title.textContent = "A quiet corner for now.";
+      if (copy) copy.textContent = "Be the first to post in this topic.";
+    } else if (feedMode === "following") {
       if (title) title.textContent = "Your Following feed is quiet.";
-      if (copy) copy.textContent = "Connect with people from Explore and their edits will show up here.";
+      if (copy) copy.textContent = "Follow people from Explore to build your feed.";
     } else {
-      if (title) title.textContent = "No edits here yet.";
-      if (copy) copy.textContent = "Publish one and start the conversation.";
+      if (title) title.textContent = "No posts here yet.";
+      if (copy) copy.textContent = "Share something and start the conversation.";
     }
   }
   if (reopenPostId) {
@@ -727,17 +742,43 @@ const startLeaderboard = () => {
 };
 
 const setFeedMode = (mode) => {
-  feedMode = mode === "following" ? "following" : "all";
-  const following = feedMode === "following";
-  feedForYouButton?.classList.toggle("is-active", !following);
-  feedFollowingButton?.classList.toggle("is-active", following);
-  feedForYouButton?.setAttribute("aria-selected", String(!following));
-  feedFollowingButton?.setAttribute("aria-selected", String(following));
+  feedMode = ["all", "personal", "following"].includes(mode) ? mode : "all";
+  for (const [button, value] of [
+    [feedForYouButton, "all"], [feedPersonalButton, "personal"], [feedFollowingButton, "following"]
+  ]) {
+    button?.classList.toggle("is-active", feedMode === value);
+    button?.setAttribute("aria-selected", String(feedMode === value));
+  }
   renderFeed();
+  document.dispatchEvent(new CustomEvent("community:filter-change", { detail: { vibe: activeVibe, mode: feedMode } }));
 };
-
 feedForYouButton?.addEventListener("click", () => setFeedMode("all"));
+feedPersonalButton?.addEventListener("click", () => setFeedMode("personal"));
 feedFollowingButton?.addEventListener("click", () => setFeedMode("following"));
+vibeFilterButtons.forEach((button) => button.addEventListener("click", () => {
+  activeVibe = validVibes.has(button.dataset.communityVibe) ? button.dataset.communityVibe : "all";
+  vibeFilterButtons.forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
+  renderFeed();
+  document.dispatchEvent(new CustomEvent("community:filter-change", { detail: { vibe: activeVibe, mode: feedMode } }));
+}));
+const conversationStarters = [
+  "What made you laugh harder than you should have today? 😭",
+  "What is the most dramatic thing your pet has ever done? 🐾",
+  "Tell us one tiny win. Yes, even if it seems small. ✨",
+  "What is your brain's current side quest? 🧠",
+  "What's something you learned about yourself lately? 💗",
+  "What's the funniest thing that happened this week? 😂",
+  "What are you giving yourself permission to enjoy? 🌷"
+];
+const promptText = $("community-prompt-text");
+if (promptText) promptText.textContent = conversationStarters[Math.floor(Date.now() / 86400000) % conversationStarters.length];
+$("community-use-prompt")?.addEventListener("click", () => {
+  const field = $("community-post-body");
+  if (!field) return;
+  if (!field.value.trim()) field.value = promptText?.textContent || "";
+  field.focus();
+  field.scrollIntoView({ behavior: "smooth", block: "center" });
+});
 
 const toggleConnection = async (authorId) => {
   if (!currentUser || !authorId || authorId === currentUser.uid) return;
