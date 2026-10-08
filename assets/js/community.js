@@ -605,6 +605,7 @@ const updateSignedInUi = async () => {
       uid: currentUser?.uid || "",
       displayName: profile?.displayName || "Community member",
       bio: profile?.bio || "",
+      postCount: Math.max(0, Number(profile?.postCount) || 0),
       followingCount: followingIds.size
     }
   }));
