@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/community-live-smoke.yml'
       - 'community/**'
+      - 'community/firestore.rules'
       - 'assets/js/community.js'
       - 'assets/js/community-seed.js'
       - 'assets/js/community-reference.js'
@@ -20,6 +21,7 @@ on:
     paths:
       - '.github/workflows/community-live-smoke.yml'
       - 'community/**'
+      - 'community/firestore.rules'
       - 'assets/js/community.js'
       - 'assets/js/community-seed.js'
       - 'assets/js/community-reference.js'
