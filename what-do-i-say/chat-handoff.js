@@ -18,11 +18,10 @@
     }
   }
 
-  function saveHandoff(text, mode) {
+  function saveHandoff(text) {
     try {
       sessionStorage.setItem(KEY, JSON.stringify({
         text: String(text || '').slice(0, 3500),
-        mode: ['write', 'reply', 'fix'].includes(mode) ? mode : 'write',
         at: Date.now()
       }));
     } catch {}
@@ -45,8 +44,7 @@
     form.addEventListener('submit', () => {
       const text = String(prompt.value || '').trim();
       if (!text || hasFinishedAnswer()) return;
-      const mode = document.querySelector('.mode.active')?.dataset.mode || 'write';
-      saveHandoff(text, mode);
+      saveHandoff(text);
     }, true);
 
     const observer = new MutationObserver(() => {
@@ -57,8 +55,6 @@
     const pending = readHandoff();
     if (!pending || conversation.children.length) return;
 
-    const modeButton = document.querySelector(`.mode[data-mode="${pending.mode}"]`);
-    modeButton?.click();
     prompt.value = pending.text;
     prompt.dispatchEvent(new Event('input', { bubbles: true }));
 

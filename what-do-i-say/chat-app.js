@@ -1,5 +1,5 @@
 (() => {
-  const S = { mode: 'write', last: '', base: null, pending: false, working: null, retry: null, installPrompt: null };
+  const S = { last: '', base: null, pending: false, working: null, retry: null, installPrompt: null };
   const $ = s => document.querySelector(s);
   const $$ = s => [...document.querySelectorAll(s)];
   const el = {
@@ -76,7 +76,7 @@
 
   function loading(on, text = 'Sparkle is finding the words…') {
     S.pending = on; el.send.disabled = on; el.send.dataset.loading = on ? 'true' : 'false'; el.send.textContent = on ? '…' : 'Send'; el.stop.hidden = !on;
-    $$('.mode,.just-right,.more-options,.refine-options button').forEach(b => b.disabled = on);
+    $('.just-right,.more-options,.refine-options button').forEach(b => b.disabled = on);
     on ? working(text) : stopWorking();
   }
 
@@ -101,11 +101,23 @@
     actions.append(right,more,options); m.stack.append(actions); scrollDown();
   }
 
+  // One composer, no mode chooser. Older desktop models still need an internal task
+  // label; mobile Cloudflare AI can infer intent directly from the full message.
+  function inferDesktopIntent(text) {
+    const source = String(text || '').trim();
+    if (/^(?:please\s+)?(?:fix|rewrite|reword|edit|polish|proofread|correct|clean up)\b/i.test(source)
+      || /^(?:my\s+)?(?:draft|message\s+to\s+fix)\s*:/i.test(source)
+      || /^(?:hi|hello|hey|dear)\s+[^,\n]{1,50}[,!]?(?:\s|$)/i.test(source)) return 'fix';
+    if (/^(?:please\s+)?(?:reply|respond|text\s+back|write\s+(?:a\s+)?reply|help\s+me\s+reply|what\s+do\s+i\s+say\s+back)\b/i.test(source)
+      || /\b(?:they|he|she|my\s+(?:friend|boss|mom|dad|partner)|someone)\s+(?:said|sent|texted|asked|wrote)\b/i.test(source)
+      || /\b(?:they|he|she)\s+(?:messaged|texted)\s+me\b/i.test(source)) return 'reply';
+    return 'write';
+  }
+
   function initialPayload(text) {
-    const source = S.mode === 'fix'
-      ? String(text || '').replace(/\bcant\b/gi, "can't").replace(/\bwont\b/gi, "won't").replace(/\bdont\b/gi, "don't").replace(/\bdoesnt\b/gi, "doesn't")
-      : text;
-    return { mode:S.mode, tone:'warm', situation:'general', personName:S.mode === 'write' ? inferRecipient(source) : '', text:source, refine:'', currentMessage:'' };
+    const source = String(text || '');
+    const mode = window.__WDIS_MOBILE_CLOUD_SPARKLE === true ? 'auto' : inferDesktopIntent(source);
+    return { mode, tone:'warm', situation:'general', personName:inferRecipient(source), text:source, refine:'', currentMessage:'' };
   }
   function refinePayload(kind, instruction='') {
     const base = S.base || initialPayload(S.last);
@@ -147,17 +159,10 @@
 
   function reset() {
     if (S.pending) return;
-    S.mode='write'; S.last=''; S.base=null; S.retry=null; el.conversation.innerHTML=''; el.welcome.hidden=false; el.newTop.hidden=true; el.prompt.value=''; el.prompt.placeholder='Tell me what you’re trying to say…';
-    $$('.mode').forEach(b=>{const a=b.dataset.mode==='write'; b.classList.toggle('active',a); b.setAttribute('aria-selected',String(a));}); clearError(); status({phase:'idle',message:'Private on-device AI'}); resize(); el.prompt.focus();
+    S.last=''; S.base=null; S.retry=null; el.conversation.innerHTML=''; el.welcome.hidden=false; el.newTop.hidden=true; el.prompt.value=''; el.prompt.placeholder='Tell Sparkle what you need, or paste a message…';
+    clearError(); status({phase:'idle',message:'Sparkle is ready.'}); resize(); el.prompt.focus();
   }
 
-  $$('.mode').forEach(b => b.onclick = () => {
-    if(S.pending)return; S.mode=b.dataset.mode; $$('.mode').forEach(x=>{const a=x===b;x.classList.toggle('active',a);x.setAttribute('aria-selected',String(a));});
-    if(S.mode==='reply'){el.label.textContent='What did they send you, and what do you want to say back?';el.prompt.placeholder='Paste what they sent, then tell me what you want your reply to say…';}
-    else if(S.mode==='fix'){el.label.textContent='Paste your message';el.prompt.placeholder='Paste your message and tell me what feels off…';}
-    else {el.label.textContent='What are you trying to say?';el.prompt.placeholder='Tell me what you’re trying to say…';}
-    el.prompt.focus();
-  });
   el.form.onsubmit = e => { e.preventDefault(); const text=el.prompt.value.trim(); if(!text)return; S.last ? refine('custom',text,text) : first(text); };
   el.prompt.oninput = resize;
   el.stop.onclick = () => window.Sparkle?.cancel();

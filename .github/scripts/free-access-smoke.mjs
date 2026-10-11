@@ -1,39 +1,73 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
+
 const read = path => readFileSync(path, 'utf8');
 const html = read('what-do-i-say/index.html');
-assert(!/data-checkout-offer|id="paywall"|payment-v3\.js|paid-trial-access\.js|lifetime-copy\.js/.test(html));
 assert(html.includes('Free for everyone'));
-const schema = JSON.parse(html.match(/application\/ld\+json">(.*?)<\/script>/s)[1]);
+assert(!/data-mode=|class="mode|class="mode-tabs"|id="paywall"|data-checkout-offer|payment-v3\.js|paid-trial-access\.js/.test(html), 'No visible mode chooser or payment gate');
+const schema = JSON.parse(html.match(/application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
 assert.equal(schema.isAccessibleForFree, true);
 assert.equal(schema.offers.price, '0');
+assert(html.includes('chat-app.js?v=29'), 'Fresh chat controller is referenced');
+
 class Element {
-  constructor() { this.children=[]; this.style={}; this.dataset={}; this.value=''; this.textContent=''; this.classList={add(){},toggle(){}}; }
+  constructor() {
+    this.children = []; this.style = {}; this.dataset = {}; this.value = ''; this.textContent = ''; this.className = ''; this.hidden = false;
+    this.classList = { add() {}, toggle() {} };
+  }
   append(...children) { this.children.push(...children); }
   remove() {}
   focus() {}
   setAttribute() {}
+  getAttribute() { return 'false'; }
   addEventListener() {}
-  querySelector(selector) { return this.children.find(c => selector === '.bubble' && c.className === 'bubble') || null; }
+  querySelector(selector) { return this.children.find(child => selector === '.bubble' && child.className === 'bubble') || null; }
 }
-for (const scenario of ['new visitor','expired trial','past purchaser','blocked storage']) {
-  const nodes=new Map();
-  const modes=['write','reply','fix'].map(mode=>{const e=new Element();e.dataset.mode=mode;return e;});
-  const calls=[];
-  const document={querySelector(s){if(!nodes.has(s))nodes.set(s,new Element());return nodes.get(s);},querySelectorAll(s){return s==='.mode'?modes:[];},createElement(){return new Element();}};
-  // Storage must never be consulted, including expired or paid legacy records.
-  const context={document,navigator:{},window:{addEventListener(){},Sparkle:{generate:async p=>{calls.push(p);return 'Thanks for checking in.';}}},localStorage:{getItem(){throw Error('Access must not depend on storage');},setItem(){throw Error('No trial may start');}},requestAnimationFrame:f=>f()};
-  vm.runInNewContext(read('what-do-i-say/chat-app.js'),context);
-  assert.equal(nodes.get('#trial-status').textContent,'Free for everyone');
-  const submit=async text=>{nodes.get('#prompt').value=text;nodes.get('#message-form').onsubmit({preventDefault(){}});await new Promise(r=>setImmediate(r));};
-  for (const mode of modes) {
-    nodes.get('#new-message-top').onclick();mode.onclick();await submit('Tell Alex thank you.');assert.equal(calls.at(-1).mode,mode.dataset.mode);
+const cases = [
+  { description: 'direct writing', text: 'Tell Alex thank you.', desktop: 'write' },
+  { description: 'responding', text: 'They said: Are you mad? I want to say I need time.', desktop: 'reply' },
+  { description: 'rewriting', text: 'Fix this message: hey i cant do Friday.', desktop: 'fix' },
+  { description: 'plain text to another person', text: 'Can you loan me a dollar?', desktop: 'write' }
+];
+for (const scenario of ['new visitor', 'expired trial', 'past purchaser', 'blocked storage']) {
+  for (const cloud of [false, true]) {
+    const nodes = new Map();
+    const calls = [];
+    const document = {
+      querySelector(selector) { if (!nodes.has(selector)) nodes.set(selector, new Element()); return nodes.get(selector); },
+      querySelectorAll() { return []; },
+      createElement() { return new Element(); }
+    };
+    const window = {
+      __WDIS_MOBILE_CLOUD_SPARKLE: cloud,
+      addEventListener() {},
+      Sparkle: { generate: async payload => { calls.push(payload); return 'Thanks for checking in.'; } }
+    };
+    const context = { document, navigator: {}, window, localStorage: {
+      getItem() { throw Error('Access must not depend on storage'); },
+      setItem() { throw Error('No trial may start'); }
+    }, requestAnimationFrame: callback => callback() };
+    vm.runInNewContext(read('what-do-i-say/chat-app.js'), context);
+    assert.equal(nodes.get('#trial-status').textContent, 'Free for everyone');
+    const submit = async input => {
+      nodes.get('#new-message-top').onclick();
+      nodes.get('#prompt').value = input;
+      nodes.get('#message-form').onsubmit({ preventDefault() {} });
+      await new Promise(resolve => setImmediate(resolve));
+    };
+    for (const test of cases) {
+      await submit(test.text);
+      assert.equal(calls.at(-1).mode, cloud ? 'auto' : test.desktop, `${scenario} / ${test.description}`);
+    }
+    const walk = element => [element, ...element.children.flatMap(walk)];
+    const buttons = walk(nodes.get('#conversation')).filter(element => element.onclick && /^(?:Make it|Try another)/.test(element.textContent));
+    for (const button of buttons.slice(-5)) { button.onclick(); await new Promise(resolve => setImmediate(resolve)); }
+    assert.deepEqual(calls.slice(-5).map(payload => payload.refine), ['shorter','softer','firmer','professional','another']);
+    nodes.get('#prompt').value = 'Make it warmer';
+    nodes.get('#message-form').onsubmit({ preventDefault() {} });
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(calls.at(-1).refine, 'custom');
+    console.log(`PASS ${scenario} / ${cloud ? 'mobile cloud' : 'desktop local'}: universal chat, inferred intent, refinements, no paid gate`);
   }
-  const walk=e=>[e,...e.children.flatMap(walk)];
-  const buttons=walk(nodes.get('#conversation')).filter(e=>e.onclick&&/^Make it|Try another/.test(e.textContent));
-  for(const b of buttons.slice(-5)){b.onclick();await new Promise(r=>setImmediate(r));}
-  assert.deepEqual(calls.slice(-5).map(p=>p.refine),['shorter','softer','firmer','professional','another']);
-  await submit('Make it warmer');assert.equal(calls.at(-1).refine,'custom');
-  console.log(`PASS ${scenario}: Write, Reply, Fix and all refinements without checkout or storage`);
 }

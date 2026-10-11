@@ -59,12 +59,8 @@ permalink: /what-do-i-say/
 
     <div id="chat-thread" class="chat-thread" aria-live="polite" aria-relevant="additions text">
       <section id="welcome-card" class="welcome-card">
-        <p class="welcome-question">What are we doing?</p>
-        <div class="mode-tabs" role="tablist" aria-label="Choose what you need help with">
-          <button class="mode active" type="button" data-mode="write" aria-selected="true">Send a message</button>
-          <button class="mode" type="button" data-mode="reply" aria-selected="false">Respond to someone</button>
-          <button class="mode" type="button" data-mode="fix" aria-selected="false">Rewrite my message</button>
-        </div>
+        <p class="welcome-question">What’s on your mind?</p>
+        <p class="welcome-hint">Start typing. Sparkle will figure out how to help.</p>
       </section>
       <div id="conversation" class="conversation"></div>
     </div>
@@ -82,7 +78,7 @@ permalink: /what-do-i-say/
     <form id="message-form" class="chat-composer">
       <label class="sr-only" for="prompt" id="prompt-label">What are you trying to say?</label>
       <div class="composer-box">
-        <textarea id="prompt" rows="1" maxlength="3500" required placeholder="Tell me what you’re trying to say…"></textarea>
+        <textarea id="prompt" rows="1" maxlength="3500" required placeholder="Tell Sparkle what you need, or paste a message…"></textarea>
         <button class="send-button" id="generate" type="submit" aria-label="Send to Sparkle">Send</button>
       </div>
       <button class="stop-button" id="sparkle-cancel" type="button" hidden>Stop Sparkle</button>
@@ -105,7 +101,7 @@ permalink: /what-do-i-say/
 <script src="/what-do-i-say/sparkle-cloud-mobile.js?v=2"></script>
 <script src="/what-do-i-say/sparkle-quality-hotfix.js?v=4"></script>
 <script src="/what-do-i-say/sparkle-first-draft-polish.js?v=1"></script>
-<script src="/what-do-i-say/chat-handoff.js?v=1" defer></script>
-<script src="/what-do-i-say/chat-app.js?v=28" defer></script>
+<script src="/what-do-i-say/chat-handoff.js?v=2" defer></script>
+<script src="/what-do-i-say/chat-app.js?v=29" defer></script>
 </body>
 </html>
