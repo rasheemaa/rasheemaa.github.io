@@ -76,7 +76,7 @@
 
   function loading(on, text = 'Sparkle is finding the words…') {
     S.pending = on; el.send.disabled = on; el.send.dataset.loading = on ? 'true' : 'false'; el.send.textContent = on ? '…' : 'Send'; el.stop.hidden = !on;
-    $('.just-right,.more-options,.refine-options button').forEach(b => b.disabled = on);
+    $$('.just-right,.more-options,.refine-options button').forEach(b => b.disabled = on);
     on ? working(text) : stopWorking();
   }
 
