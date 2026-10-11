@@ -1,4 +1,4 @@
-name: What Do I Say payment access smoke
+name: Sparkle free access regression smoke
 
 on:
   push:
@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/payment-access-smoke.yml'
       - '.github/scripts/payment-access-smoke.mjs'
+      - '.github/scripts/free-access-smoke.mjs'
       - 'what-do-i-say/index.html'
       - 'what-do-i-say/config.js'
       - 'what-do-i-say/payment-v3.js'
@@ -36,10 +37,5 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install exact Playwright version without package lifecycle scripts
-        run: |
-          npm install --no-save --ignore-scripts playwright@1.55.0
-          npx playwright install --with-deps chromium
-
-      - name: Test live paid access boundaries
-        run: node .github/scripts/payment-access-smoke.mjs
+      - name: Verify free access for everyone
+        run: node .github/scripts/free-access-smoke.mjs

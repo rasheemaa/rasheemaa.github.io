@@ -1,29 +1,15 @@
 (() => {
-  const API = String(window.WDIS_API_BASE || '').trim().replace(/\/$/, '');
-  const VERIFY = API ? `${API}/api/verify-payment` : '';
-  const TRIAL_MS = 3 * 86400000;
-  const K = {
-    trial: 'wdis_trial_started_at_v2',
-    founder: 'wdis_founder_session_v1',
-    pending: 'wdis_pending_founder_session_v1'
-  };
-  const S = { mode: 'write', last: '', base: null, pending: false, founder: false, working: null, retry: null, installPrompt: null };
+  const S = { mode: 'write', last: '', base: null, pending: false, working: null, retry: null, installPrompt: null };
   const $ = s => document.querySelector(s);
   const $$ = s => [...document.querySelectorAll(s)];
   const el = {
     form: $('#message-form'), prompt: $('#prompt'), label: $('#prompt-label'), conversation: $('#conversation'),
     thread: $('#chat-thread'), welcome: $('#welcome-card'), send: $('#generate'), stop: $('#sparkle-cancel'),
     status: $('#sparkle-status'), statusText: $('#sparkle-status-text'), error: $('#ai-error'), errorText: $('#ai-error-message'),
-    retry: $('#ai-retry'), newTop: $('#new-message-top'), paywall: $('#paywall'), trial: $('#trial-status'), trialDetail: $('#trial-detail'),
+    retry: $('#ai-retry'), newTop: $('#new-message-top'), trial: $('#trial-status'), trialDetail: $('#trial-detail'),
     install: $('.install-button')
   };
   const labels = { shorter: 'Make it shorter', softer: 'Make it softer', firmer: 'Make it firmer', professional: 'Make it professional', another: 'Try another version' };
-  const get = k => { try { return localStorage.getItem(k); } catch { return null; } };
-  const set = (k,v) => { try { localStorage.setItem(k,v); } catch {} };
-  const del = k => { try { localStorage.removeItem(k); } catch {} };
-  const start = () => Number(get(K.trial) || 0);
-  const trialOK = () => S.founder || !start() || Date.now() - start() < TRIAL_MS;
-  const setFounderStatus = msg => document.querySelectorAll('[data-payment-status], [data-founder-status]').forEach(n => n.textContent = msg);
 
   function inferRecipient(text) {
     const source = String(text || '').trim();
@@ -51,22 +37,9 @@
     return !hasUserRefusal(source);
   }
 
-  function updateTrial() {
-    if (S.founder) { el.trial.textContent = 'Founding Member'; el.trialDetail.textContent = ' · access unlocked'; return; }
-    if (!start()) { el.trial.textContent = '3-day free trial'; el.trialDetail.textContent = ' · starts with your first message'; return; }
-    const left = TRIAL_MS - (Date.now() - start());
-    if (left <= 0) { el.trial.textContent = 'Trial ended'; el.trialDetail.textContent = ' · unlock Founding access'; return; }
-    const h = Math.max(1, Math.ceil(left / 3600000));
-    el.trial.textContent = h > 24 ? `${Math.ceil(h / 24)} days left` : `${h} ${h === 1 ? 'hour' : 'hours'} left`;
-    el.trialDetail.textContent = ' · free trial active';
-  }
-
-  function gate() {
-    if (trialOK()) return true;
-    updateTrial();
-    el.paywall.hidden = false;
-    document.body.style.overflow = 'hidden';
-    return false;
+  function updateAccess() {
+    el.trial.textContent = 'Free for everyone';
+    el.trialDetail.textContent = ' · no payment required';
   }
 
   function scrollDown() { requestAnimationFrame(() => { el.thread.scrollTop = el.thread.scrollHeight; }); }
@@ -152,8 +125,7 @@
         if (!kind) S.base = {...payload, refine:'', currentMessage:''};
       }
       assistant(out, validDraft);
-      if (validDraft && !S.founder && !start()) set(K.trial,String(Date.now()));
-      updateTrial();
+      updateAccess();
       if (validDraft) el.prompt.placeholder='Tell Sparkle what to change…';
     } catch (e) {
       if (e?.code === 'sparkle_cancelled') status({phase:'idle',message:'Stopped. Your message is still here.'});
@@ -162,13 +134,13 @@
   }
 
   async function first(text) {
-    if (S.pending || !gate()) return;
+    if (S.pending) return;
     text = text.trim(); if (!text) return;
     message('user',text); el.prompt.value=''; resize();
     const payload=initialPayload(text); S.retry={payload,kind:''}; await generate(payload,'');
   }
   async function refine(kind, display, instruction='') {
-    if (S.pending || !S.last || !gate()) return;
+    if (S.pending || !S.last) return;
     if (kind === 'custom') { el.prompt.value=''; resize(); }
     message('user',display); const payload=refinePayload(kind,instruction); S.retry={payload,kind}; await generate(payload,kind);
   }
@@ -191,33 +163,6 @@
   el.stop.onclick = () => window.Sparkle?.cancel();
   el.retry.onclick = () => { if(S.retry && !S.pending) generate(S.retry.payload,S.retry.kind); };
   el.newTop.onclick = reset;
-  $('.paywall-close')?.addEventListener('click',()=>{el.paywall.hidden=true;document.body.style.overflow='';});
-  el.paywall?.addEventListener('click',e=>{if(e.target===el.paywall){el.paywall.hidden=true;document.body.style.overflow='';}});
-
-  async function verify(session, quiet=false) {
-    session=String(session||'').trim();
-    if(!/^cs_live_[A-Za-z0-9]+$/.test(session) || !VERIFY){ if(!quiet)setFounderStatus('No verified payment was found. Founding Member access stays locked.'); return false; }
-    if(!quiet)setFounderStatus('Verifying your Stripe payment…');
-    try {
-      const c=new AbortController(); const t=setTimeout(()=>c.abort(),16000);
-      const r=await fetch(VERIFY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:session}),signal:c.signal,cache:'no-store',credentials:'omit',mode:'cors'}); clearTimeout(t);
-      let d={}; try{d=await r.json();}catch{}
-      if(!r.ok || d.paid!==true){
-        if (r.ok || r.status === 400) { del(K.founder); del(K.pending); S.founder=false; updateTrial(); }
-        if(!quiet)setFounderStatus(d.error || 'Stripe has not marked this checkout as paid. Founding access stays locked.');
-        return false;
-      }
-      S.founder=true; set(K.founder,session); del(K.pending); updateTrial(); el.paywall.hidden=true; document.body.style.overflow=''; setFounderStatus('Payment verified by Stripe. Founding Member access is unlocked. 💗'); return true;
-    } catch { if(!quiet)setFounderStatus('We could not verify your payment right now. Refresh this page to try again.'); return false; }
-  }
-
-  async function initAccess() {
-    const q=new URLSearchParams(location.search), checkout=q.get('checkout'), session=q.get('session_id');
-    if(checkout==='cancelled'){setFounderStatus('Checkout canceled. No payment was made.');history.replaceState({},'',location.pathname);}
-    if(checkout==='success'){if(/^cs_live_[A-Za-z0-9]+$/.test(String(session||'')))set(K.pending,session);await verify(session,false);history.replaceState({},'',location.pathname);return;}
-    const saved=get(K.founder)||get(K.pending); if(saved)await verify(saved,true);
-  }
-
   window.addEventListener('beforeinstallprompt', event => {
     event.preventDefault(); S.installPrompt = event;
     if (el.install) el.install.hidden = false;
@@ -231,5 +176,5 @@
   window.addEventListener('appinstalled', () => { S.installPrompt = null; if (el.install) el.install.hidden = true; });
 
   if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('/what-do-i-say/service-worker.js',{scope:'/what-do-i-say/',updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}));
-  updateTrial(); resize(); initAccess().finally(updateTrial); setInterval(updateTrial,60000);
+  updateAccess(); resize();
 })();

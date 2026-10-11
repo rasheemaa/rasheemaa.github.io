@@ -2,11 +2,6 @@
   if (window.location.pathname.startsWith('/what-do-i-say')) return;
 
   const POPUP_KEY = 'wdis_launch_popup_seen_v2';
-  const FOUNDER_KEYS = ['wdis_founder_session_v1', 'wdis_founder_v1'];
-  const TRIAL_SESSION_KEY = 'wdis_paid_trial_session_v1';
-  const TRIAL_EXPIRES_KEY = 'wdis_paid_trial_expires_at_v1';
-  const TRIAL_USED_KEY = 'wdis_paid_trial_used_v1';
-  const TRIAL_MS = 3 * 24 * 60 * 60 * 1000;
   const DAY_MS = 24 * 60 * 60 * 1000;
 
   const safeGet = (key) => {
@@ -16,20 +11,8 @@
     try { window.localStorage.setItem(key, value); } catch (_) {}
   };
 
-  if (FOUNDER_KEYS.some((key) => Boolean(safeGet(key)))) return;
   const lastSeen = Number(safeGet(POPUP_KEY) || '0');
   if (Number.isFinite(lastSeen) && Date.now() - lastSeen < DAY_MS) return;
-
-  const trialSession = safeGet(TRIAL_SESSION_KEY);
-  const trialExpiresAt = Number(safeGet(TRIAL_EXPIRES_KEY) || '0');
-  const trialUsed = safeGet(TRIAL_USED_KEY) === '1';
-  const trialStarted = Boolean(trialSession) && Number.isFinite(trialExpiresAt) && trialExpiresAt > Date.now();
-  const remaining = trialStarted ? Math.max(0, trialExpiresAt - Date.now()) : 0;
-  const expired = trialUsed && !trialStarted;
-  const remainingHours = Math.max(1, Math.ceil(remaining / (60 * 60 * 1000)));
-  const remainingText = remainingHours > 24
-    ? `${Math.ceil(remainingHours / 24)} days left`
-    : `${remainingHours} ${remainingHours === 1 ? 'hour' : 'hours'} left`;
 
   const track = (event, params = {}) => {
     if (typeof window.gtag === 'function') {
@@ -65,23 +48,9 @@
   `;
   document.head.appendChild(style);
 
-  const headline = expired
-    ? 'Your trial ended. <span>Lifetime Access is still open.</span>'
-    : trialStarted
-      ? `Your <span>What Do I Say?</span> trial is active.`
-      : 'Meet <span>What Do I Say?</span>';
-
-  const lede = expired
-    ? 'Lifetime Access is still available for $19.99 once while the launch offer is available.'
-    : trialStarted
-      ? `You still have ${remainingText}. Come back whenever a text, reply, boundary, apology, work message, or awkward conversation has you staring at the keyboard.`
-      : 'The new online message platform from The Sheema Edit helps you write it, reply to it, or fix what you already typed. Try it for 3 days for $1 once. No automatic renewal.';
-
-  const cta = expired
-    ? 'See Lifetime Access →'
-    : trialStarted
-      ? 'Continue my trial →'
-      : 'Start my 3-day trial · $1 →';
+  const headline = 'Meet <span>Sparkle.</span> Free for everyone.';
+  const lede = 'Write a message, reply to someone, or fix what you already typed. Find your words without a trial, subscription, or payment.';
+  const cta = 'Use Sparkle for free →';
 
   const backdrop = document.createElement('div');
   backdrop.className = 'wdis-launch-backdrop';
@@ -93,13 +62,9 @@
         <p class="wdis-launch-badge">✦ New platform launch</p>
         <h2 id="wdis-launch-title">${headline}</h2>
         <p class="wdis-launch-lede" id="wdis-launch-description">${lede}</p>
-        <div class="wdis-launch-trial" aria-label="Launch offer">
-          <span>${trialStarted ? remainingText : expired ? 'Trial ended' : '3 days · $1 once'}</span>
-          <span>${trialStarted ? '$1 trial active' : 'No automatic renewal'}</span>
-          <span>$19.99 lifetime access</span>
-        </div>
+        <div class="wdis-launch-trial" aria-label="Free access"><span>Free for everyone</span><span>No payment required</span></div>
         <a class="wdis-launch-cta" href="/what-do-i-say/">${cta}</a>
-        <p class="wdis-launch-note">Lifetime Access is $19.99 once for the first 100 customers. The regular plan is intended to be $9.99/month after the launch.</p>
+        <p class="wdis-launch-note">Write, reply, rewrite, and refine with Sparkle.</p>
         <button class="wdis-launch-skip" type="button">Not right now</button>
       </div>
     </section>`;
@@ -113,7 +78,7 @@
 
   const dismiss = (reason) => {
     safeSet(POPUP_KEY, String(Date.now()));
-    track('wdis_launch_popup_close', { close_reason: reason, trial_started: trialStarted, trial_expired: expired });
+    track('wdis_launch_popup_close', { close_reason: reason });
     backdrop.dataset.open = 'false';
     document.body.classList.remove('wdis-launch-lock');
     window.setTimeout(() => {
@@ -127,7 +92,7 @@
   skip.addEventListener('click', () => dismiss('not_right_now'));
   ctaLink.addEventListener('click', () => {
     safeSet(POPUP_KEY, String(Date.now()));
-    track('wdis_launch_popup_click', { trial_started: trialStarted, trial_expired: expired });
+    track('wdis_launch_popup_click', { access: 'free' });
   });
   backdrop.addEventListener('click', (event) => {
     if (event.target === backdrop) dismiss('backdrop');
@@ -157,6 +122,6 @@
     backdrop.dataset.open = 'true';
     document.body.classList.add('wdis-launch-lock');
     close.focus();
-    track('wdis_launch_popup_view', { trial_started: trialStarted, trial_expired: expired });
+    track('wdis_launch_popup_view', { access: 'free' });
   }, 650);
 })();

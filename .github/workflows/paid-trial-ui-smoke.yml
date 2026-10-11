@@ -1,4 +1,4 @@
-name: Paid $1 trial live UI smoke
+name: Sparkle free access UI smoke
 
 on:
   push:
@@ -11,6 +11,7 @@ on:
       - 'assets/js/main.js'
       - 'assets/js/wdis-launch-popup.js'
       - 'shop/index.html'
+      - '.github/scripts/free-access-smoke.mjs'
       - 'what-do-i-say/index.html'
       - 'what-do-i-say/payment-v3.js'
       - 'what-do-i-say/paid-trial-access.js'
@@ -43,12 +44,5 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Chromium test runtime
-        run: |
-          npm install --no-save --ignore-scripts playwright@1.55.0
-          npx playwright install --with-deps chromium
-
-      - name: Verify live $1 paid trial customer flow
-        run: node .github/scripts/paid-trial-ui-smoke.mjs
-
-# Triggered after workflow registration so the live verification run attaches to a real push.
+      - name: Verify free access for everyone
+        run: node .github/scripts/free-access-smoke.mjs
