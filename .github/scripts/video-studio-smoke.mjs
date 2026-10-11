@@ -16,7 +16,8 @@ const server=createServer(async(req,res)=>{
   }
   try {
     const text=await readFile(join(root,path), 'utf8');
-    const body=path.endsWith('.html')?text.replace(/^---\s*\n[\s\S]*?\n---\s*\n/,''):text;
+    // HTTPS-only upgrade rules are tested in production. HTTP localhost cannot satisfy them in WebKit.
+    const body=path.endsWith('.html')?text.replace(/^---\s*\n[\s\S]*?\n---\s*\n/,'').replace('upgrade-insecure-requests',''):text;
     res.writeHead(200, {'Content-Type':mime[extname(path)]||'text/plain'});
     res.end(body);
   } catch(e) { res.writeHead(404).end('not found'); }
