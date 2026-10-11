@@ -1,0 +1,81 @@
+---
+layout: null
+permalink: /what-do-i-say/video-studio/
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-src https://lightricks-ltx-2-3.hf.space; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="theme-color" content="#fff5fc">
+  <meta name="description" content="Sparkle Video Studio preview: compose cinematic AI video prompts and use a free, quota-limited open model generator. No paid APIs or checkout.">
+  <link rel="canonical" href="https://thesheemaedit.com/what-do-i-say/video-studio/">
+  <link rel="icon" href="/assets/images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/what-do-i-say/video-studio/studio.css?v=1">
+  <title>Sparkle Video Studio ✦ Free AI Video Preview</title>
+  <script src="/what-do-i-say/video-studio/studio.js?v=1" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to Video Studio</a>
+<header class="site-header">
+  <a class="brand" href="/what-do-i-say/">SPARKLE <span aria-hidden="true">✦</span></a>
+  <nav aria-label="Sparkle navigation">
+    <a href="/what-do-i-say/">Back to Sparkle chat</a>
+    <span class="free-chip">No paid APIs</span>
+  </nav>
+</header>
+<main id="main">
+  <section class="hero" aria-labelledby="page-title">
+    <div class="eyebrow">Sparkle Creative Lab / Preview 01</div>
+    <h1 id="page-title">Imagine it.<br><em>Make it move.</em></h1>
+    <p>Write your scene here, then generate a real video using a public, free-tier AI video engine. This is our first working integration, not a promise of unlimited generations or Veo-quality output.</p>
+    <div class="pills"><span>Text to video</span><span>Cinematic prompts</span><span>Video and sound</span><span>Free quotas apply</span></div>
+  </section>
+
+  <div class="studio-grid">
+    <section class="panel" aria-labelledby="composer-heading">
+      <div class="panel-heading"><div><p class="section-kicker">01 / Creative direction</p><h2 id="composer-heading">Build your scene</h2></div><span class="soft-chip">Prompt composer</span></div>
+      <label for="scene">Describe what you want to see</label>
+      <textarea id="scene" maxlength="2500" rows="7" placeholder="A woman walks down a rain-soaked Philadelphia street at dusk. Passing headlights reflect in the puddles. Her hair moves naturally in a gentle breeze..."></textarea>
+      <div class="sample-row" aria-label="Example scenes">
+        <button type="button" class="sample" data-sample="street">City at dusk</button>
+        <button type="button" class="sample" data-sample="portrait">Cinematic portrait</button>
+        <button type="button" class="sample" data-sample="nature">Nature film</button>
+      </div>
+      <div class="field-grid">
+        <div><label for="camera">Camera style</label><select id="camera"><option value="natural">Natural handheld</option><option value="dolly">Slow cinematic dolly</option><option value="locked">Locked-off tripod</option><option value="tracking">Smooth tracking shot</option><option value="close">Intimate close-up</option></select></div>
+        <div><label for="lighting">Lighting</label><select id="lighting"><option value="natural">Natural and realistic</option><option value="golden">Golden hour</option><option value="studio">Soft studio light</option><option value="night">Moody nighttime</option><option value="overcast">Soft overcast daylight</option></select></div>
+        <div><label for="format">Frame shape</label><select id="format"><option value="9:16">Vertical (9:16)</option><option value="16:9">Landscape (16:9)</option><option value="1:1">Square (1:1)</option></select></div>
+        <div><label for="sound">Sound direction</label><select id="sound"><option value="ambient">Realistic ambient sound</option><option value="quiet">Quiet atmospheric sound</option><option value="cinematic">Cinematic environmental sound</option></select></div>
+      </div>
+      <button id="prepare" class="primary" type="button">Prepare my video prompt <span aria-hidden="true">✦</span></button>
+      <div id="prepared-panel" class="prepared-panel" hidden>
+        <label for="prepared">Your complete prompt</label>
+        <textarea id="prepared" rows="7" readonly aria-describedby="prompt-instructions"></textarea>
+        <button type="button" id="copy" class="secondary">Copy prompt</button>
+        <p id="prompt-instructions" class="hint">Paste the prompt into the generator on the right. Set the matching frame shape and video length there, then press Generate Video inside the generator.</p>
+      </div>
+      <p id="composer-status" class="status-text" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="panel generator-panel" aria-labelledby="generator-heading">
+      <div class="panel-heading"><div><p class="section-kicker">02 / Video generation</p><h2 id="generator-heading">Turn words into film</h2></div><span class="soft-chip">LTX 2.3</span></div>
+      <p class="generator-intro">This is the actual Lightricks video generator, embedded here with Hugging Face's supported public Space feature. Generation, progress and downloads happen inside the generator below.</p>
+      <div class="generator-note"><strong>How to use:</strong> Prepare and copy your prompt, paste it into the embedded generator, then select Generate Video. An optional input image is not required. If sign-in is needed, open the generator directly.</div>
+      <div class="frame-wrap">
+        <iframe title="Lightricks LTX 2.3 AI video generator" loading="lazy" allow="fullscreen" src="https://lightricks-ltx-2-3.hf.space/"></iframe>
+      </div>
+      <div class="fallback"><p>Can't see or use the generator? Some browsers block third-party sign-in and cookies.</p><a href="https://huggingface.co/spaces/Lightricks/LTX-2-3" target="_blank" rel="noopener noreferrer">Open official free-tier generator ↗</a></div>
+    </section>
+  </div>
+  <section class="disclosure" aria-labelledby="important-heading">
+    <h2 id="important-heading">Free means no surprise bills. 💗</h2>
+    <p>Sparkle Video Studio does not call any paid AI APIs, collect payment information, or run a GPU server. The external Hugging Face ZeroGPU service supplies shared GPU time with daily usage limits and queues. A free account can run out of GPU quota; videos may fail, take time, or be unavailable. Do not choose paid upgrades or credits if you want to stay at $0.</p>
+    <p>When you use the embedded generator, your text, uploaded images, and generated content are processed by its third-party operator, not locally in Sparkle. Only upload photos you have permission to use. This prototype doesn't offer a Sparkle-hosted video library or guarantee Google Flow results.</p>
+  </section>
+</main>
+<footer><span>© Sparkle Video Studio preview • The Sheema Edit</span><a href="/what-do-i-say/">Back to Sparkle</a><a href="https://huggingface.co/spaces/Lightricks/LTX-2-3" target="_blank" rel="noopener noreferrer">Generator by Lightricks</a></footer>
+</body>
+</html>
