@@ -1,22 +1,14 @@
-const CACHE_NAME = "sheema-edit-v57";
+const CACHE_NAME = "sheema-edit-v58";
 const CORE_SHELL = [
   "/",
   "/index.html",
   "/about.html",
-  "/community/",
   "/shop/",
   "/offline.html",
   "/site.webmanifest",
   "/assets/css/styles.css?v=2",
   "/assets/css/app-polish.css",
-  "/assets/css/community.css?v=14",
-  "/assets/css/community-seed.css?v=4",
-  "/assets/css/community-reference.css?v=4",
   "/assets/js/main.js?v=3",
-  "/assets/js/community-config.js?v=4",
-  "/assets/js/community.js?v=27",
-  "/assets/js/community-seed.js?v=7",
-  "/assets/js/community-reference.js?v=4",
   "/assets/images/favicon.svg",
   "/assets/images/app-icon-192.png",
   "/assets/images/app-icon-512.png",
@@ -49,6 +41,12 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
   if (request.method !== "GET" || url.origin !== self.location.origin) return;
+
+  // Retired routes must never revive an offline copy of the old feed.
+  if (url.pathname === "/community" || url.pathname.startsWith("/community/")) {
+    event.respondWith(Promise.resolve(Response.redirect(new URL("/", self.location.origin).href, 302)));
+    return;
+  }
 
   // The private tool owns its cache. Do not serve older Sparkle scripts from
   // the site-wide cache on visits before its scoped worker takes control.

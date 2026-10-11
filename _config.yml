@@ -31,3 +31,9 @@ soft_reset_delivery_ready: false
 
 # Public Stripe pay-what-you-want link for the floating Support The Edit button.
 support_url: "https://buy.stripe.com/5kQbJ2adD1iV8Zq81WgjC08"
+
+# Retained setup records and media are not part of the published site.
+exclude:
+  - community/FIREBASE-SETUP.md
+  - community/firestore.rules
+  - assets/community

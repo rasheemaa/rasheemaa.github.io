@@ -65,7 +65,7 @@ filterButtons.forEach((button) => {
   });
 });
 
-// Community room links can open the home feed already filtered to that topic.
+// Topic links can open the home feed already filtered.
 const requestedTopic = new URLSearchParams(window.location.search).get("topic");
 if (requestedTopic) {
   const requestedButton = [...filterButtons].find((button) => button.dataset.filter === requestedTopic);
@@ -114,7 +114,7 @@ document.querySelectorAll("[data-support-edit-link]").forEach((link) => {
 });
 
 // Sparkle remains accessible from navigation and inline site links.
-// Do not interrupt reading or Community participation with a launch modal.
+// Do not interrupt reading with a launch modal.
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
