@@ -57,6 +57,7 @@ async function smoke(browserType,name,options={}){
     await page.locator('#prepare').click();
     assert.match(await page.locator('#prepared').inputValue(),/Smooth tracking/);
     await page.locator('#copy').click();
+    await page.waitForFunction(() => /copied|selected/i.test(document.getElementById('composer-status').textContent), null, {timeout:5000});
     assert.match(await page.locator('#composer-status').innerText(),/copied|selected/i);
     assert.equal(await page.locator('a[href="/what-do-i-say/"]').count()>0,true);
     assert.equal(await page.locator('a[href="https://huggingface.co/spaces/Lightricks/LTX-2-3"]').count()>0,true);
