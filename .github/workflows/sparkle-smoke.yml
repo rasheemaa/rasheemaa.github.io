@@ -2,77 +2,44 @@ name: Sparkle live smoke test
 
 on:
   push:
+    branches: [main]
     paths:
       - '.github/workflows/sparkle-smoke.yml'
       - '.github/scripts/sparkle-smoke.mjs'
-      - '.github/scripts/run-sparkle-chromium-runtime.mjs'
-      - '.github/scripts/sparkle-compatibility-test.mjs'
-      - '.github/scripts/sparkle-targeted-retry.mjs'
-      - '.github/scripts/sparkle-targeted-mobile.mjs'
+      - '.github/scripts/free-access-smoke.mjs'
       - 'what-do-i-say/index.html'
-      - 'what-do-i-say/bootstrap.js'
-      - 'what-do-i-say/config.js'
-      - 'what-do-i-say/payment.js'
       - 'what-do-i-say/chat-app.js'
-      - 'what-do-i-say/sparkle.js'
-      - 'what-do-i-say/sparkle-cloud-mobile.js'
-      - 'what-do-i-say/sparkle-worker.js'
-      - 'what-do-i-say/sparkle-mobile-worker.js'
-      - 'what-do-i-say/sparkle-mobile-worker-v2.js'
-      - 'what-do-i-say/styles.css'
-      - 'what-do-i-say/sparkle.css'
-      - 'what-do-i-say/trust.css'
+      - 'what-do-i-say/chat-handoff.js'
       - 'what-do-i-say/service-worker.js'
-      - 'what-do-i-say/manifest.webmanifest'
-      - 'what-do-i-say/privacy/**'
-      - 'what-do-i-say/terms/**'
-      - 'what-do-i-say/refunds/**'
+      - 'what-do-i-say/sparkle-cloud-mobile.js'
+      - 'what-do-i-say/styles.css'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: sparkle-live-smoke-main
+  group: sparkle-live-production-main
   cancel-in-progress: true
 
 jobs:
-  sparkle-smoke:
+  sparkle-live:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 20
     steps:
       - name: Checkout exact repository revision
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
-
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '20'
-
-      - name: Verify compatibility recovery without downloading a model
-        run: node .github/scripts/sparkle-compatibility-test.mjs
-
-      - name: Cache Playwright browsers
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-1.55.0
-
-      - name: Install exact Playwright version without package lifecycle scripts
+      - name: Verify local free access and automatic intent
+        run: node .github/scripts/free-access-smoke.mjs
+      - name: Install Playwright Chromium
         run: |
           npm install --no-save --ignore-scripts playwright@1.55.0
-          npx playwright install --with-deps chromium webkit
-
-      - name: Test targeted Sparkle mobile UI and generation live
-        if: contains(github.event.head_commit.message, '[sparkle-mobile]')
-        run: node .github/scripts/sparkle-targeted-mobile.mjs
-
-      - name: Test targeted Sparkle retry refusal live
-        if: ${{ contains(github.event.head_commit.message, '[sparkle-targeted]') && !contains(github.event.head_commit.message, '[sparkle-mobile]') }}
-        run: node .github/scripts/sparkle-targeted-retry.mjs
-
-      - name: Test full live customer flow end to end
-        if: ${{ !contains(github.event.head_commit.message, '[sparkle-targeted]') && !contains(github.event.head_commit.message, '[sparkle-mobile]') }}
-        run: node .github/scripts/run-sparkle-chromium-runtime.mjs
+          npx playwright install --with-deps chromium
+      - name: Check live single-composer experience
+        run: node .github/scripts/sparkle-smoke.mjs chromium
