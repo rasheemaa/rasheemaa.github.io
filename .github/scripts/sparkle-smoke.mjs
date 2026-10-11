@@ -1,15 +1,19 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { chromium, webkit } from 'playwright';
 
 const url = 'https://thesheemaedit.com/what-do-i-say/';
 const isWebKit = process.argv[2] === 'webkit';
 const engine = isWebKit ? webkit : chromium;
+const expectedController = readFileSync('what-do-i-say/chat-app.js','utf8').trim();
 let deployed = false;
 for (let i = 0; i < 35; i++) {
   try {
     const response = await fetch(url + '?smoke=' + Date.now(), {cache:'no-store'});
     const html = response.ok ? await response.text() : '';
-    if (html.includes('chat-app.js?v=29') && !/data-mode=|class="mode-tabs"|id="paywall"/.test(html)) {
+    const scriptResponse = await fetch(url + 'chat-app.js?smoke=' + Date.now(), {cache:'no-store'});
+    const controller = scriptResponse.ok ? (await scriptResponse.text()).trim() : '';
+    if (html.includes('chat-app.js?v=29') && controller === expectedController && !/data-mode=|class="mode-tabs"|id="paywall"/.test(html)) {
       deployed = true; break;
     }
   } catch {}
@@ -43,7 +47,12 @@ async function test(cloud) {
     ]) {
       await page.locator('#prompt').fill(input);
       await page.locator('#generate').click();
-      await page.waitForFunction(() => window.__calls?.length > 0 && !document.querySelector('#generate')?.disabled,null,{timeout:15000});
+      try {
+        await page.waitForFunction(() => window.__calls?.length > 0 && !document.querySelector('#generate')?.disabled,null,{timeout:15000});
+      } catch (error) {
+        const details = await page.evaluate(() => ({calls:window.__calls?.length ?? null,loaded:Boolean(window.Sparkle?.generate),error:document.querySelector('#ai-error-message')?.textContent || '',disabled:document.querySelector('#generate')?.disabled}));
+        throw new Error('Sparkle browser test failed: '+JSON.stringify({input,details,errors,original:String(error)}));
+      }
       assert.equal(await page.evaluate(() => window.__calls.at(-1).mode),cloud?'auto':intent,input);
       await page.locator('.message-row.assistant:not(.working) .bubble').last().waitFor();
       await page.locator('#new-message-top').click();
