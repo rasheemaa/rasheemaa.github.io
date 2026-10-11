@@ -1,4 +1,4 @@
-const CACHE_NAME = "sheema-edit-v58";
+const CACHE_NAME = "sheema-edit-v59";
 const CORE_SHELL = [
   "/",
   "/index.html",
@@ -6,7 +6,7 @@ const CORE_SHELL = [
   "/shop/",
   "/offline.html",
   "/site.webmanifest",
-  "/assets/css/styles.css?v=2",
+  "/assets/css/styles.css?v=3",
   "/assets/css/app-polish.css",
   "/assets/js/main.js?v=3",
   "/assets/images/favicon.svg",

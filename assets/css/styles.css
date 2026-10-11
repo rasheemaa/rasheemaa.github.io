@@ -1702,7 +1702,7 @@ button {
 .hub-feature-tag{display:inline-flex;padding:7px 11px;border:1px solid rgba(255,255,255,.3);border-radius:99px;color:#ffc2df;font-size:.7rem;font-weight:900}
 .hub-feature-caption h2{margin:12px 0 10px;font-family:Georgia,serif;font-size:clamp(1.6rem,2.9vw,2.5rem);line-height:1.05;letter-spacing:-.045em}
 .hub-feature-caption p{max-width:36ch;margin:0;color:#efe1f0;line-height:1.5;font-size:.87rem}
-.edit-hub-pathways{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin:23px auto 50px}
+.edit-hub-pathways{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;margin:23px auto 50px}
 .hub-pathway{display:flex;min-width:0;min-height:245px;padding:25px;flex-direction:column;border:1.5px solid #32233c;border-radius:23px;color:#2c2133;text-decoration:none;transition:transform .2s ease,box-shadow .2s ease}
 .hub-pathway:hover,.hub-pathway:focus-visible{transform:translateY(-4px);box-shadow:4px 7px 0 rgba(33,23,44,.2)}
 .hub-pathway-read{background:#f1e6fe}.hub-pathway-words{background:#ffe6f0}.hub-pathway-shop{background:#e9f7ce}
