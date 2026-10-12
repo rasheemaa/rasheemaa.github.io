@@ -5,6 +5,7 @@
  * local, optionally saved in IndexedDB after the user picks the file.
  */
 import { PocketTTS, StreamingPlayer, chunksToWavBlob } from "./pocket-tts/index.js";
+import { VoiceClarityProcessor } from "./voice-clarity.mjs";
 
 const $ = id => document.getElementById(id);
 const ui = {
@@ -239,13 +240,15 @@ async function speak(text) {
   if (state.cancelled) return;
   state.player.reset();
   const chunks = [];
+  const clarity = new VoiceClarityProcessor(state.tts.sampleRate);
   say("Speaking in Sparkle's custom voice…");
   await state.tts.generate(text.slice(0, 1500), {
     voice: state.voice,
     onChunk: (samples, meta) => {
       if (state.cancelled) return;
-      state.player.play(samples, meta);
-      chunks.push(samples.slice());
+      const enhanced = clarity.process(samples);
+      state.player.play(enhanced, meta);
+      chunks.push(enhanced);
     }
   });
   state.player.flush();
