@@ -30,4 +30,7 @@ assert(!html.includes("Choose Sparkle's recording once"), 'No setup instructions
 
 assert(!js.includes('VoiceClarityProcessor') && !js.includes('clarity.process'), 'Unprocessed native Pocket TTS audio by default');
 assert(js.includes('state.player.play(samples, meta)') && js.includes('chunks.push(samples.slice())'), 'No compressing or limiting the custom voice');
-assert(html.includes('lab.js?v=6'), 'Raw-audio rollback must bypass cached HD script');
+assert(html.includes('lab.js?v=7'), 'Reference-prep update must bypass cached audio script');
+
+assert(js.includes('prepareVoiceReference(mono, decoded.sampleRate)'), 'Use phrase-complete clip before cloning');
+assert(js.includes('state.player.play(samples, meta)') && !js.includes('VoiceClarityProcessor'), 'Keep unprocessed playback after reference fix');

@@ -5,6 +5,7 @@
  * local, optionally saved in IndexedDB after the user picks the file.
  */
 import { PocketTTS, StreamingPlayer, chunksToWavBlob } from "./pocket-tts/index.js";
+import { prepareVoiceReference } from "./reference-prep.mjs";
 
 const $ = id => document.getElementById(id);
 const ui = {
@@ -203,7 +204,8 @@ async function clone(file) {
       const samples = decoded.getChannelData(ch);
       for (let i = 0; i < samples.length; i++) mono[i] += samples[i] / decoded.numberOfChannels;
     }
-    return state.tts.cloneVoice(mono, { inputSampleRate: decoded.sampleRate, name: "sparkle-voice-local" });
+    const prepared = prepareVoiceReference(mono, decoded.sampleRate);
+    return state.tts.cloneVoice(prepared, { inputSampleRate: decoded.sampleRate, name: "sparkle-voice-local" });
   } finally { await ctx.close(); }
 }
 async function ensureVoice() {
