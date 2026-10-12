@@ -480,6 +480,8 @@ function finishListening() {
     completeSpeechTurn();
     return;
   }
+  // Some providers dispatch onend synchronously, so don't schedule after send.
+  if (!state.finishRequested) return;
   // A broken provider must not strand a deliberate user finish.
   state.finishTimer = setTimeout(() => {
     if (state.recognition === speech) {
