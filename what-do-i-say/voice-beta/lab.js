@@ -11,6 +11,7 @@ import { turnSilenceMs } from "./turn-detection.mjs";
 const $ = id => document.getElementById(id);
 const ui = {
   app: $("voice-app"), talk: $("talk"), stop: $("stop"), replay: $("replay"),
+  endConversation: $("end-conversation"),
   title: $("phase-title"), subtitle: $("phase-subtitle"), status: $("status"),
   error: $("error"), transcript: $("transcript"), heard: $("heard"), reply: $("reply"),
   settings: $("settings"), settingsButton: $("settings-button"),
@@ -26,6 +27,7 @@ const state = {
   phase: "idle", busy: false, listening: false, recognition: null,
   transcript: "", partial: "", resumeDraft: false, finishRequested: false,
   restartTimer: null, finishTimer: null, autoTimer: null,
+  handsFree: false, followUpTimer: null,
   pendingInterim: false, lastSpeechActivity: 0, restartFailures: 0,
   lastHeard: "", history: [], request: null,
   tts: null, player: null, playback: null, voice: null,
@@ -40,6 +42,7 @@ function phase(name, title, subtitle) {
   ui.subtitle.textContent = subtitle;
   ui.stop.hidden = name !== "thinking" && name !== "speaking";
   ui.talk.hidden = name === "thinking" || name === "speaking";
+  ui.endConversation.hidden = !state.handsFree;
   ui.talk.setAttribute("aria-label", name === "listening" ? "Finish speaking and send to Sparkle" : state.resumeDraft ? "Continue speaking" : "Talk to Sparkle");
   ui.talk.setAttribute("aria-pressed", String(name === "listening"));
   ui.typeToggle.disabled = name === "thinking" || name === "speaking" || name === "listening";
@@ -290,7 +293,9 @@ async function speak(text) {
   ui.download.href = state.url;
   ui.download.hidden = false;
   ui.replay.disabled = false;
-  say("Tap to speak again, or replay her last answer.");
+  say(state.handsFree ? "Sparkle is finishing her reply. The microphone will reopen next." : "Tap to speak again, or replay her last answer.");
+  // Wait for actual audio playback, not only completed synthesis.
+  await state.player.waitForCompletion();
 }
 async function processTurn(text) {
   text = String(text || "").trim();
@@ -314,6 +319,7 @@ async function processTurn(text) {
   showTurn(text, "");
   phase("thinking", "Sparkle is thinking", "One moment…");
   say("Understanding what you said…");
+  let playedReply = false;
   const oldHistory = state.history.slice(-4).map(turn => ({
     role: turn.role, content: String(turn.content || "").slice(0, 850)
   }));
@@ -336,6 +342,7 @@ async function processTurn(text) {
     state.history = [...state.history, { role: "user", content: text }, { role: "assistant", content: reply }].slice(-8);
     showTurn(text, reply);
     await speak(reply);
+    playedReply = !state.cancelled;
   } catch (e) {
     if (!state.cancelled && e?.name !== "AbortError") {
       state.transcript = text;
@@ -348,10 +355,20 @@ async function processTurn(text) {
     state.busy = false;
     ui.progress.hidden = true;
     if (!state.cancelled && state.phase !== "idle") phase("idle", "Talk to Sparkle", "Just say what's on your mind.");
+    if (playedReply && state.handsFree && !state.cancelled) {
+      clearTimeout(state.followUpTimer);
+      state.followUpTimer = setTimeout(() => {
+        state.followUpTimer = null;
+        if (state.handsFree && !state.busy && !state.listening && !document.hidden) startListening();
+      }, 650);
+    }
   }
 }
 async function cancel() {
   state.cancelled = true;
+  state.handsFree = false;
+  clearTimeout(state.followUpTimer);
+  state.followUpTimer = null;
   state.request?.abort();
   clearTimeout(state.restartTimer);
   clearTimeout(state.finishTimer);
@@ -549,6 +566,8 @@ function finishListening() {
 }
 function startListening() {
   if (!SpeechRecognition) {
+    state.handsFree = false;
+    ui.endConversation.hidden = true;
     say("Your browser doesn't support speech recognition here. Type instead.");
     ui.typeForm.hidden = false;
     ui.typed.focus();
@@ -574,9 +593,11 @@ ui.talk.addEventListener("click", () => {
   if (state.busy || state.finishRequested) return;
   ui.typeForm.hidden = true;
   try { ensurePlayback(); } catch (e) { report(e); return; }
+  state.handsFree = true;
   startListening();
 });
 ui.stop.addEventListener("click", cancel);
+ui.endConversation.addEventListener("click", cancel);
 ui.typeToggle.addEventListener("click", () => {
   if (state.listening) return;
   ui.typeForm.hidden = !ui.typeForm.hidden;
@@ -604,6 +625,8 @@ ui.replay.addEventListener("click", async () => {
   catch (e) { report(e); }
 });
 window.addEventListener("pagehide", () => {
+  state.handsFree = false;
+  clearTimeout(state.followUpTimer);
   clearTimeout(state.restartTimer);
   clearTimeout(state.finishTimer);
   clearAutoTurn();
@@ -613,6 +636,10 @@ window.addEventListener("pagehide", () => {
   if (state.url) URL.revokeObjectURL(state.url);
   state.tts?.destroy();
   state.playback?.close();
+});
+// Don't keep the microphone open when someone backgrounds their phone.
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden && state.handsFree) void cancel();
 });
 // Do not load any legacy stored or user-selected voice; the official sample is default.
 showVoiceState();
