@@ -44,6 +44,10 @@ jobs:
           assert(source.includes('if (!text || active || isAppleMobile) return;'),
             'No Chatterbox worker may start from an iPhone event');
           assert(html.includes('Sparkle_HD.mp3'),'Original voice playback must remain available');
+          assert(html.includes('.sparkle-mobile-guard #voice-model-test,.sparkle-mobile-guard .desktop-desc{display:none!important}'),
+            'Hide nonfunctional generation form on iPhone');
+          assert(html.includes('Voice comparison isn\'t ready on iPhone') && html.includes('href="/what-do-i-say/"'),
+            'Show a truthful mobile alternative with a working return link');
           console.log('PASS: iPhone safe guard blocks high-memory model and leaves reference playback');
           NODE
           node --input-type=module <<'NODE'

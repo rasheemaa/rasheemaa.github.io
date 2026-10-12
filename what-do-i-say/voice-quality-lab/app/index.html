@@ -45,6 +45,14 @@ footer{font-size:12px;color:#7c647c;margin-top:auto;padding:25px 0 5px}
 .mobile-guard-note{display:none;background:#fff3f7;border:1px solid #e9b4d0;border-radius:17px;padding:17px;color:#6c3868;margin:12px 0;font-size:14px}
 .sparkle-mobile-guard .mobile-guard-note{display:block}
 .sparkle-mobile-guard #generate,.sparkle-mobile-guard #cancel,.sparkle-mobile-guard #progress,.sparkle-mobile-guard .warning{display:none!important}
+.mobile-only{display:none}
+.sparkle-mobile-guard #voice-model-test,.sparkle-mobile-guard .desktop-desc{display:none!important}
+.sparkle-mobile-guard .mobile-only{display:block}
+.mobile-safe{margin-top:17px;border:1px solid #ebcbdf;border-radius:20px;background:#fff9fd;padding:18px;box-shadow:0 10px 24px #b2529710}
+.mobile-safe h2{font-size:19px;margin:0 0 8px}
+.mobile-safe p{font-size:14px;color:#745674;margin:0 0 15px}
+.mobile-back{display:block;text-align:center;text-decoration:none;padding:13px 15px;border-radius:13px;background:#c84796;color:#fff!important;font-weight:800}
+.sparkle-mobile-guard footer{font-size:11px}
 @media(max-height:700px){.orb{width:110px;height:110px}.orb span{font-size:72px}.top{margin-top:15px}}
 </style>
 </head>
@@ -54,7 +62,8 @@ footer{font-size:12px;color:#7c647c;margin-top:auto;padding:25px 0 5px}
 <p class="top">SPARKLE ✦ VOICE QUALITY LAB</p>
 <div class="orb" aria-hidden="true"><span>✦</span></div>
 <h1>Does she sound like herself?</h1>
-<p class="desc">Compare your approved Sparkle recording with a new voice-cloning model. Nothing here changes her normal chat.</p>
+<p class="desc desktop-desc">Compare your approved Sparkle recording with a new voice-cloning model. Nothing here changes her normal chat.</p>
+<p class="desc mobile-only">Here's the original voice you approved. I won't run an oversized model or pretend the replacement is ready on your phone.</p>
 
 <div class="compare">
 <section class="message" aria-label="Approved reference recording">
@@ -62,7 +71,12 @@ footer{font-size:12px;color:#7c647c;margin-top:auto;padding:25px 0 5px}
 <audio controls preload="metadata" src="/what-do-i-say/voice-beta/Sparkle_HD.mp3" aria-label="Official Sparkle HD reference"></audio>
 <small>Your exact approved recording, not AI-generated speech.</small>
 </section>
-<section class="message" aria-label="Voice model test">
+<section class="mobile-safe mobile-only" aria-label="iPhone voice comparison status">
+<h2>Voice comparison isn't ready on iPhone</h2>
+<p>I've paused the 1.5 GB Chatterbox experiment because it can crash Safari. You can still hear your exact Sparkle recording above, but a better custom voice hasn't been verified yet.</p>
+<a class="mobile-back" href="/what-do-i-say/">Back to Sparkle chat</a>
+</section>
+<section class="message" id="voice-model-test" aria-label="Voice model test">
 <h2>2. Hear a brand-new sentence</h2>
 <label for="words"><small>What Sparkle should say</small></label>
 <textarea id="words" maxlength="100" rows="2">Hey! It's Sparkle. I'm here with you, so tell me what's going on.</textarea>
