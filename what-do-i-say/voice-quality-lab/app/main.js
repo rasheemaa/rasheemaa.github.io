@@ -5,13 +5,22 @@ const button = $('generate'), cancelButton = $('cancel'), status = $('status'), 
   error = $('error'), input = $('words'), result = $('result'), audio = $('rendered'), save = $('save');
 let worker = null, pending = null, sequence = 0, active = false, wavUrl = null;
 const setStatus = message => { status.textContent = message; };
+const isAppleMobile = /iPhone|iPad|iPod/.test(navigator.userAgent || '') ||
+  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+if (isAppleMobile) {
+  button.hidden = true;
+  button.disabled = true;
+  cancelButton.hidden = true;
+  progress.hidden = true;
+  setStatus('Mobile voice comparison paused to prevent browser crashes. You can listen to the original recording above.');
+}
 
 function teardown() {
   worker?.terminate();
   worker = null;
   if (pending) { pending.reject(new Error('Test stopped.')); pending = null; }
   active = false;
-  button.disabled = false;
+  button.disabled = isAppleMobile;
   cancelButton.hidden = true;
   progress.hidden = true;
 }
@@ -96,7 +105,7 @@ function encodeWav(pcm, sampleRate = 24000) {
 }
 button.addEventListener('click', async () => {
   const text = input.value.trim();
-  if (!text || active) return;
+  if (!text || active || isAppleMobile) return;
   active = true; button.disabled = true; cancelButton.hidden = false; error.hidden = true; result.hidden = true;
   if (wavUrl) { URL.revokeObjectURL(wavUrl); wavUrl = null; }
   try {

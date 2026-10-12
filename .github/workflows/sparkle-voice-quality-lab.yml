@@ -35,6 +35,18 @@ jobs:
           test -f what-do-i-say/voice-quality-lab/assets/quality-v1.js
           grep -q 'Does she sound like herself' what-do-i-say/voice-quality-lab/index.html
           node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+          const html=readFileSync('what-do-i-say/voice-quality-lab/index.html','utf8');
+          const source=readFileSync('what-do-i-say/voice-quality-lab/app/main.js','utf8');
+          assert(html.includes('sparkle-mobile-guard') && html.includes('This test is too heavy for an iPhone.'),
+            'Apple mobile users must receive the low-memory safe page');
+          assert(source.includes('if (!text || active || isAppleMobile) return;'),
+            'No Chatterbox worker may start from an iPhone event');
+          assert(html.includes('Sparkle_HD.mp3'),'Original voice playback must remain available');
+          console.log('PASS: iPhone safe guard blocks high-memory model and leaves reference playback');
+          NODE
+          node --input-type=module <<'NODE'
           import fs from 'node:fs';
           import assert from 'node:assert/strict';
           const dir='what-do-i-say/voice-quality-lab/assets/';
