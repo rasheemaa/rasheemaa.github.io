@@ -211,8 +211,27 @@ async function clone(file) {
       const samples = decoded.getChannelData(ch);
       for (let i = 0; i < samples.length; i++) mono[i] += samples[i] / decoded.numberOfChannels;
     }
-    const prepared = prepareVoiceReference(mono, decoded.sampleRate);
-    return state.tts.cloneVoice(prepared, { inputSampleRate: decoded.sampleRate, name: "sparkle-voice-local" });
+    let prepared = prepareVoiceReference(mono, decoded.sampleRate);
+    let preparedRate = decoded.sampleRate;
+    // Resample the voice reference with the browser's band-limited audio engine.
+    // The TTS adapter's linear downsampler can alias 48 kHz sibilance into the
+    // 24 kHz voice embedding, producing unwanted harshness before synthesis.
+    // This changes only the reference preparation, never Sparkle's actual MP3.
+    const OfflineCtx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    if (preparedRate !== state.tts.sampleRate && OfflineCtx) {
+      const outputRate = state.tts.sampleRate;
+      const offline = new OfflineCtx(1, Math.ceil(prepared.length * outputRate / preparedRate), outputRate);
+      const sourceBuffer = offline.createBuffer(1, prepared.length, preparedRate);
+      sourceBuffer.copyToChannel(prepared, 0);
+      const source = offline.createBufferSource();
+      source.buffer = sourceBuffer;
+      source.connect(offline.destination);
+      source.start(0);
+      const rendered = await offline.startRendering();
+      prepared = rendered.getChannelData(0).slice();
+      preparedRate = outputRate;
+    }
+    return state.tts.cloneVoice(prepared, { inputSampleRate: preparedRate, name: "sparkle-voice-local" });
   } finally { await ctx.close(); }
 }
 async function ensureVoice() {
