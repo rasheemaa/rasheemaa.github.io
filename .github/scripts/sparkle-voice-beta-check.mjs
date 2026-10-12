@@ -7,7 +7,7 @@ const css=readFileSync(base+'voice.css','utf8');
 assert(html.includes('name="robots" content="noindex,nofollow"'));
 for(const id of ['voice-file','audio','talk','settings','stop','type-form','replay']) assert(html.includes('id="'+id+'"'));
 assert(!html.includes('class="step"') && !html.includes('Give her something NEW to say'), 'No three-box test interface');
-assert(js.includes('cloneVoice(mono') && js.includes('state.tts.generate(text'), 'Clone and generate on device');
+assert(js.includes('cloneVoice(prepared') && js.includes('state.tts.generate(text'), 'Clone prepared reference and generate on device');
 assert(js.includes('SpeechRecognition') && js.includes('/api/voice-conversation'), 'Voice UI is connected to conversational endpoint');
 assert(js.includes('DEFAULT_SAMPLE_URL') && js.includes('/api/voice-reference'), 'Load official Sparkle reference automatically');
 assert(js.includes('chunksToWavBlob'));
