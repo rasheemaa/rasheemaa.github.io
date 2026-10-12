@@ -6,6 +6,7 @@
  */
 import { PocketTTS, StreamingPlayer, chunksToWavBlob } from "./pocket-tts/index.js";
 import { prepareVoiceReference } from "./reference-prep.mjs";
+import { turnSilenceMs } from "./turn-detection.mjs";
 
 const $ = id => document.getElementById(id);
 const ui = {
@@ -24,7 +25,8 @@ const MAX_VOICE_MESSAGE_CHARS = 6000;
 const state = {
   phase: "idle", busy: false, listening: false, recognition: null,
   transcript: "", partial: "", resumeDraft: false, finishRequested: false,
-  restartTimer: null, finishTimer: null, restartFailures: 0,
+  restartTimer: null, finishTimer: null, autoTimer: null,
+  pendingInterim: false, lastSpeechActivity: 0, restartFailures: 0,
   lastHeard: "", history: [], request: null,
   tts: null, player: null, playback: null, voice: null,
   voiceFile: null, voiceKey: "", url: null, cancelled: false
@@ -353,8 +355,10 @@ async function cancel() {
   state.request?.abort();
   clearTimeout(state.restartTimer);
   clearTimeout(state.finishTimer);
+  clearTimeout(state.autoTimer);
   state.restartTimer = null;
   state.finishTimer = null;
+  state.autoTimer = null;
   state.finishRequested = false;
   if (state.recognition) { try { state.recognition.abort(); } catch {} }
   state.recognition = null;
@@ -376,7 +380,31 @@ function showSpeechDraft() {
   const words = joinSpeech(state.transcript, state.partial);
   if (words) showTurn(words, "");
 }
+function clearAutoTurn() {
+  clearTimeout(state.autoTimer);
+  state.autoTimer = null;
+}
+function noteSpeechActivity() {
+  state.lastSpeechActivity = Date.now();
+  clearAutoTurn();
+}
+function scheduleAutoTurn() {
+  clearAutoTurn();
+  if (!state.listening || state.finishRequested || state.busy || state.pendingInterim) return;
+  const words = joinSpeech(state.transcript, state.partial);
+  const delay = turnSilenceMs(words);
+  if (delay == null) return;
+  const activity = state.lastSpeechActivity;
+  state.autoTimer = setTimeout(() => {
+    state.autoTimer = null;
+    if (!state.listening || state.finishRequested || state.pendingInterim || state.busy || activity !== state.lastSpeechActivity) return;
+    say("Sparkle is responding…");
+    finishListening();
+  }, delay);
+  say("Keep talking if you need to. Sparkle will respond when you're done.");
+}
 function pauseSpeech(message) {
+  clearAutoTurn();
   clearTimeout(state.restartTimer);
   state.restartTimer = null;
   state.listening = false;
@@ -388,6 +416,7 @@ function pauseSpeech(message) {
 }
 function completeSpeechTurn() {
   if (!state.finishRequested) return;
+  clearAutoTurn();
   clearTimeout(state.finishTimer);
   state.finishTimer = null;
   state.finishRequested = false;
@@ -407,6 +436,17 @@ function startSpeechSegment() {
   speech.interimResults = true;
   speech.maxAlternatives = 1;
   state.recognition = speech;
+  // Event support varies across browsers; finalized results provide a fallback.
+  speech.onspeechstart = () => {
+    if (state.recognition !== speech || !state.listening) return;
+    state.pendingInterim = true;
+    noteSpeechActivity();
+    say("Listening… take your time.");
+  };
+  speech.onspeechend = () => {
+    if (state.recognition !== speech || !state.listening) return;
+    if (!state.pendingInterim) scheduleAutoTurn();
+  };
   state.partial = "";
   speech.onresult = event => {
     if (state.recognition !== speech) return;
@@ -419,8 +459,13 @@ function startSpeechSegment() {
       else interims.push(words);
     }
     state.partial = joinSpeech(finals.join(" "), interims.join(" "));
-    if (state.partial) state.restartFailures = 0;
+    state.pendingInterim = interims.length > 0;
+    if (state.partial) {
+      state.restartFailures = 0;
+      noteSpeechActivity();
+    }
     showSpeechDraft();
+    if (finals.length && !state.pendingInterim && state.listening) scheduleAutoTurn();
   };
   speech.onerror = event => {
     if (state.recognition !== speech || state.cancelled) return;
@@ -440,13 +485,17 @@ function startSpeechSegment() {
     state.recognition = null;
     state.transcript = joinSpeech(state.transcript, state.partial);
     state.partial = "";
+    state.pendingInterim = false;
     if (state.finishRequested) { completeSpeechTurn(); return; }
     if (!state.listening || state.restartFailures >= 4) {
       pauseSpeech("Microphone paused. Nothing was sent. Tap the microphone to continue or type instead.");
       return;
     }
-    // A browser-initiated onend is NOT the user's permission to send.
-    say("Still listening… Take your time. Tap the microphone when you're finished.");
+    // Browser onend can be a hard time limit or a pause; do not send yet.
+    if (state.transcript) {
+      noteSpeechActivity();
+      scheduleAutoTurn();
+    } else say("Still listening… Take your time.");
     state.restartTimer = setTimeout(() => {
       state.restartTimer = null;
       startSpeechSegment();
@@ -465,6 +514,7 @@ function startSpeechSegment() {
 }
 function finishListening() {
   if (!state.listening) return;
+  clearAutoTurn();
   state.listening = false;
   state.finishRequested = true;
   clearTimeout(state.restartTimer);
@@ -507,9 +557,12 @@ function startListening() {
   state.listening = true;
   state.cancelled = false;
   state.restartFailures = 0;
+  state.pendingInterim = false;
+  state.lastSpeechActivity = Date.now();
+  clearAutoTurn();
   ui.error.hidden = true;
-  phase("listening", "I'm listening", "Take your time. Tap again when you're finished.");
-  say("Listening… Your pauses won't make Sparkle respond.");
+  phase("listening", "I'm listening", "Keep talking naturally. I'll respond when you're done.");
+  say("Listening… Short pauses are okay. Tap again to send sooner.");
   startSpeechSegment();
 }
 ui.talk.addEventListener("click", () => {
@@ -549,6 +602,7 @@ ui.replay.addEventListener("click", async () => {
 window.addEventListener("pagehide", () => {
   clearTimeout(state.restartTimer);
   clearTimeout(state.finishTimer);
+  clearAutoTurn();
   state.listening = false;
   try { state.recognition?.abort(); } catch {}
   state.request?.abort();
