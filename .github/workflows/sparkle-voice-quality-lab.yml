@@ -34,6 +34,22 @@ jobs:
           test -f what-do-i-say/voice-quality-lab/index.html
           test -f what-do-i-say/voice-quality-lab/assets/quality-v1.js
           grep -q 'Does she sound like herself' what-do-i-say/voice-quality-lab/index.html
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const dir='what-do-i-say/voice-quality-lab/assets/';
+          const main=fs.readFileSync(dir+'quality-v1.js','utf8');
+          const name=main.match(/worker-[A-Za-z0-9_-]+\.js/)?.[0];
+          assert(name,'Bundled main script must reference an actual worker');
+          const worker=fs.readFileSync(dir+name,'utf8');
+          assert(worker.startsWith('import'),'Worker must remain an ES module, never a broken IIFE');
+          assert(worker.includes('https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.0.0-next.2'),
+            'Use vetted pinned public Transformers.js module');
+          assert(!worker.includes('transformers_4_0_0Next_2)'),
+            'Must not depend on an unbound global library');
+          assert(worker.includes('onnx-community/chatterbox-ONNX'),'Test the official voice model');
+          console.log('PASS: model worker uses a real ES import, with no missing global');
+          NODE
           git diff --name-only | grep -v '^what-do-i-say/voice-quality-lab/' && exit 1 || true
       - name: Publish only isolated voice test assets
         run: |
