@@ -24,7 +24,7 @@ assert(!js.includes('ui.voiceFile.click()'), 'Microphone must never ask users to
 assert(!html.includes('Choose Sparkle\'s voice <span'), 'No visible voice selection requirement');
 
 assert(html.includes('The reference recording is publicly accessible.'), 'Disclose public reference audio');
-assert(html.includes('voice.css?v=4') && html.includes('lab.js?v=6'), 'Cache-bust the redesigned voice interface');
+assert(html.includes('voice.css?v=4') && html.includes('lab.js?v=7'), 'Cache-bust the redesigned voice interface');
 assert(js.includes('await loadDefaultVoice();'), 'Voice must be fetched before generating speech');
 assert(!html.includes("Choose Sparkle's recording once"), 'No setup instructions');
 
