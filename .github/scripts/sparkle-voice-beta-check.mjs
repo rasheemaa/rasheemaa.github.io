@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import { readFileSync, readdirSync } from 'node:fs';
+const base='what-do-i-say/voice-beta/';
+const html=readFileSync(base+'index.html','utf8');
+const js=readFileSync(base+'lab.js','utf8');
+assert(html.includes('name="robots" content="noindex,nofollow"'));
+assert(html.includes('id="voice-file"') && html.includes('id="audio"'));
+assert(js.includes('cloneVoice(mono') && js.includes('tts.generate(text'));
+assert(js.includes('chunksToWavBlob'));
+assert(!/\bFormData\b|XMLHttpRequest|fetch\s*\(\s*file/.test(js),'No uploading voice recordings');
+assert(!readdirSync(base).some(name=>/\.(mp3|wav|ogg|m4a|flac)$/i.test(name)),'Do not publish MP3');
+assert(!js.includes('serviceWorker.register'),'Keep current text app untouched');
+console.log('PASS: standalone local-only reference voice beta; no MP3 published');

@@ -1,0 +1,25 @@
+name: Sparkle Voice Beta static checks
+on:
+  push:
+    branches: [main]
+    paths:
+      - "what-do-i-say/voice-beta/**"
+      - ".github/scripts/sparkle-voice-beta-check.mjs"
+      - ".github/workflows/sparkle-voice-beta.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+      - run: node --check what-do-i-say/voice-beta/lab.js
+      - run: |
+          for f in what-do-i-say/voice-beta/pocket-tts/*.js; do node --check "$f"; done
+      - run: node .github/scripts/sparkle-voice-beta-check.mjs
