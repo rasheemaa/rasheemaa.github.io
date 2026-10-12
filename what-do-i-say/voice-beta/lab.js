@@ -50,12 +50,13 @@ function clearResult() {
   ui.audio.pause(); ui.audio.removeAttribute("src");
   ui.replay.disabled = true;
   ui.download.removeAttribute("href");
+  ui.download.hidden = true;
 }
 function voiceKey(file) { return file ? String(file.name || "sparkle") + ":" + file.size + ":" + (file.lastModified || 0) : ""; }
 function showVoiceState() {
   ui.voiceState.textContent = state.voiceFile
     ? "✓ Sparkle's reference is ready on this device."
-    : "No voice reference saved yet.";
+    : "No recording selected yet.";
   ui.forget.hidden = !state.voiceFile;
 }
 function openSettings() {
@@ -228,6 +229,7 @@ async function speak(text) {
   state.url = URL.createObjectURL(chunksToWavBlob(chunks, state.tts.sampleRate));
   ui.audio.src = state.url;
   ui.download.href = state.url;
+  ui.download.hidden = false;
   ui.replay.disabled = false;
   say("Tap to speak again, or replay her last answer.");
 }
@@ -338,8 +340,8 @@ ui.talk.addEventListener("click", () => {
   if (state.busy) return;
   ui.typeForm.hidden = true;
   if (!state.voiceFile) {
-    say("Choose Sparkle's approved MP3 once in settings.");
-    openSettings();
+    say("Select Sparkle's recording once to start talking.");
+    ui.voiceFile.click();
     return;
   }
   state.cancelled = false;
@@ -355,7 +357,7 @@ ui.typeForm.addEventListener("submit", event => {
   event.preventDefault();
   const text = ui.typed.value.trim();
   if (!text || state.busy) return;
-  if (!state.voiceFile) { openSettings(); say("Choose the approved Sparkle MP3 once to hear her respond."); return; }
+  if (!state.voiceFile) { say("Select Sparkle's recording once to hear her respond."); ui.voiceFile.click(); return; }
   try { ensurePlayback(); } catch (e) { report(e); return; }
   ui.typed.value = "";
   ui.typeForm.hidden = true;

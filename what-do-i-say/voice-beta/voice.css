@@ -16,3 +16,21 @@ dialog{border:1px solid #f1d5e4;border-radius:26px;box-shadow:0 24px 100px #5a24
 @keyframes float{50%{transform:translateY(-8px) rotate(-14deg)}}@keyframes glow{to{transform:scale(1.09);opacity:.8}}@keyframes pulse{50%{transform:scale(1.12);opacity:.1}}
 @media(max-height:600px){.topbar{height:60px}.orb-field{height:148px;width:148px;margin-bottom:0}.voice-main{gap:3px}.talk-button{height:64px;width:64px}.controls{padding-bottom:12px}.subtitle{margin:0}.status{margin:2px}.controls-row{gap:18px}}
 @media(prefers-reduced-motion:reduce){.orb,.orb-glow,.ring{animation:none!important}}
+
+/* Compact one-time setup: keep the talking interface in focus. */
+.visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+dialog{max-width:min(410px,calc(100% - 32px));max-height:calc(100dvh - 44px);width:100%;overflow-y:auto;border-radius:27px}
+.dialog-close-form{padding:11px 12px 0}
+.dialog-content{padding:0 26px 25px}
+.dialog-content h2{font-size:clamp(25px,7vw,30px);margin:7px 0 9px}
+.dialog-content .setup-description{font-size:15px;color:#765c75;line-height:1.5;margin:0 0 20px}
+.voice-upload{display:flex;justify-content:center;align-items:center;gap:12px;background:#c7418e;color:white;border-radius:15px;padding:15px 16px;text-align:center;cursor:pointer;font-weight:760;min-height:54px}
+.voice-upload span{font-size:19px}
+.voice-upload:focus-within,.voice-upload:hover{background:#b72c7e}
+.dialog-content #voice-state{font-size:13px;margin:13px 0 0;color:#6f4d70}
+.forget{display:block;margin-top:10px;background:transparent;border:0;padding:6px 0;font-size:13px;text-decoration:underline;color:#a2366a}
+.save-reply{display:inline-block;margin-top:9px;font-size:13px;font-weight:700}
+.voice-details{border-top:1px solid #ebd9e7;margin-top:24px;padding-top:15px;color:#7b6478;font-size:12px}
+.voice-details summary{cursor:pointer;font-size:13px;font-weight:750;list-style-position:outside}
+.voice-details p{font-size:12px;line-height:1.5}
+@media(max-width:480px){dialog{width:calc(100% - 26px);max-width:410px;max-height:calc(100dvh - 30px)}.dialog-content{padding:0 22px 23px}}

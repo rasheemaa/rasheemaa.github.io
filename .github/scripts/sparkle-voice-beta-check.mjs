@@ -16,3 +16,9 @@ assert(!readdirSync(base).some(name=>/\.(mp3|wav|ogg|m4a|flac)$/i.test(name)), '
 assert(!js.includes('serviceWorker.register'), 'Keep main Sparkle app untouched');
 assert(css.includes('.orb') && css.includes('.talk-button'), 'Voice-first design');
 console.log('PASS: voice-first interface, microphone, private sample, isolated backend, no sample publication');
+
+assert(html.includes('id="download"'), 'Voice download must exist before JavaScript accesses it');
+assert(html.includes('<details class="voice-details">'), 'Technical text should be collapsed');
+assert(!html.includes('Experimental beta. Voice generation runs locally'), 'Remove wall of technical text');
+assert(js.includes('ui.voiceFile.click()'), 'Microphone should open system file picker without forcing settings form');
+assert(html.includes('class="visually-hidden" type="file"'), 'Picker should not occupy a box in the interface');

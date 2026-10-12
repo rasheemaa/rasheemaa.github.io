@@ -12,7 +12,7 @@ permalink: /what-do-i-say/voice-beta/
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; worker-src 'self' blob:; connect-src 'self' https://cdn.jsdelivr.net https://huggingface.co https://*.huggingface.co https://*.hf.co https://what-do-i-say-payments.rasheema-abdullah.workers.dev; media-src 'self' blob:; style-src 'self'; img-src 'self' data:; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
 <title>Sparkle Voice ✨ | Early beta</title>
-<link rel="stylesheet" href="/what-do-i-say/voice-beta/voice.css?v=2">
+<link rel="stylesheet" href="/what-do-i-say/voice-beta/voice.css?v=3">
 </head>
 <body>
 <div class="voice-app" id="voice-app" data-phase="idle">
@@ -62,25 +62,29 @@ permalink: /what-do-i-say/voice-beta/
       <div class="type-row"><input id="typed-message" maxlength="1200" placeholder="Say something to Sparkle…" autocomplete="off"><button type="submit">Send</button></div>
     </form>
   </footer>
+  <!-- Private reference: the same file picker also opens directly from the microphone button. -->
+  <input id="voice-file" class="visually-hidden" type="file" accept=".mp3,.wav,.m4a,audio/*" aria-label="Choose approved Sparkle voice recording">
   <dialog id="settings" aria-labelledby="settings-title">
     <form method="dialog" class="dialog-close-form"><button class="circle" aria-label="Close settings" type="submit">✕</button></form>
     <div class="dialog-content">
-      <span class="eyebrow">✨ HER VOICE</span>
-      <h2 id="settings-title">Set up Sparkle once</h2>
-      <p>Your approved MP3 is needed to reproduce Sparkle's voice. Choose it once and this browser can remember it for future visits.</p>
-      <label class="file-select" for="voice-file">Choose Sparkle's recording</label>
-      <input id="voice-file" type="file" accept=".mp3,.wav,.m4a,audio/*">
-      <p id="voice-state" role="status">No voice reference stored on this device.</p>
-      <button id="forget" class="forget" type="button" hidden>Forget stored voice</button>
-      <hr>
-      <p class="note">Experimental beta. Voice generation runs locally with free Pocket TTS, but may need a large model download and can be slow on phones. Your reference MP3 is saved only in this browser, not posted to the website. If your browser's speech recognition uses a remote service, your spoken audio may be processed by that provider. Only recognized text and recent conversation turns are sent to Sparkle's Cloudflare AI; no voice audio is sent there. Cloudflare AI usage may have hosting costs.</p>
-      <p class="note">This is turn-by-turn voice chat, not simultaneous hands-free audio. Some iPhones may not support it.</p>
-      <p class="note"><a href="https://github.com/vlapky/pocket-tts-js" target="_blank" rel="noopener noreferrer">Pocket TTS browser adapter (MIT)</a> · <a href="https://github.com/kyutai-labs/pocket-tts" target="_blank" rel="noopener noreferrer">Kyutai Pocket TTS (CC BY 4.0)</a>. Use only voice recordings you have permission to clone.</p>
+      <span class="eyebrow">✦ SPARKLE VOICE</span>
+      <h2 id="settings-title">Her voice, your way.</h2>
+      <p class="setup-description">Choose the Sparkle recording once. Your browser can remember it for next time.</p>
+      <label class="voice-upload" for="voice-file">Choose Sparkle's voice <span aria-hidden="true">↗</span></label>
+      <p id="voice-state" role="status" aria-live="polite">No recording selected yet.</p>
+      <button id="forget" class="forget" type="button" hidden>Forget saved recording</button>
+      <a id="download" class="save-reply" download="sparkle-voice-test.wav" hidden>Save last voice reply ↓</a>
+      <details class="voice-details">
+        <summary>Privacy & compatibility</summary>
+        <p>The original recording stays in this browser; we don't publish it to the site or send it to Cloudflare. The free voice model downloads to your device and may run slowly or fail on some phones.</p>
+        <p>Speech recognition may use a service provided by your browser. Recognized text and recent conversation turns go to Sparkle's Cloudflare AI. This is a turn-by-turn beta, not continuous real-time voice. Server AI usage may cost the site operator.</p>
+        <p><a href="https://github.com/vlapky/pocket-tts-js" target="_blank" rel="noopener noreferrer">Pocket TTS browser adapter (MIT)</a> · <a href="https://github.com/kyutai-labs/pocket-tts" target="_blank" rel="noopener noreferrer">Kyutai Pocket TTS (CC BY 4.0)</a>. Only clone voices you have permission to use.</p>
+      </details>
     </div>
   </dialog>
   <audio id="audio" preload="none" hidden></audio>
 </div>
 <script src="/what-do-i-say/config.js?v=9"></script>
-<script type="module" src="/what-do-i-say/voice-beta/lab.js?v=2"></script>
+<script type="module" src="/what-do-i-say/voice-beta/lab.js?v=3"></script>
 </body>
 </html>
