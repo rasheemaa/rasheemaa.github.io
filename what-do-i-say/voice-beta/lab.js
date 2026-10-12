@@ -4,7 +4,7 @@
  * sent to the existing Cloudflare backend. Reference voice/audio remains
  * local, optionally saved in IndexedDB after the user picks the file.
  */
-import { PocketTTS, StreamingPlayer, chunksToWavBlob } from "./pocket-tts/index.js";
+import { PocketTTS, StreamingPlayer, chunksToWavBlob } from "./pocket-tts/index.js?v=2";
 import { prepareVoiceReference } from "./reference-prep.mjs";
 import { turnSilenceMs } from "./turn-detection.mjs";
 
@@ -247,7 +247,7 @@ async function ensureVoice() {
   if (!window.Worker || !window.WebAssembly) throw new Error("This browser can't run local voice generation.");
   if (!state.tts) {
     say("Downloading Sparkle's free voice model. The first load can be large…");
-    state.tts = new PocketTTS({ language: "english_2026-04", quantized: true, voiceCloning: true });
+    state.tts = new PocketTTS({ language: "english_2026-04", quantized: true, fullPrecisionAudio: true, voiceCloning: true });
     try {
       await state.tts.load(info => {
         if (info.type === "progress" && info.total) {

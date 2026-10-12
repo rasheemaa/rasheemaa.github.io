@@ -51,7 +51,12 @@ function modelUrl(language, filename) {
 }
 
 function stem(name) {
-    return config.quantized ? `${name}_int8.onnx` : `${name}.onnx`;
+    // Preserve precision in the acoustic flow and waveform reconstruction.
+    // The upstream model keeps these stages in FP32 when quantizing FlowLM:
+    // https://github.com/kyutai-labs/pocket-tts/blob/main/docs/quantization.md
+    const fullPrecisionAudio = config.fullPrecisionAudio &&
+        (name === "flow_lm_flow" || name === "mimi_decoder");
+    return config.quantized && !fullPrecisionAudio ? `${name}_int8.onnx` : `${name}.onnx`;
 }
 
 function post(msg, transfer) {
