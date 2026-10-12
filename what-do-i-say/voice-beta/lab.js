@@ -151,31 +151,32 @@ ui.forget.addEventListener("click", async () => {
   say("Saved voice cleared from this browser.");
 });
 
-const DEFAULT_SAMPLE_URL = "/what-do-i-say/voice-beta/Sparkle_HD_soft.mp3";
+const DEFAULT_SAMPLE_URL = "/what-do-i-say/voice-beta/Sparkle_reference.wav";
 let defaultVoicePending = null;
 
 async function loadDefaultVoice() {
-  if (state.voiceFile?.name === "Sparkle_HD_soft.mp3") return state.voiceFile;
+  if (state.voiceFile?.name === "Sparkle_reference.wav") return state.voiceFile;
   if (defaultVoicePending) return defaultVoicePending;
   defaultVoicePending = (async () => {
     // Same-origin source: no OneDrive, Cloudflare audio proxy or file-picker required.
     const response = await fetch(DEFAULT_SAMPLE_URL, {
       method: "GET", mode: "same-origin", credentials: "same-origin", cache: "no-store"
     });
-    if (!response.ok) throw new Error("Sparkle's official HD voice is temporarily unavailable. Try again shortly.");
+    if (!response.ok) throw new Error("Sparkle\'s original WAV voice reference is unavailable. Please try again later.");
     const blob = await response.blob();
-    if (blob.size !== 753687) throw new Error("Sparkle's approved HD recording was not delivered correctly.");
+    if (blob.size !== 891016) throw new Error("Sparkle\'s original WAV reference was not delivered correctly.");
     const bytes = await blob.arrayBuffer();
     const digest = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)),
       value => value.toString(16).padStart(2, "0")).join("");
-    if (digest !== "9cca7394cf982852b58682608b0b5ad53e24dbccae74cead32bef3120163bd02") {
-      throw new Error("Sparkle's updated voice recording could not be verified. Please reload and try again.");
+    if (digest !== "b59e9c4d70864fcd0cb0b4e9c5f4a25b4854464e53104b7a6a5449d24a54ea20") {
+      throw new Error("Sparkle\'s original WAV recording could not be verified. Please reload and try again.");
     }
-    const header = new Uint8Array(bytes, 0, 3);
-    if (header[0] !== 0x49 || header[1] !== 0x44 || header[2] !== 0x33) {
-      throw new Error("Sparkle's official HD voice is not a valid MP3.");
+    const header = new Uint8Array(bytes, 0, 12);
+    if (String.fromCharCode(...header.slice(0, 4)) !== "RIFF" ||
+        String.fromCharCode(...header.slice(8, 12)) !== "WAVE") {
+      throw new Error("Sparkle\'s original reference is not a valid WAV file.");
     }
-    const file = new File([blob], "Sparkle_HD_soft.mp3", { type: "audio/mpeg" });
+    const file = new File([blob], "Sparkle_reference.wav", { type: "audio/wav" });
     state.voiceFile = file;
     state.voice = null;
     state.voiceKey = "";
