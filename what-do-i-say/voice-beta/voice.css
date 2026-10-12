@@ -34,3 +34,6 @@ dialog{max-width:min(410px,calc(100% - 32px));max-height:calc(100dvh - 44px);wid
 .voice-details summary{cursor:pointer;font-size:13px;font-weight:750;list-style-position:outside}
 .voice-details p{font-size:12px;line-height:1.5}
 @media(max-width:480px){dialog{width:calc(100% - 26px);max-width:410px;max-height:calc(100dvh - 30px)}.dialog-content{padding:0 22px 23px}}
+
+/* A quiet exit for hands-free voice, not another panel or interruptive modal. */
+.end-conversation{border:0;background:transparent;color:#865b80;text-decoration:underline;text-underline-offset:3px;font-size:12px;font-weight:650;margin:7px auto 0;padding:6px 10px;display:block}
