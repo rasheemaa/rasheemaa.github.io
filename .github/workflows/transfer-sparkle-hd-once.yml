@@ -1,0 +1,65 @@
+name: Transfer approved Sparkle HD voice into website
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/transfer-sparkle-hd-once.yml'
+permissions:
+  contents: write
+jobs:
+  transfer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Check out website
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: true
+      - name: Download and verify exact user-approved Sparkle HD MP3
+        env:
+          EXPECTED_SHA256: '6039ee534cfacbe86a6af66f88c7fd1edcddc95831ac8dfac04ca6da1c9ff68e'
+        run: |
+          node --input-type=module <<'NODE'
+          import { createHash } from 'node:crypto';
+          import { writeFileSync, mkdirSync } from 'node:fs';
+          const share = 'https://1drv.ms/u/c/6A90B25872C73263/IQDknONbuq6HQrrQB7UqNK-ZAXhhaC2jtt2WAmNcxYKRRQY';
+          const shareId = 'u!' + Buffer.from(share).toString('base64url');
+          const candidates = [
+            'https://api.onedrive.com/v1.0/shares/' + shareId + '/root/content',
+            'https://graph.microsoft.com/v1.0/shares/' + shareId + '/driveItem/content',
+            share + '?download=1',
+            share
+          ];
+          let verified = null;
+          for (let i=0; i<candidates.length; i++) {
+            try {
+              const response = await fetch(candidates[i], {
+                redirect: 'follow', headers: { Accept: 'application/octet-stream,audio/mpeg,*/*' },
+                signal: AbortSignal.timeout(28000)
+              });
+              if (!response.ok) { console.log('Source',i+1,'HTTP',response.status); continue; }
+              const bytes = Buffer.from(await response.arrayBuffer());
+              const sha = createHash('sha256').update(bytes).digest('hex');
+              console.log('Source',i+1,'file size',bytes.length,'SHA match',sha===process.env.EXPECTED_SHA256);
+              if (sha === process.env.EXPECTED_SHA256) { verified = bytes; break; }
+            } catch (err) {
+              console.log('Source',i+1,'failed:',String(err?.name||'network_error'));
+            }
+          }
+          if (!verified) throw new Error('Cannot retrieve exact approved audio. Refusing to publish a substitute.');
+          mkdirSync('what-do-i-say/voice-beta',{recursive:true});
+          writeFileSync('what-do-i-say/voice-beta/Sparkle_HD.mp3',verified);
+          console.log('Verified MP3 written into Sparkle website assets');
+          NODE
+      - name: Commit original audio bytes to GitHub Pages repo
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add what-do-i-say/voice-beta/Sparkle_HD.mp3
+          if git diff --cached --quiet; then
+            echo "Approved Sparkle HD audio already exists in site"
+            exit 0
+          fi
+          git commit -m "Add user-approved Sparkle_HD.mp3 as local website asset"
+          git push origin HEAD:main
