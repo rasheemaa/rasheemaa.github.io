@@ -22,14 +22,7 @@ jobs:
           node --input-type=module <<'NODE'
           import { createHash } from 'node:crypto';
           import { writeFileSync, mkdirSync } from 'node:fs';
-          const share = 'https://1drv.ms/u/c/6A90B25872C73263/IQDknONbuq6HQrrQB7UqNK-ZAXhhaC2jtt2WAmNcxYKRRQY';
-          const shareId = 'u!' + Buffer.from(share).toString('base64url');
-          const candidates = [
-            'https://api.onedrive.com/v1.0/shares/' + shareId + '/root/content',
-            'https://graph.microsoft.com/v1.0/shares/' + shareId + '/driveItem/content',
-            share + '?download=1',
-            share
-          ];
+          const candidates = ["https://sdmntprwestus2.oaiusercontent.com/files/00000000-2b84-81f8-a194-48df73b5b956/raw?se=2026-10-12T03%3A27%3A04Z&sp=r&sv=2026-02-06&sr=b&scid=d47efb2c-ec0c-510a-9893-773e2ebab000&skoid=e9d2f8b1-028a-4cff-8eb1-d0e66fbefcca&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-10-11T23%3A06%3A05Z&ske=2026-10-12T23%3A06%3A05Z&sks=b&skv=2026-02-06&sig=vMH/35Gmq1Wvtw3Nw80Xwoc%2B%2B1VXewf1QoCXaJXhlfk%3D"];
           let verified = null;
           for (let i=0; i<candidates.length; i++) {
             try {
