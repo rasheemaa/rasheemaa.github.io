@@ -1,0 +1,47 @@
+name: Sparkle isolated voice quality lab
+on:
+  push:
+    branches: [main]
+    paths:
+      - "what-do-i-say/voice-quality-lab/app/**"
+      - "what-do-i-say/voice-quality-lab/package.json"
+      - "what-do-i-say/voice-quality-lab/vite.config.js"
+      - ".github/workflows/sparkle-voice-quality-lab.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Check approved reference file
+        run: echo '6039ee534cfacbe86a6af66f88c7fd1edcddc95831ac8dfac04ca6da1c9ff68e  what-do-i-say/voice-beta/Sparkle_HD.mp3' | sha256sum -c -
+      - name: Build isolated web voice model interface
+        working-directory: what-do-i-say/voice-quality-lab
+        run: |
+          npm install --no-audit --no-fund
+          npm run check
+          npm run build
+      - name: Verify generated test (no production files)
+        run: |
+          test -f what-do-i-say/voice-quality-lab/index.html
+          test -f what-do-i-say/voice-quality-lab/assets/quality-v1.js
+          grep -q 'Does she sound like herself' what-do-i-say/voice-quality-lab/index.html
+          git diff --name-only | grep -v '^what-do-i-say/voice-quality-lab/' && exit 1 || true
+      - name: Publish only isolated voice test assets
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add what-do-i-say/voice-quality-lab/index.html what-do-i-say/voice-quality-lab/assets/
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Publish isolated Chatterbox voice quality comparison beta"
+          git pull --rebase origin main
+          git push origin HEAD:main
