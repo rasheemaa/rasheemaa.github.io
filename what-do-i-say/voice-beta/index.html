@@ -12,7 +12,7 @@ permalink: /what-do-i-say/voice-beta/
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; worker-src 'self' blob:; connect-src 'self' https://cdn.jsdelivr.net https://huggingface.co https://*.huggingface.co https://*.hf.co https://what-do-i-say-payments.rasheema-abdullah.workers.dev; media-src 'self' blob:; style-src 'self'; img-src 'self' data:; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
 <title>Sparkle Voice ✨ | Early beta</title>
-<link rel="stylesheet" href="/what-do-i-say/voice-beta/voice.css?v=4">
+<link rel="stylesheet" href="/what-do-i-say/voice-beta/voice.css?v=5">
 </head>
 <body>
 <div class="voice-app" id="voice-app" data-phase="idle">
@@ -56,10 +56,10 @@ permalink: /what-do-i-say/voice-beta/
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 9V4L2 7l3 2Z" fill="currentColor"/><path d="M5 7a8 8 0 1 1-1 8"/><path d="m11 9 5 3-5 3V9Z" fill="currentColor" stroke="none"/></svg>
       </button>
     </div>
-    <p class="controls-hint" id="hint">Tap to talk · Tap again to stop</p>
+    <p class="controls-hint" id="hint">Tap to talk · Tap again to send · Pauses are okay</p>
     <form id="type-form" class="type-form" hidden>
       <label for="typed-message">Type what you'd like to say</label>
-      <div class="type-row"><input id="typed-message" maxlength="1200" placeholder="Say something to Sparkle…" autocomplete="off"><button type="submit">Send</button></div>
+      <div class="type-row"><textarea id="typed-message" rows="2" placeholder="Say something to Sparkle…" autocomplete="off"></textarea><button type="submit">Send</button></div>
     </form>
   </footer>
   <!-- Private reference: the same file picker also opens directly from the microphone button. -->
@@ -87,6 +87,6 @@ permalink: /what-do-i-say/voice-beta/
   <audio id="audio" preload="none" hidden></audio>
 </div>
 <script src="/what-do-i-say/config.js?v=9"></script>
-<script type="module" src="/what-do-i-say/voice-beta/lab.js?v=10"></script>
+<script type="module" src="/what-do-i-say/voice-beta/lab.js?v=11"></script>
 </body>
 </html>
