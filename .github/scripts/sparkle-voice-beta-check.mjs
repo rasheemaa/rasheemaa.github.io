@@ -9,7 +9,7 @@ for(const id of ['voice-file','audio','talk','settings','stop','type-form','repl
 assert(!html.includes('class="step"') && !html.includes('Give her something NEW to say'), 'No three-box test interface');
 assert(js.includes('cloneVoice(mono') && js.includes('state.tts.generate(text'), 'Clone and generate on device');
 assert(js.includes('SpeechRecognition') && js.includes('/api/voice-conversation'), 'Voice UI is connected to conversational endpoint');
-assert(js.includes('indexedDB.open('), 'One-time private voice sample setup');
+assert(js.includes('DEFAULT_SAMPLE_URL') && js.includes('/api/voice-reference'), 'Load official Sparkle reference automatically');
 assert(js.includes('chunksToWavBlob'));
 assert(!/\bFormData\b|XMLHttpRequest|fetch\s*\(\s*(?:file|state.voiceFile)/.test(js), 'No voice-file uploads');
 assert(!readdirSync(base).some(name=>/\.(mp3|wav|ogg|m4a|flac)$/i.test(name)), 'Never publish reference MP3');
@@ -20,5 +20,10 @@ console.log('PASS: voice-first interface, microphone, private sample, isolated b
 assert(html.includes('id="download"'), 'Voice download must exist before JavaScript accesses it');
 assert(html.includes('<details class="voice-details">'), 'Technical text should be collapsed');
 assert(!html.includes('Experimental beta. Voice generation runs locally'), 'Remove wall of technical text');
-assert(js.includes('ui.voiceFile.click()'), 'Microphone should open system file picker without forcing settings form');
-assert(html.includes('class="visually-hidden" type="file"'), 'Picker should not occupy a box in the interface');
+assert(!js.includes('ui.voiceFile.click()'), 'Microphone must never ask users to pick MP3');
+assert(!html.includes('Choose Sparkle\'s voice <span'), 'No visible voice selection requirement');
+
+assert(html.includes('The reference recording is publicly accessible.'), 'Disclose public reference audio');
+assert(html.includes('voice.css?v=4') && html.includes('lab.js?v=4'), 'Cache-bust the redesigned voice interface');
+assert(js.includes('await loadDefaultVoice();'), 'Voice must be fetched before generating speech');
+assert(!html.includes('Choose Sparkle\\'s recording once'), 'No setup instructions');

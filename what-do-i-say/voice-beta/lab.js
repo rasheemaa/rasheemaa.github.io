@@ -54,10 +54,8 @@ function clearResult() {
 }
 function voiceKey(file) { return file ? String(file.name || "sparkle") + ":" + file.size + ":" + (file.lastModified || 0) : ""; }
 function showVoiceState() {
-  ui.voiceState.textContent = state.voiceFile
-    ? "✓ Sparkle's reference is ready on this device."
-    : "No recording selected yet.";
-  ui.forget.hidden = !state.voiceFile;
+  ui.voiceState.textContent = "✓ Sparkle’s approved voice is set for everyone.";
+  ui.forget.hidden = true;
 }
 function openSettings() {
   if (!ui.settings.open) ui.settings.showModal();
@@ -152,6 +150,34 @@ ui.forget.addEventListener("click", async () => {
   say("Saved voice cleared from this browser.");
 });
 
+const DEFAULT_SAMPLE_URL = "/api/voice-reference";
+let defaultVoicePending = null;
+
+async function loadDefaultVoice() {
+  if (state.voiceFile?.name === "sparkle-official-default.mp3") return state.voiceFile;
+  if (defaultVoicePending) return defaultVoicePending;
+  defaultVoicePending = (async () => {
+    const base = String(window.WDIS_API_BASE || "").replace(/\/$/, "");
+    if (!base) throw new Error("Sparkle's voice service is not configured.");
+    const response = await fetch(base + DEFAULT_SAMPLE_URL, {
+      method: "GET", cache: "default"
+    });
+    if (!response.ok) throw new Error("Sparkle's default voice is temporarily unavailable. Try again shortly.");
+    const blob = await response.blob();
+    if (blob.size < 5000 || blob.size > 2_000_000 || !blob.type.includes("audio")) {
+      throw new Error("Sparkle's voice recording was not delivered correctly.");
+    }
+    const file = new File([blob], "sparkle-official-default.mp3", { type: "audio/mpeg" });
+    state.voiceFile = file;
+    state.voice = null;
+    state.voiceKey = "";
+    showVoiceState();
+    return file;
+  })();
+  try { return await defaultVoicePending; }
+  catch (error) { defaultVoicePending = null; throw error; }
+}
+
 function ensurePlayback() {
   const AC = window.AudioContext || window.webkitAudioContext;
   if (!AC) throw new Error("Your browser doesn't support the required audio features.");
@@ -181,7 +207,7 @@ async function clone(file) {
   } finally { await ctx.close(); }
 }
 async function ensureVoice() {
-  if (!state.voiceFile) throw new Error("Set up Sparkle's voice in Settings first.");
+  await loadDefaultVoice();
   if (!window.Worker || !window.WebAssembly) throw new Error("This browser can't run local voice generation.");
   if (!state.tts) {
     say("Downloading Sparkle's free voice model. The first load can be large…");
@@ -339,11 +365,6 @@ ui.talk.addEventListener("click", () => {
   if (state.listening) { state.recognition?.stop(); return; }
   if (state.busy) return;
   ui.typeForm.hidden = true;
-  if (!state.voiceFile) {
-    say("Select Sparkle's recording once to start talking.");
-    ui.voiceFile.click();
-    return;
-  }
   state.cancelled = false;
   try { ensurePlayback(); } catch (e) { report(e); return; }
   startListening();
@@ -357,7 +378,6 @@ ui.typeForm.addEventListener("submit", event => {
   event.preventDefault();
   const text = ui.typed.value.trim();
   if (!text || state.busy) return;
-  if (!state.voiceFile) { say("Select Sparkle's recording once to hear her respond."); ui.voiceFile.click(); return; }
   try { ensurePlayback(); } catch (e) { report(e); return; }
   ui.typed.value = "";
   ui.typeForm.hidden = true;
@@ -374,5 +394,7 @@ window.addEventListener("pagehide", () => {
   state.tts?.destroy();
   state.playback?.close();
 });
-restoreSample();
+// Do not load any legacy stored or user-selected voice; the official sample is default.
+showVoiceState();
+void loadDefaultVoice().catch(() => { /* Retried when a voice answer is requested. */ });
 phase("idle", "Talk to Sparkle", "Just say what's on your mind.");

@@ -12,7 +12,7 @@ permalink: /what-do-i-say/voice-beta/
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; worker-src 'self' blob:; connect-src 'self' https://cdn.jsdelivr.net https://huggingface.co https://*.huggingface.co https://*.hf.co https://what-do-i-say-payments.rasheema-abdullah.workers.dev; media-src 'self' blob:; style-src 'self'; img-src 'self' data:; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
 <title>Sparkle Voice ✨ | Early beta</title>
-<link rel="stylesheet" href="/what-do-i-say/voice-beta/voice.css?v=3">
+<link rel="stylesheet" href="/what-do-i-say/voice-beta/voice.css?v=4">
 </head>
 <body>
 <div class="voice-app" id="voice-app" data-phase="idle">
@@ -63,20 +63,20 @@ permalink: /what-do-i-say/voice-beta/
     </form>
   </footer>
   <!-- Private reference: the same file picker also opens directly from the microphone button. -->
-  <input id="voice-file" class="visually-hidden" type="file" accept=".mp3,.wav,.m4a,audio/*" aria-label="Choose approved Sparkle voice recording">
+  <input id="voice-file" class="visually-hidden" type="file" accept=".mp3,.wav,.m4a,audio/*" aria-label="Choose approved Sparkle voice recording" tabindex="-1" disabled>
   <dialog id="settings" aria-labelledby="settings-title">
     <form method="dialog" class="dialog-close-form"><button class="circle" aria-label="Close settings" type="submit">✕</button></form>
     <div class="dialog-content">
       <span class="eyebrow">✦ SPARKLE VOICE</span>
-      <h2 id="settings-title">Her voice, your way.</h2>
-      <p class="setup-description">Choose the Sparkle recording once. Your browser can remember it for next time.</p>
-      <label class="voice-upload" for="voice-file">Choose Sparkle's voice <span aria-hidden="true">↗</span></label>
-      <p id="voice-state" role="status" aria-live="polite">No recording selected yet.</p>
-      <button id="forget" class="forget" type="button" hidden>Forget saved recording</button>
+      <h2 id="settings-title">Her voice is ready.</h2>
+      <p class="setup-description">Sparkle uses her approved custom voice automatically. Just tap the microphone and talk.</p>
+      
+      <p id="voice-state" role="status" aria-live="polite">Sparkle's custom voice is the default for everyone.</p>
+      <button id="forget" class="forget" type="button" hidden aria-hidden="true">Forget saved recording</button>
       <a id="download" class="save-reply" download="sparkle-voice-test.wav" hidden>Save last voice reply ↓</a>
       <details class="voice-details">
         <summary>Privacy & compatibility</summary>
-        <p>The original recording stays in this browser; we don't publish it to the site or send it to Cloudflare. The free voice model downloads to your device and may run slowly or fail on some phones.</p>
+        <p>Sparkle’s owner chose to make the approved voice reference available to every visitor. Your browser downloads this reference from the Sparkle Cloudflare service, which retrieves it from the original audio host. The reference recording is publicly accessible. No personal conversations are included in the sample. The free local voice model can be slow or fail on some phones.</p>
         <p>Speech recognition may use a service provided by your browser. Recognized text and recent conversation turns go to Sparkle's Cloudflare AI. This is a turn-by-turn beta, not continuous real-time voice. Server AI usage may cost the site operator.</p>
         <p><a href="https://github.com/vlapky/pocket-tts-js" target="_blank" rel="noopener noreferrer">Pocket TTS browser adapter (MIT)</a> · <a href="https://github.com/kyutai-labs/pocket-tts" target="_blank" rel="noopener noreferrer">Kyutai Pocket TTS (CC BY 4.0)</a>. Only clone voices you have permission to use.</p>
       </details>
@@ -85,6 +85,6 @@ permalink: /what-do-i-say/voice-beta/
   <audio id="audio" preload="none" hidden></audio>
 </div>
 <script src="/what-do-i-say/config.js?v=9"></script>
-<script type="module" src="/what-do-i-say/voice-beta/lab.js?v=3"></script>
+<script type="module" src="/what-do-i-say/voice-beta/lab.js?v=4"></script>
 </body>
 </html>
