@@ -5,6 +5,7 @@ on:
     paths:
       - "what-do-i-say/voice-beta/**"
       - ".github/scripts/sparkle-voice-beta-check.mjs"
+      - ".github/scripts/sparkle-voice-turn-detection-test.mjs"
       - ".github/scripts/sparkle-voice-reference-prep-check.mjs"
       - ".github/workflows/sparkle-voice-beta.yml"
   workflow_dispatch:
@@ -25,5 +26,6 @@ jobs:
       - run: |
           for f in what-do-i-say/voice-beta/pocket-tts/*.js; do node --check "$f"; done
       - run: node .github/scripts/sparkle-voice-beta-check.mjs
+      - run: node .github/scripts/sparkle-voice-turn-detection-test.mjs
       - name: Confirm original approved HD audio bytes
         run: echo '9cca7394cf982852b58682608b0b5ad53e24dbccae74cead32bef3120163bd02  what-do-i-say/voice-beta/Sparkle_HD_soft.mp3' | sha256sum -c -
