@@ -60,10 +60,10 @@ function makeWorker() {
   });
 }
 async function getReference24k() {
-  const res = await fetch('/what-do-i-say/voice-beta/Sparkle_HD_soft.mp3', { mode: 'same-origin' });
+  const res = await fetch('/what-do-i-say/voice-beta/Sparkle_reference.wav', { mode: 'same-origin' });
   if (!res.ok) throw new Error('Approved Sparkle reference is not available.');
   const raw = await res.arrayBuffer();
-  if (raw.byteLength !== 753687) throw new Error('Unexpected Sparkle voice reference.');
+  if (raw.byteLength !== 891016) throw new Error('Unexpected Sparkle voice reference.');
   const ctx = new (window.AudioContext || window.webkitAudioContext)();
   try {
     const decoded = await ctx.decodeAudioData(raw);
@@ -117,7 +117,7 @@ button.addEventListener('click', async () => {
     setStatus('Preparing Chatterbox. The first download is approximately 1.5 GB…');
     await request('load');
     progress.hidden = true;
-    setStatus('Learning from Sparkle_HD_soft.mp3…');
+    setStatus('Learning from Sparkle_reference.wav…');
     const ref = await getReference24k();
     const samples = ref.buffer;
     await request('clone', samples, [samples]);
