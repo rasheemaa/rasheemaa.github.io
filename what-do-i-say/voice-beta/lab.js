@@ -483,7 +483,8 @@ function startSpeechSegment() {
   speech.onend = () => {
     if (state.recognition !== speech) return;
     state.recognition = null;
-    state.transcript = joinSpeech(state.transcript, state.partial);
+    const segmentWords = state.partial;
+    state.transcript = joinSpeech(state.transcript, segmentWords);
     state.partial = "";
     state.pendingInterim = false;
     if (state.finishRequested) { completeSpeechTurn(); return; }
@@ -492,10 +493,13 @@ function startSpeechSegment() {
       return;
     }
     // Browser onend can be a hard time limit or a pause; do not send yet.
-    if (state.transcript) {
+    if (state.transcript && segmentWords) {
+      // A new segment resets the grace. An empty browser restart does not.
       noteSpeechActivity();
       scheduleAutoTurn();
-    } else say("Still listening… Take your time.");
+    } else if (state.transcript && !state.autoTimer) {
+      scheduleAutoTurn();
+    } else if (!state.transcript) say("Still listening… Take your time.");
     state.restartTimer = setTimeout(() => {
       state.restartTimer = null;
       startSpeechSegment();
