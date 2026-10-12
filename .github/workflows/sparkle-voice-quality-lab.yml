@@ -22,7 +22,7 @@ jobs:
         with:
           node-version: '22'
       - name: Check approved reference file
-        run: echo '6039ee534cfacbe86a6af66f88c7fd1edcddc95831ac8dfac04ca6da1c9ff68e  what-do-i-say/voice-beta/Sparkle_HD.mp3' | sha256sum -c -
+        run: echo '9cca7394cf982852b58682608b0b5ad53e24dbccae74cead32bef3120163bd02  what-do-i-say/voice-beta/Sparkle_HD_soft.mp3' | sha256sum -c -
       - name: Build isolated web voice model interface
         working-directory: what-do-i-say/voice-quality-lab
         run: |
@@ -43,7 +43,7 @@ jobs:
             'Apple mobile users must receive the low-memory safe page');
           assert(source.includes('if (!text || active || isAppleMobile) return;'),
             'No Chatterbox worker may start from an iPhone event');
-          assert(html.includes('Sparkle_HD.mp3'),'Original voice playback must remain available');
+          assert(html.includes('Sparkle_HD_soft.mp3'),'Original voice playback must remain available');
           assert(html.includes('.sparkle-mobile-guard #voice-model-test,.sparkle-mobile-guard .desktop-desc{display:none!important}'),
             'Hide nonfunctional generation form on iPhone');
           assert(html.includes('Voice comparison isn\'t ready on iPhone') && html.includes('href="/what-do-i-say/"'),
