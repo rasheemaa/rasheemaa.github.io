@@ -370,7 +370,7 @@ async function cancel() {
 }
 
 function joinSpeech(...parts) {
-  return parts.map(part => String(part || "").trim()).filter(Boolean).join(" ").trim();
+  return parts.map(part => String(part || "").trim()).filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
 }
 function showSpeechDraft() {
   const words = joinSpeech(state.transcript, state.partial);
