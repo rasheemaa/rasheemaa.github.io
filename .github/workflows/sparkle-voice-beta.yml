@@ -5,7 +5,6 @@ on:
     paths:
       - "what-do-i-say/voice-beta/**"
       - ".github/scripts/sparkle-voice-beta-check.mjs"
-      - ".github/scripts/sparkle-voice-clarity-check.mjs"
       - ".github/workflows/sparkle-voice-beta.yml"
   workflow_dispatch:
 permissions:
@@ -21,8 +20,6 @@ jobs:
         with:
           node-version: '20'
       - run: node --check what-do-i-say/voice-beta/lab.js
-      - run: node --check what-do-i-say/voice-beta/voice-clarity.mjs
-      - run: node .github/scripts/sparkle-voice-clarity-check.mjs
       - run: |
           for f in what-do-i-say/voice-beta/pocket-tts/*.js; do node --check "$f"; done
       - run: node .github/scripts/sparkle-voice-beta-check.mjs
