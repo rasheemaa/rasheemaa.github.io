@@ -24,13 +24,13 @@ assert(!js.includes('ui.voiceFile.click()'), 'Microphone must never ask users to
 assert(!html.includes('Choose Sparkle\'s voice <span'), 'No visible voice selection requirement');
 
 assert(html.includes('The reference recording is publicly accessible'), 'Disclose public reference audio');
-assert(html.includes('voice.css?v=4') && html.includes('lab.js?v=10'), 'Cache-bust the redesigned voice interface');
+assert(html.includes('voice.css?v=5') && html.includes('lab.js?v=11'), 'Cache-bust the redesigned voice interface');
 assert(js.includes('await loadDefaultVoice();'), 'Voice must be fetched before generating speech');
 assert(!html.includes("Choose Sparkle's recording once"), 'No setup instructions');
 
 assert(!js.includes('VoiceClarityProcessor') && !js.includes('clarity.process'), 'Unprocessed native Pocket TTS audio by default');
 assert(js.includes('state.player.play(samples, meta)') && js.includes('chunks.push(samples.slice())'), 'No compressing or limiting the custom voice');
-assert(html.includes('lab.js?v=10'), 'Reference-prep update must bypass cached audio script');
+assert(html.includes('lab.js?v=11'), 'Voice listening fix must bypass cached JavaScript');
 
 assert(js.includes('prepareVoiceReference(mono, decoded.sampleRate)'), 'Use phrase-complete clip before cloning');
 assert(js.includes('state.player.play(samples, meta)') && !js.includes('VoiceClarityProcessor'), 'Keep unprocessed playback after reference fix');
@@ -38,3 +38,12 @@ assert(js.includes('state.player.play(samples, meta)') && !js.includes('VoiceCla
 assert(js.includes('fetch(DEFAULT_SAMPLE_URL') && js.includes('mode: "same-origin"'), 'Load HD MP3 without external dependency');
 assert(!js.includes('api/voice-reference'), 'Never request old audio proxy');
 assert(js.includes('blob.size !== 753687'), 'Validate approved HD asset size');
+
+assert(js.includes('speech.continuous = true'), 'Speech recognition must support multiple sentences');
+assert(js.includes('state.restartTimer = setTimeout('), 'Resume listening after browser-initiated silence or session end');
+assert(js.includes('if (state.finishRequested) { completeSpeechTurn(); return; }'), 'Only an explicit finish can submit a spoken turn');
+assert(js.includes('finishListening()') && js.includes('speech.stop()'), 'User controls when Sparkle responds');
+assert(!js.includes('speech.continuous = false'), 'No one-shot speech recognition');
+assert(!js.includes('text.slice(0, 1200)'), 'Never silently truncate the spoken turn at 1200 characters');
+assert(html.includes('Tap again to send'), 'Voice UI should explain explicit send');
+assert(html.includes('<textarea id="typed-message"'), 'Long transcripts remain editable after interruption');
