@@ -1,6 +1,6 @@
 // Based on the public Transformers.js Chatterbox demo by Resemble AI.
 // Intentionally isolated from production voice and chat.
-import { ChatterboxModel, AutoProcessor, Tensor } from '@huggingface/transformers';
+import { ChatterboxModel, AutoProcessor, Tensor } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.0.0-next.2';
 
 const MODEL = 'onnx-community/chatterbox-ONNX';
 let model, processor, speaker;
