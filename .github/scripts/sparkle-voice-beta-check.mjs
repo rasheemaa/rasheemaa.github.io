@@ -24,13 +24,13 @@ assert(!js.includes('ui.voiceFile.click()'), 'Microphone must never ask users to
 assert(!html.includes('Choose Sparkle\'s voice <span'), 'No visible voice selection requirement');
 
 assert(html.includes('The reference recording is publicly accessible'), 'Disclose public reference audio');
-assert(html.includes('voice.css?v=5') && html.includes('lab.js?v=12'), 'Cache-bust the redesigned voice interface');
+assert(html.includes('voice.css?v=6') && html.includes('lab.js?v=13'), 'Cache-bust the redesigned voice interface');
 assert(js.includes('await loadDefaultVoice();'), 'Voice must be fetched before generating speech');
 assert(!html.includes("Choose Sparkle's recording once"), 'No setup instructions');
 
 assert(!js.includes('VoiceClarityProcessor') && !js.includes('clarity.process'), 'Unprocessed native Pocket TTS audio by default');
 assert(js.includes('state.player.play(samples, meta)') && js.includes('chunks.push(samples.slice())'), 'No compressing or limiting the custom voice');
-assert(html.includes('lab.js?v=12'), 'Voice listening fix must bypass cached JavaScript');
+assert(html.includes('lab.js?v=13'), 'Voice listening fix must bypass cached JavaScript');
 
 assert(js.includes('prepareVoiceReference(mono, decoded.sampleRate)'), 'Use phrase-complete clip before cloning');
 assert(js.includes('state.player.play(samples, meta)') && !js.includes('VoiceClarityProcessor'), 'Keep unprocessed playback after reference fix');
@@ -52,4 +52,11 @@ assert(js.includes('import { turnSilenceMs } from "./turn-detection.mjs"'), 'Use
 assert(js.includes('speech.onspeechstart') && js.includes('speech.onspeechend'), 'Detect the start and end of speech, not browser session end');
 assert(js.includes('scheduleAutoTurn()') && js.includes('clearAutoTurn()'), 'Auto-send can be cancelled when speaking resumes');
 assert(js.includes('if (state.finishRequested) { completeSpeechTurn(); return; }'), 'Browser session end does not immediately send');
-assert(html.includes('Sparkle responds after you finish'), 'Explain the automatic voice behavior');
+assert(html.includes('She waits through short pauses'), 'Explain the automatic voice behavior');
+
+assert(html.includes('id="end-conversation"'), 'Hands-free conversation has an explicit stop control');
+assert(js.includes('state.handsFree = true'), 'Starting the microphone starts an ongoing voice session');
+assert(js.includes('await state.player.waitForCompletion()'), 'Never reopen the mic while Sparkle is still speaking');
+assert(js.includes('playedReply && state.handsFree && !state.cancelled'), 'Reopen mic only after a successful spoken answer');
+assert(js.includes('if (document.hidden && state.handsFree) void cancel()'), 'Stop voice session when tab is backgrounded');
+assert(css.includes('.end-conversation'), 'Provide a discreet always-accessible voice stop');
