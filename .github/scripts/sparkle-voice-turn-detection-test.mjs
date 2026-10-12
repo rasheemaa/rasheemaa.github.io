@@ -169,3 +169,50 @@ function fixture() {
 }
 
 console.log('PASS: auto turn detection, pauses, browser restarts, partials, manual finish and safe recovery');
+
+const playerSource = readFileSync('what-do-i-say/voice-beta/pocket-tts/player.js', 'utf8');
+const StreamingPlayer = new Function(
+  playerSource.replace('export class StreamingPlayer', 'class StreamingPlayer')
+    .replace('export function chunksToWavBlob', 'function chunksToWavBlob')
+  + '\nreturn StreamingPlayer;'
+)();
+function playbackFixture() {
+  const sources = [];
+  const ctx = {
+    currentTime: 0,
+    destination: {},
+    createGain: () => ({ connect() {} }),
+    createAnalyser: () => ({ fftSize: 0, connect() {} }),
+    createBuffer: (_channels, len, rate) => ({ duration: len / rate, copyToChannel() {} }),
+    createBufferSource: () => {
+      const source = { connect() {}, start() {}, stop() { this.onended?.(); } };
+      sources.push(source);
+      return source;
+    }
+  };
+  const player = new StreamingPlayer({ audioContext: ctx, primeSeconds: 0 });
+  player.play(new Float32Array(24000), { isLast: true });
+  player.flush();
+  return { player, sources };
+}
+{
+  const t = playbackFixture();
+  assert.equal(t.sources.length, 1);
+  let completed = false;
+  const waiting = t.player.waitForCompletion().then(() => { completed = true; });
+  await Promise.resolve();
+  assert.equal(completed, false, 'Do not reopen mic before audio finishes');
+  t.sources[0].onended();
+  await waiting;
+  assert.equal(completed, true, 'Audio completion should allow next turn');
+}
+{
+  const t = playbackFixture();
+  const waiting = t.player.waitForCompletion();
+  t.player.stop();
+  await waiting;
+}
+assert(source.includes('await state.player.waitForCompletion()'), 'Voice session waits for playback');
+assert(source.includes('state.handsFree = true'), 'User can start hands-free mode');
+assert(source.includes('if (playedReply && state.handsFree && !state.cancelled)'), 'Follow-up requires successful spoken reply');
+console.log('PASS: microphone remains off until playback ends and cancel releases waiters');
