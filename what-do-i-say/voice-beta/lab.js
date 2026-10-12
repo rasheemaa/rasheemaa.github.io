@@ -20,9 +20,12 @@ const ui = {
 
 const DB_NAME = "sparkle-voice-device-v1";
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const MAX_VOICE_MESSAGE_CHARS = 6000;
 const state = {
   phase: "idle", busy: false, listening: false, recognition: null,
-  transcript: "", lastHeard: "", history: [], request: null,
+  transcript: "", partial: "", resumeDraft: false, finishRequested: false,
+  restartTimer: null, finishTimer: null, restartFailures: 0,
+  lastHeard: "", history: [], request: null,
   tts: null, player: null, playback: null, voice: null,
   voiceFile: null, voiceKey: "", url: null, cancelled: false
 };
@@ -35,9 +38,9 @@ function phase(name, title, subtitle) {
   ui.subtitle.textContent = subtitle;
   ui.stop.hidden = name !== "thinking" && name !== "speaking";
   ui.talk.hidden = name === "thinking" || name === "speaking";
-  ui.talk.setAttribute("aria-label", name === "listening" ? "Stop listening" : "Talk to Sparkle");
+  ui.talk.setAttribute("aria-label", name === "listening" ? "Finish speaking and send to Sparkle" : state.resumeDraft ? "Continue speaking" : "Talk to Sparkle");
   ui.talk.setAttribute("aria-pressed", String(name === "listening"));
-  ui.typeToggle.disabled = name === "thinking" || name === "speaking";
+  ui.typeToggle.disabled = name === "thinking" || name === "speaking" || name === "listening";
 }
 function report(e) {
   ui.error.textContent = e?.message || String(e);
@@ -288,7 +291,20 @@ async function speak(text) {
   say("Tap to speak again, or replay her last answer.");
 }
 async function processTurn(text) {
+  text = String(text || "").trim();
   if (!text || state.busy) return;
+  // Show a recoverable full draft rather than silently truncating the message.
+  if (text.length > MAX_VOICE_MESSAGE_CHARS) {
+    state.transcript = text;
+    state.resumeDraft = true;
+    ui.typed.value = text;
+    ui.typeForm.hidden = false;
+    ui.error.textContent = "Your full transcript is saved below, but it's too long to send in one message. Please divide it into parts. Nothing was cut off or sent.";
+    ui.error.hidden = false;
+    phase("idle", "Your words are saved", "Edit your transcript below.");
+    say("Nothing was sent. Your whole message is still here.");
+    return;
+  }
   state.cancelled = false;
   state.busy = true;
   state.lastHeard = text;
@@ -296,7 +312,9 @@ async function processTurn(text) {
   showTurn(text, "");
   phase("thinking", "Sparkle is thinking", "One moment…");
   say("Understanding what you said…");
-  const oldHistory = state.history.slice(-8);
+  const oldHistory = state.history.slice(-4).map(turn => ({
+    role: turn.role, content: String(turn.content || "").slice(0, 850)
+  }));
   try {
     state.request = new AbortController();
     const base = String(window.WDIS_API_BASE || "").replace(/\/$/, "");
@@ -306,18 +324,23 @@ async function processTurn(text) {
       headers: { "Content-Type": "application/json" },
       cache: "no-store",
       signal: state.request.signal,
-      body: JSON.stringify({ text: text.slice(0, 1200), history: oldHistory })
+      body: JSON.stringify({ text, history: oldHistory })
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data?.error || "Sparkle couldn't respond. Try again.");
     const reply = String(data?.message || "").trim();
     if (!reply) throw new Error("Sparkle returned an empty answer.");
     if (state.cancelled) return;
-    state.history = [...oldHistory, { role: "user", content: text.slice(0, 1200) }, { role: "assistant", content: reply }].slice(-8);
+    state.history = [...state.history, { role: "user", content: text }, { role: "assistant", content: reply }].slice(-8);
     showTurn(text, reply);
     await speak(reply);
   } catch (e) {
-    if (!state.cancelled && e?.name !== "AbortError") report(e);
+    if (!state.cancelled && e?.name !== "AbortError") {
+      state.transcript = text;
+      state.resumeDraft = true;
+      ui.typed.value = text;
+      report(e);
+    }
   } finally {
     state.request = null;
     state.busy = false;
@@ -328,16 +351,145 @@ async function processTurn(text) {
 async function cancel() {
   state.cancelled = true;
   state.request?.abort();
-  if (state.recognition && state.listening) {
-    try { state.recognition.abort(); } catch {}
-  }
+  clearTimeout(state.restartTimer);
+  clearTimeout(state.finishTimer);
+  state.restartTimer = null;
+  state.finishTimer = null;
+  state.finishRequested = false;
+  if (state.recognition) { try { state.recognition.abort(); } catch {} }
   state.recognition = null;
   state.listening = false;
+  state.partial = "";
+  state.transcript = "";
+  state.resumeDraft = false;
   if (state.tts && state.busy) { try { await state.tts.stop(); } catch {} }
   state.player?.stop();
   state.busy = false;
   phase("idle", "Talk to Sparkle", "Just say what's on your mind.");
   say("Stopped. Tap the microphone whenever you're ready.");
+}
+
+function joinSpeech(...parts) {
+  return parts.map(part => String(part || "").trim()).filter(Boolean).join(" ").trim();
+}
+function showSpeechDraft() {
+  const words = joinSpeech(state.transcript, state.partial);
+  if (words) showTurn(words, "");
+}
+function pauseSpeech(message) {
+  clearTimeout(state.restartTimer);
+  state.restartTimer = null;
+  state.listening = false;
+  state.finishRequested = false;
+  state.resumeDraft = Boolean(state.transcript);
+  phase("idle", "Listening paused", "Your words are still here.");
+  say(message || "Nothing sent. Tap the microphone to continue, or type instead.");
+  showSpeechDraft();
+}
+function completeSpeechTurn() {
+  if (!state.finishRequested) return;
+  clearTimeout(state.finishTimer);
+  state.finishTimer = null;
+  state.finishRequested = false;
+  const words = state.transcript.trim();
+  state.transcript = "";
+  state.partial = "";
+  state.resumeDraft = false;
+  phase("idle", "Talk to Sparkle", "Just say what's on your mind.");
+  if (words) void processTurn(words);
+  else say("I didn't catch that. Tap the microphone to try again.");
+}
+function startSpeechSegment() {
+  if (!state.listening || state.finishRequested) return;
+  const speech = new SpeechRecognition();
+  speech.lang = "en-US";
+  speech.continuous = true;
+  speech.interimResults = true;
+  speech.maxAlternatives = 1;
+  state.recognition = speech;
+  state.partial = "";
+  speech.onresult = event => {
+    if (state.recognition !== speech) return;
+    const finals = [], interims = [];
+    // Browsers repeat previous results, so rebuild each segment without duplicates.
+    for (let i = 0; i < event.results.length; i++) {
+      const result = event.results[i];
+      const words = result?.[0]?.transcript || "";
+      if (result?.isFinal) finals.push(words);
+      else interims.push(words);
+    }
+    state.partial = joinSpeech(finals.join(" "), interims.join(" "));
+    if (state.partial) state.restartFailures = 0;
+    showSpeechDraft();
+  };
+  speech.onerror = event => {
+    if (state.recognition !== speech || state.cancelled) return;
+    const error = event.error || "unknown";
+    if (["not-allowed", "service-not-allowed", "audio-capture", "language-not-supported"].includes(error)) {
+      state.listening = false;
+      ui.error.textContent = "Microphone access stopped. Your captured words are saved. Tap to try again or type instead.";
+      ui.error.hidden = false;
+    } else if (error !== "no-speech" && error !== "aborted") {
+      state.restartFailures++;
+      ui.error.textContent = "Speech recognition had a connection problem. Your words have been saved.";
+      ui.error.hidden = false;
+    }
+  };
+  speech.onend = () => {
+    if (state.recognition !== speech) return;
+    state.recognition = null;
+    state.transcript = joinSpeech(state.transcript, state.partial);
+    state.partial = "";
+    if (state.finishRequested) { completeSpeechTurn(); return; }
+    if (!state.listening || state.restartFailures >= 4) {
+      pauseSpeech("Microphone paused. Nothing was sent. Tap the microphone to continue or type instead.");
+      return;
+    }
+    // A browser-initiated onend is NOT the user's permission to send.
+    say("Still listening… Take your time. Tap the microphone when you're finished.");
+    state.restartTimer = setTimeout(() => {
+      state.restartTimer = null;
+      startSpeechSegment();
+    }, state.restartFailures ? 850 : 250);
+  };
+  try { speech.start(); }
+  catch {
+    if (state.recognition !== speech) return;
+    state.recognition = null;
+    state.transcript = joinSpeech(state.transcript, state.partial);
+    state.partial = "";
+    ui.error.textContent = "Your browser couldn't restart the microphone. Your words are saved.";
+    ui.error.hidden = false;
+    pauseSpeech("Nothing sent. Tap the microphone to continue or type instead.");
+  }
+}
+function finishListening() {
+  if (!state.listening) return;
+  state.listening = false;
+  state.finishRequested = true;
+  clearTimeout(state.restartTimer);
+  state.restartTimer = null;
+  say("Finishing your message…");
+  const speech = state.recognition;
+  if (!speech) { completeSpeechTurn(); return; }
+  try { speech.stop(); }
+  catch {
+    state.recognition = null;
+    state.transcript = joinSpeech(state.transcript, state.partial);
+    state.partial = "";
+    completeSpeechTurn();
+    return;
+  }
+  // A broken provider must not strand a deliberate user finish.
+  state.finishTimer = setTimeout(() => {
+    if (state.recognition === speech) {
+      try { speech.abort(); } catch {}
+      state.recognition = null;
+      state.transcript = joinSpeech(state.transcript, state.partial);
+      state.partial = "";
+    }
+    completeSpeechTurn();
+  }, 1800);
 }
 function startListening() {
   if (!SpeechRecognition) {
@@ -346,69 +498,45 @@ function startListening() {
     ui.typed.focus();
     return;
   }
-  if (state.listening) {
-    try { state.recognition?.stop(); } catch {}
-    return;
-  }
-  const speech = new SpeechRecognition();
-  speech.lang = "en-US";
-  speech.continuous = false;
-  speech.interimResults = true;
-  speech.maxAlternatives = 1;
-  state.recognition = speech;
+  if (state.listening) { finishListening(); return; }
+  if (state.busy || state.finishRequested) return;
+  if (!state.resumeDraft) state.transcript = "";
+  state.resumeDraft = false;
   state.listening = true;
-  state.transcript = "";
+  state.cancelled = false;
+  state.restartFailures = 0;
   ui.error.hidden = true;
-  phase("listening", "I'm listening", "Go ahead. I'm here.");
-  say("Listening… Speech recognition may use your device's speech provider.");
-  speech.onresult = event => {
-    let full = "";
-    for (let i = 0; i < event.results.length; i++) full += (event.results[i]?.[0]?.transcript || "") + " ";
-    state.transcript = full.trim();
-    if (state.transcript) showTurn(state.transcript, "");
-  };
-  speech.onerror = event => {
-    if (state.recognition !== speech || state.cancelled) return;
-    ui.error.textContent = event.error === "not-allowed" ? "Microphone permission was denied. You can type instead." : event.error === "no-speech" ? "I didn't hear anything. Try again." : "Speech recognition stopped: " + event.error;
-    ui.error.hidden = false;
-  };
-  speech.onend = () => {
-    if (state.recognition !== speech) return;
-    state.recognition = null;
-    state.listening = false;
-    const text = state.transcript;
-    state.transcript = "";
-    phase("idle", "Talk to Sparkle", "Just say what's on your mind.");
-    if (!state.cancelled && text) processTurn(text);
-    else if (!state.cancelled) say("Tap the microphone to try again.");
-  };
-  try { speech.start(); }
-  catch (e) {
-    state.listening = false;
-    state.recognition = null;
-    report(e);
-  }
+  phase("listening", "I'm listening", "Take your time. Tap again when you're finished.");
+  say("Listening… Your pauses won't make Sparkle respond.");
+  startSpeechSegment();
 }
 ui.talk.addEventListener("click", () => {
-  if (state.listening) { state.recognition?.stop(); return; }
-  if (state.busy) return;
+  if (state.listening) { finishListening(); return; }
+  if (state.busy || state.finishRequested) return;
   ui.typeForm.hidden = true;
-  state.cancelled = false;
   try { ensurePlayback(); } catch (e) { report(e); return; }
   startListening();
 });
 ui.stop.addEventListener("click", cancel);
 ui.typeToggle.addEventListener("click", () => {
+  if (state.listening) return;
   ui.typeForm.hidden = !ui.typeForm.hidden;
-  if (!ui.typeForm.hidden) ui.typed.focus();
+  if (!ui.typeForm.hidden) {
+    if (state.resumeDraft && !ui.typed.value) ui.typed.value = state.transcript;
+    ui.typed.focus();
+  }
 });
 ui.typeForm.addEventListener("submit", event => {
   event.preventDefault();
   const text = ui.typed.value.trim();
-  if (!text || state.busy) return;
+  if (!text || state.busy || state.listening || state.finishRequested) return;
   try { ensurePlayback(); } catch (e) { report(e); return; }
-  ui.typed.value = "";
-  ui.typeForm.hidden = true;
+  if (text.length <= MAX_VOICE_MESSAGE_CHARS) {
+    ui.typed.value = "";
+    ui.typeForm.hidden = true;
+    state.transcript = "";
+    state.resumeDraft = false;
+  }
   processTurn(text);
 });
 ui.replay.addEventListener("click", async () => {
@@ -417,6 +545,10 @@ ui.replay.addEventListener("click", async () => {
   catch (e) { report(e); }
 });
 window.addEventListener("pagehide", () => {
+  clearTimeout(state.restartTimer);
+  clearTimeout(state.finishTimer);
+  state.listening = false;
+  try { state.recognition?.abort(); } catch {}
   state.request?.abort();
   if (state.url) URL.revokeObjectURL(state.url);
   state.tts?.destroy();
