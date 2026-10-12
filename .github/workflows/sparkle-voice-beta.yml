@@ -25,3 +25,5 @@ jobs:
       - run: |
           for f in what-do-i-say/voice-beta/pocket-tts/*.js; do node --check "$f"; done
       - run: node .github/scripts/sparkle-voice-beta-check.mjs
+      - name: Confirm original approved HD audio bytes
+        run: echo '6039ee534cfacbe86a6af66f88c7fd1edcddc95831ac8dfac04ca6da1c9ff68e  what-do-i-say/voice-beta/Sparkle_HD.mp3' | sha256sum -c -

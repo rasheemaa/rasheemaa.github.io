@@ -9,10 +9,10 @@ for(const id of ['voice-file','audio','talk','settings','stop','type-form','repl
 assert(!html.includes('class="step"') && !html.includes('Give her something NEW to say'), 'No three-box test interface');
 assert(js.includes('cloneVoice(prepared') && js.includes('state.tts.generate(text'), 'Clone prepared reference and generate on device');
 assert(js.includes('SpeechRecognition') && js.includes('/api/voice-conversation'), 'Voice UI is connected to conversational endpoint');
-assert(js.includes('DEFAULT_SAMPLE_URL') && js.includes('/api/voice-reference'), 'Load official Sparkle reference automatically');
+assert(js.includes('DEFAULT_SAMPLE_URL = "/what-do-i-say/voice-beta/Sparkle_HD.mp3"'), 'Load approved HD audio from same-origin site');
 assert(js.includes('chunksToWavBlob'));
 assert(!/\bFormData\b|XMLHttpRequest|fetch\s*\(\s*(?:file|state.voiceFile)/.test(js), 'No voice-file uploads');
-assert(!readdirSync(base).some(name=>/\.(mp3|wav|ogg|m4a|flac)$/i.test(name)), 'Never publish reference MP3');
+assert(readdirSync(base).includes('Sparkle_HD.mp3'), 'Approved Sparkle HD MP3 must be in website files');
 assert(!js.includes('serviceWorker.register'), 'Keep main Sparkle app untouched');
 assert(css.includes('.orb') && css.includes('.talk-button'), 'Voice-first design');
 console.log('PASS: voice-first interface, microphone, private sample, isolated backend, no sample publication');
@@ -24,13 +24,17 @@ assert(!js.includes('ui.voiceFile.click()'), 'Microphone must never ask users to
 assert(!html.includes('Choose Sparkle\'s voice <span'), 'No visible voice selection requirement');
 
 assert(html.includes('The reference recording is publicly accessible.'), 'Disclose public reference audio');
-assert(html.includes('voice.css?v=4') && html.includes('lab.js?v=7'), 'Cache-bust the redesigned voice interface');
+assert(html.includes('voice.css?v=4') && html.includes('lab.js?v=8'), 'Cache-bust the redesigned voice interface');
 assert(js.includes('await loadDefaultVoice();'), 'Voice must be fetched before generating speech');
 assert(!html.includes("Choose Sparkle's recording once"), 'No setup instructions');
 
 assert(!js.includes('VoiceClarityProcessor') && !js.includes('clarity.process'), 'Unprocessed native Pocket TTS audio by default');
 assert(js.includes('state.player.play(samples, meta)') && js.includes('chunks.push(samples.slice())'), 'No compressing or limiting the custom voice');
-assert(html.includes('lab.js?v=7'), 'Reference-prep update must bypass cached audio script');
+assert(html.includes('lab.js?v=8'), 'Reference-prep update must bypass cached audio script');
 
 assert(js.includes('prepareVoiceReference(mono, decoded.sampleRate)'), 'Use phrase-complete clip before cloning');
 assert(js.includes('state.player.play(samples, meta)') && !js.includes('VoiceClarityProcessor'), 'Keep unprocessed playback after reference fix');
+
+assert(js.includes('fetch(DEFAULT_SAMPLE_URL') && js.includes('mode: "same-origin"'), 'Load HD MP3 without external dependency');
+assert(!js.includes('api/voice-reference'), 'Never request old audio proxy');
+assert(js.includes('blob.size !== 753687'), 'Validate approved HD asset size');

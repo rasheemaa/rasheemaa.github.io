@@ -151,24 +151,25 @@ ui.forget.addEventListener("click", async () => {
   say("Saved voice cleared from this browser.");
 });
 
-const DEFAULT_SAMPLE_URL = "/api/voice-reference";
+const DEFAULT_SAMPLE_URL = "/what-do-i-say/voice-beta/Sparkle_HD.mp3";
 let defaultVoicePending = null;
 
 async function loadDefaultVoice() {
-  if (state.voiceFile?.name === "sparkle-official-default.mp3") return state.voiceFile;
+  if (state.voiceFile?.name === "Sparkle_HD.mp3") return state.voiceFile;
   if (defaultVoicePending) return defaultVoicePending;
   defaultVoicePending = (async () => {
-    const base = String(window.WDIS_API_BASE || "").replace(/\/$/, "");
-    if (!base) throw new Error("Sparkle's voice service is not configured.");
-    const response = await fetch(base + DEFAULT_SAMPLE_URL, {
-      method: "GET", cache: "default"
+    // Same-origin source: no OneDrive, Cloudflare audio proxy or file-picker required.
+    const response = await fetch(DEFAULT_SAMPLE_URL, {
+      method: "GET", mode: "same-origin", credentials: "same-origin", cache: "default"
     });
-    if (!response.ok) throw new Error("Sparkle's default voice is temporarily unavailable. Try again shortly.");
+    if (!response.ok) throw new Error("Sparkle's official HD voice is temporarily unavailable. Try again shortly.");
     const blob = await response.blob();
-    if (blob.size < 5000 || blob.size > 2_000_000 || !blob.type.includes("audio")) {
-      throw new Error("Sparkle's voice recording was not delivered correctly.");
+    if (blob.size !== 753687) throw new Error("Sparkle's approved HD recording was not delivered correctly.");
+    const header = new Uint8Array(await blob.slice(0, 3).arrayBuffer());
+    if (header[0] !== 0x49 || header[1] !== 0x44 || header[2] !== 0x33) {
+      throw new Error("Sparkle's official HD voice is not a valid MP3.");
     }
-    const file = new File([blob], "sparkle-official-default.mp3", { type: "audio/mpeg" });
+    const file = new File([blob], "Sparkle_HD.mp3", { type: "audio/mpeg" });
     state.voiceFile = file;
     state.voice = null;
     state.voiceKey = "";
