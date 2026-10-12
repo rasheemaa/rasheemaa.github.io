@@ -30,6 +30,7 @@ export class StreamingPlayer {
 
         this._nextStartTime = 0;
         this._sources = new Set();
+        this._completionWaiters = new Set();
         this._gain = null;
         this.analyser = null;
 
@@ -126,7 +127,22 @@ export class StreamingPlayer {
         this._nextStartTime = startAt + buffer.duration;
 
         this._sources.add(source);
-        source.onended = () => this._sources.delete(source);
+        source.onended = () => {
+            this._sources.delete(source);
+            this._resolveCompletionWaiters();
+        };
+    }
+
+    /** Resolve when playback really ends, so the microphone won't hear Sparkle. */
+    waitForCompletion() {
+        if (!this._sources.size) return Promise.resolve();
+        return new Promise(resolve => this._completionWaiters.add(resolve));
+    }
+
+    _resolveCompletionWaiters() {
+        if (this._sources.size) return;
+        for (const resolve of this._completionWaiters) resolve();
+        this._completionWaiters.clear();
     }
 
     /** Stop all scheduled sources immediately and drop any buffered audio. */
@@ -139,6 +155,7 @@ export class StreamingPlayer {
             }
         }
         this._sources.clear();
+        this._resolveCompletionWaiters();
         this._pending = [];
         this._pendingDuration = 0;
         this._primed = false;
