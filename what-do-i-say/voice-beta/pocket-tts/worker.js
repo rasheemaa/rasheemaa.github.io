@@ -18,7 +18,10 @@ const CACHE_NAME = "pocket-tts-js-v1";
 const CHUNK_GAP_SEC = 0.25;
 const MAX_FRAMES = 500;
 const LSD_STEPS = 1;
-const TEMPERATURE = 0.7;
+// English April weights were evaluated and preferred at 0.3 by the model authors.
+// https://github.com/kyutai-labs/pocket-tts/blob/main/pocket_tts/config/english_2026-04.yaml
+// Retain the existing sampling setting for other language bundles.
+let temperature = 0.7;
 const EOS_THRESHOLD = -4.0;
 
 // ----- configurable state (set at init) -----
@@ -406,6 +409,7 @@ async function createSession(language, name, onProgress) {
 async function init(cfg) {
     config = cfg;
     const language = config.language;
+    temperature = language === "english_2026-04" ? 0.3 : 0.7;
     await loadOrt();
 
     post({ type: "status", status: "loading-bundle" });
@@ -583,7 +587,7 @@ async function generate(text, voiceRef) {
             if (eosLogit > EOS_THRESHOLD && eosStep == null) eosStep = step;
             const shouldStop = eosStep != null && step >= eosStep + framesAfterEos;
 
-            const std = Math.sqrt(TEMPERATURE);
+            const std = Math.sqrt(temperature);
             const latentData = new Float32Array(latentDim);
             for (let i = 0; i < latentDim; i++) {
                 let u = 0;

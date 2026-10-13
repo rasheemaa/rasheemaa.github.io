@@ -4,7 +4,7 @@
  * sent to the existing Cloudflare backend. Reference voice/audio remains
  * local, optionally saved in IndexedDB after the user picks the file.
  */
-import { PocketTTS, StreamingPlayer, chunksToWavBlob } from "./pocket-tts/index.js?v=2";
+import { PocketTTS, StreamingPlayer, chunksToWavBlob } from "./pocket-tts/index.js?v=3";
 import { prepareVoiceReference } from "./reference-prep.mjs";
 import { turnSilenceMs } from "./turn-detection.mjs";
 
