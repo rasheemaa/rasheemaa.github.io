@@ -28,6 +28,7 @@ export class PocketTTS {
      * @param {object} [options]
      * @param {string} [options.language="english_2026-04"]  Language bundle to load.
      * @param {boolean} [options.quantized=true]  Use INT8 models (smaller/faster) vs full precision.
+     * @param {boolean} [options.fullPrecisionAudio=false]  Keep flow and waveform decoder in FP32.
      * @param {boolean} [options.voiceCloning=true]  Download the encoder so cloneVoice() works.
      * @param {string} [options.modelBaseUrl]  Base URL of the `onnx/` folder on Hugging Face.
      * @param {string} [options.ortBaseUrl]  Base URL for onnxruntime-web dist files.
@@ -40,6 +41,7 @@ export class PocketTTS {
         this.options = {
             language: options.language || "english_2026-04",
             quantized: options.quantized !== false,
+            fullPrecisionAudio: options.fullPrecisionAudio === true,
             voiceCloning: options.voiceCloning !== false,
             modelBaseUrl: (options.modelBaseUrl || DEFAULT_MODEL_BASE_URL).replace(/\/$/, ""),
             ortBaseUrl: options.ortBaseUrl || DEFAULT_ORT_BASE_URL,
@@ -69,7 +71,7 @@ export class PocketTTS {
 
     _ensureWorker() {
         if (this.worker) return;
-        this.worker = new Worker(new URL("./worker.js", import.meta.url), { type: "module" });
+        this.worker = new Worker(new URL("./worker.js?v=2", import.meta.url), { type: "module" });
         this.worker.onmessage = (e) => this._handleMessage(e.data);
         this.worker.onerror = (e) => {
             const err = new Error(e.message || "Worker error");
