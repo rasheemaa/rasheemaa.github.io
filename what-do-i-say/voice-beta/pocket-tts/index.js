@@ -71,7 +71,7 @@ export class PocketTTS {
 
     _ensureWorker() {
         if (this.worker) return;
-        this.worker = new Worker(new URL("./worker.js?v=3", import.meta.url), { type: "module" });
+        this.worker = new Worker(new URL("./worker.js?v=4", import.meta.url), { type: "module" });
         this.worker.onmessage = (e) => this._handleMessage(e.data);
         this.worker.onerror = (e) => {
             const err = new Error(e.message || "Worker error");
