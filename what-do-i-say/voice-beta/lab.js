@@ -271,32 +271,45 @@ async function ensureVoice() {
   }
 }
 async function speak(text) {
-  phase("speaking", "Sparkle is speaking", "Listen to her answer.");
+  // Buffer native PCM before playback to avoid live inference underruns on
+  // slower devices. This preserves the model's raw output and exact pacing.
+  phase("thinking", "Preparing Sparkle's voice", "Making sure her reply plays smoothly.");
   await ensureVoice();
   if (state.cancelled) return;
   state.player.reset();
   const chunks = [];
-  say("Speaking in Sparkle's custom voice…");
-  await state.tts.generate(text.slice(0, 1500), {
+  const chunkMeta = [];
+  say("Preparing a continuous voice reply…");
+  await state.tts.generate(text, {
     voice: state.voice,
     onChunk: (samples, meta) => {
       if (state.cancelled) return;
-      state.player.play(samples, meta);
       chunks.push(samples.slice());
+      chunkMeta.push(meta);
     }
   });
-  state.player.flush();
   if (state.cancelled) return;
   if (!chunks.length) throw new Error("Sparkle couldn't produce voice audio on this device.");
+
   clearResult();
   state.url = URL.createObjectURL(chunksToWavBlob(chunks, state.tts.sampleRate));
   ui.audio.src = state.url;
   ui.download.href = state.url;
   ui.download.hidden = false;
   ui.replay.disabled = false;
-  say(state.handsFree ? "Sparkle is finishing her reply. The microphone will reopen next." : "Tap to speak again, or replay her last answer.");
-  // Wait for actual audio playback, not only completed synthesis.
+  phase("speaking", "Sparkle is speaking", "Listen to her answer.");
+  // All chunks are already available, so schedule them together with no gap
+  // caused by on-device inference falling behind real-time playback.
+  for (let i = 0; i < chunks.length; i++) {
+    if (state.cancelled) return;
+    const samples = chunks[i];
+    const meta = chunkMeta[i];
+    state.player.play(samples, meta);
+  }
+  state.player.flush();
   await state.player.waitForCompletion();
+  if (state.cancelled) return;
+  say(state.handsFree ? "Sparkle has finished. The microphone will reopen next." : "Tap to speak again, or replay her last answer.");
 }
 async function processTurn(text) {
   text = String(text || "").trim();
