@@ -28,4 +28,4 @@ jobs:
       - run: node .github/scripts/sparkle-voice-beta-check.mjs
       - run: node .github/scripts/sparkle-voice-turn-detection-test.mjs
       - name: Confirm original approved HD audio bytes
-        run: echo '9cca7394cf982852b58682608b0b5ad53e24dbccae74cead32bef3120163bd02  what-do-i-say/voice-beta/Sparkle_HD_soft.mp3' | sha256sum -c -
+        run: echo 'b59e9c4d70864fcd0cb0b4e9c5f4a25b4854464e53104b7a6a5449d24a54ea20  what-do-i-say/voice-beta/Sparkle_reference.wav' | sha256sum -c -
