@@ -670,6 +670,7 @@ ui.talk.addEventListener("click", () => {
     state.listening = false;
     state.transcript = joinSpeech(state.transcript, state.partial);
     state.partial = "";
+    state.resumeDraft = Boolean(state.transcript);
     try { stalled.abort(); } catch {}
   }
   if (state.listening) { finishListening(); return; }
