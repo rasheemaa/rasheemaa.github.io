@@ -15,7 +15,6 @@ const MODEL_STEMS = ["mimi_encoder", "text_conditioner", "flow_lm_main", "flow_l
 // Bump the version suffix to invalidate previously cached assets.
 const CACHE_NAME = "pocket-tts-js-v1";
 
-const CHUNK_GAP_SEC = 0.25;
 const MAX_FRAMES = 500;
 const LSD_STEPS = 1;
 // English April weights were evaluated and preferred at 0.3 by the model authors.
@@ -565,7 +564,6 @@ async function generate(text, voiceRef) {
         let chunkDecodedFrames = 0;
         let currentLatent = createTensor("float32", new Float32Array(latentDim).fill(NaN), [1, 1, latentDim]);
         let eosStep = null;
-        let chunkEnded = false;
         let chunkGenTimeMs = 0;
 
         for (let step = 0; step < MAX_FRAMES; step++) {
@@ -662,28 +660,12 @@ async function generate(text, voiceRef) {
             }
 
             if (shouldStop) {
-                chunkEnded = true;
                 break;
             }
         }
 
-        if (chunkEnded && isGenerating && chunkIdx < chunks.length - 1) {
-            const gapSamples = Math.max(1, Math.floor(CHUNK_GAP_SEC * sampleRate));
-            const silence = new Float32Array(gapSamples);
-            post(
-                {
-                    type: "chunk",
-                    audio: silence,
-                    meta: {
-                        chunkDuration: gapSamples / sampleRate,
-                        isFirst: false,
-                        isLast: false,
-                        isSilence: true,
-                    },
-                },
-                [silence.buffer]
-            );
-        }
+        // No synthetic silence between text spans. Each decoded speech chunk
+        // already carries its own natural ending; playback concatenates PCM.
     }
 
     const audioSeconds = (totalFrames * samplesPerFrame) / sampleRate;
