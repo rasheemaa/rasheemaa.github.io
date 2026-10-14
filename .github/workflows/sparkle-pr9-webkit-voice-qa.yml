@@ -1,0 +1,66 @@
+name: Sparkle PR9 WebKit mobile voice QA (isolated)
+
+on:
+  push:
+    branches:
+      - "test/sparkle-pr9-real-pocket-tts-20261013"
+    paths:
+      - ".github/workflows/sparkle-pr9-webkit-voice-qa.yml"
+      - ".github/scripts/sparkle-pr9-real-synthesis.mjs"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sparkle-pr9-webkit-voice-qa
+  cancel-in-progress: false
+
+jobs:
+  webkit-voice-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      SPARKLE_MODEL_CACHE_DIR: .cache/sparkle-pocket-tts
+      SPARKLE_BROWSER: webkit
+    steps:
+      - name: Checkout isolated test branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Set up Node 20
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.11'
+      - name: Restore exact model weights
+        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        with:
+          path: .cache/sparkle-pocket-tts
+          key: sparkle-pocket-tts-english-2026-04-qmixed-v1-${{ runner.os }}
+      - name: Confirm model integrity
+        run: python3 .github/scripts/sparkle-pocket-tts-prefetch.py
+      - name: Verify voice code static regression checks
+        run: |
+          node --check what-do-i-say/voice-beta/lab.js
+          for f in what-do-i-say/voice-beta/pocket-tts/*.js; do node --check "$f"; done
+          node .github/scripts/sparkle-voice-beta-check.mjs
+          node .github/scripts/sparkle-voice-turn-detection-test.mjs
+      - name: Install Playwright browser runner and WebKit
+        run: |
+          npm install --prefix .github/scripts --no-save --ignore-scripts --no-audit --no-fund playwright-core@1.56.1
+          npx --yes playwright@1.56.1 install --with-deps webkit
+      - name: Real Pocket TTS on iPhone-emulated WebKit
+        timeout-minutes: 30
+        run: node .github/scripts/sparkle-pr9-real-synthesis.mjs
+      - name: Upload WebKit generated audio and verified sample metrics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: sparkle-pr9-webkit-iphone-emulation
+          path: sparkle-real-webkit-artifacts/
+          if-no-files-found: warn
+          retention-days: 7
