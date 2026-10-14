@@ -5,12 +5,9 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/payment-access-smoke.yml'
-      - '.github/scripts/payment-access-smoke.mjs'
       - '.github/scripts/free-access-smoke.mjs'
       - 'what-do-i-say/index.html'
       - 'what-do-i-say/config.js'
-      - 'what-do-i-say/payment-v3.js'
-      - 'what-do-i-say/paid-trial-access.js'
       - 'what-do-i-say/chat-app.js'
       - 'what-do-i-say/service-worker.js'
   workflow_dispatch:
