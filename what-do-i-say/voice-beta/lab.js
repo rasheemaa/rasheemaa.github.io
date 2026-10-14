@@ -582,6 +582,11 @@ function startSpeechSegment() {
     } else if (!state.transcript) say("Still listening… Take your time.");
     state.restartTimer = setTimeout(() => {
       state.restartTimer = null;
+      if (!state.listening || state.finishRequested || state.cancelled || state.busy) return;
+      // Browser-ended recognition sessions also restart without a user
+      // gesture. Guard these retries, not just the post-playback restart.
+      state.awaitingMicStart = true;
+      say("Reconnecting microphone…");
       startSpeechSegment();
     }, state.restartFailures ? 850 : 250);
   };
