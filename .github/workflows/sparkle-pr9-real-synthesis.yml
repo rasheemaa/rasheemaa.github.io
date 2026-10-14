@@ -1,0 +1,66 @@
+name: Sparkle PR9 real Pocket TTS synthesis
+
+on:
+  push:
+    branches:
+      - "test/sparkle-pr9-real-pocket-tts-20261013"
+    paths:
+      - ".github/workflows/sparkle-pr9-real-synthesis.yml"
+      - ".github/scripts/sparkle-pr9-real-synthesis.mjs"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sparkle-pr9-real-synthesis
+  cancel-in-progress: false
+
+jobs:
+  generate-real-voice:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      SPARKLE_MODEL_CACHE_DIR: .cache/sparkle-pocket-tts
+    steps:
+      - name: Checkout isolated PR9 test branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Set up Node 20
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.11'
+      - name: Restore tested Pocket TTS weight cache
+        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        with:
+          path: .cache/sparkle-pocket-tts
+          key: sparkle-pocket-tts-english-2026-04-qmixed-v1-${{ runner.os }}
+      - name: Verify all eight cached model assets
+        run: python3 .github/scripts/sparkle-pocket-tts-prefetch.py
+      - name: Install pinned Playwright browser driver
+        run: npm install --prefix .github/scripts --no-save --ignore-scripts --no-audit --no-fund playwright-core@1.56.1
+      - name: Ensure headless Chromium is available
+        run: |
+          if command -v google-chrome >/dev/null; then
+            google-chrome --version
+          elif command -v chromium >/dev/null; then
+            chromium --version
+          else
+            npx --yes playwright@1.56.1 install chromium --with-deps
+          fi
+      - name: Generate real reference-conditioned speech with PR9 worker
+        timeout-minutes: 25
+        run: node .github/scripts/sparkle-pr9-real-synthesis.mjs
+      - name: Upload generated audio and comparison evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: sparkle-pr9-real-pocket-tts-audio
+          path: sparkle-real-tts-artifacts/
+          if-no-files-found: warn
+          retention-days: 7
