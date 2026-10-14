@@ -221,6 +221,42 @@ for (const kind of ["error", "end"]) {
   assert.equal(t.ui.error.hidden, true);
 }
 
+// A Safari session can end after capturing a complete sentence, then its
+// replacement session may end without microphone events. Do not let the
+// restart watchdog cancel the pending auto-send or discard the sentence.
+{
+  const t = createFixture();
+  t.startListening({ automatic: true });
+  const first = t.FakeSpeechRecognition.instances[0];
+  first.onaudiostart();
+  output(t, "I am finished.");
+  first.onend();
+  t.advance(250);
+  const second = t.FakeSpeechRecognition.instances[1];
+  assert.equal(t.state.awaitingMicStart, false, "Existing auto-send owns the completed phrase");
+  second.onend();
+  t.advance(turnSilenceMs("I am finished.") - 250);
+  assert.deepEqual(t.requests, ["I am finished."], "Do not cancel or duplicate a completed turn");
+  assert.equal(t.ui.error.hidden, true);
+}
+// When a person pauses mid-thought for longer than 6.5 seconds, a browser
+// session restart must not interrupt the conservative speech grace period.
+{
+  const t = createFixture();
+  t.startListening({ automatic: true });
+  const first = t.FakeSpeechRecognition.instances[0];
+  first.onaudiostart();
+  output(t, "um");
+  first.onend();
+  t.advance(250);
+  assert.equal(t.state.awaitingMicStart, false);
+  t.advance(6500);
+  assert.equal(t.ui.error.hidden, true);
+  assert.equal(t.requests.length, 0, "Do not prematurely submit a hesitation");
+  t.advance(turnSilenceMs("um") - 6750);
+  assert.deepEqual(t.requests, ["um"], "Let the conservative timer finish normally");
+}
+
 // Starting from a physical tap should not impose an unnecessary watchdog.
 {
   const t = createFixture();
