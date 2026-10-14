@@ -59,7 +59,6 @@ layout: null
         <p class="y2k-drop-label">✦ NEW EDIT JUST DROPPED ✦</p>
         <p class="eyebrow y2k-date">Spontaneous edit · {{ newest_edit.date | date: "%B %-d, %Y" }}</p>
         <h1 class="hero-title" id="hero-title">{{ newest_edit.title }}</h1>
-        {% if newest_edit.url contains "the-words-are-in-my-head" %}<p class="y2k-lede">The words are right there. Getting them out is another story.</p>{% endif %}
         <p class="hero-text">{{ newest_edit.description }}</p>
         <div class="button-row"><a class="button" href="{{ newest_edit.url }}">Open the new edit ♡ <span aria-hidden="true">↗</span></a></div>
         <p class="tiny-note">unfiltered thoughts from my little corner of the internet ✧ xo, Sheema</p>
