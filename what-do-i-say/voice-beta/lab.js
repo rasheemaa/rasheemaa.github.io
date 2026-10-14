@@ -583,10 +583,11 @@ function startSpeechSegment() {
     state.restartTimer = setTimeout(() => {
       state.restartTimer = null;
       if (!state.listening || state.finishRequested || state.cancelled || state.busy) return;
-      // Browser-ended recognition sessions also restart without a user
-      // gesture. Guard these retries, not just the post-playback restart.
-      state.awaitingMicStart = true;
-      say("Reconnecting microphone…");
+      // Browser-ended recognition sessions can restart without a gesture.
+      // A completed phrase may already have a scheduled auto-send. Preserve
+      // that timer instead of letting a silent restart fail and discard it.
+      state.awaitingMicStart = !state.autoTimer;
+      if (state.awaitingMicStart) say("Reconnecting microphone…");
       startSpeechSegment();
     }, state.restartFailures ? 850 : 250);
   };
