@@ -28,6 +28,7 @@ const state = {
   transcript: "", partial: "", resumeDraft: false, finishRequested: false,
   restartTimer: null, finishTimer: null, autoTimer: null,
   handsFree: false, followUpTimer: null,
+  micStartTimer: null, awaitingMicStart: false,
   pendingInterim: false, lastSpeechActivity: 0, restartFailures: 0,
   lastHeard: "", history: [], request: null,
   tts: null, player: null, playback: null, voice: null,
@@ -373,7 +374,7 @@ async function processTurn(text) {
       clearTimeout(state.followUpTimer);
       state.followUpTimer = setTimeout(() => {
         state.followUpTimer = null;
-        if (state.handsFree && !state.busy && !state.listening && !document.hidden) startListening();
+        if (state.handsFree && !state.busy && !state.listening && !document.hidden) startListening({ automatic: true });
       }, 650);
     }
   }
@@ -381,6 +382,8 @@ async function processTurn(text) {
 async function cancel() {
   state.cancelled = true;
   state.handsFree = false;
+  clearMicStartWatchdog();
+  state.awaitingMicStart = false;
   clearTimeout(state.followUpTimer);
   state.followUpTimer = null;
   state.request?.abort();
@@ -415,6 +418,34 @@ function clearAutoTurn() {
   clearTimeout(state.autoTimer);
   state.autoTimer = null;
 }
+// Safari may accept SpeechRecognition.start() without ever opening audio.
+// Only an audio/speech/result event confirms the microphone is usable.
+const MIC_START_TIMEOUT_MS = 6500;
+function clearMicStartWatchdog() {
+  clearTimeout(state.micStartTimer);
+  state.micStartTimer = null;
+}
+function confirmMicStarted(speech) {
+  if (!state.awaitingMicStart || state.recognition !== speech || !state.listening) return;
+  state.awaitingMicStart = false;
+  clearMicStartWatchdog();
+  say("Listening… Take your time.");
+}
+function failAutoMicRestart(speech) {
+  if (!state.awaitingMicStart || state.recognition !== speech) return;
+  clearMicStartWatchdog();
+  state.awaitingMicStart = false;
+  state.recognition = null;
+  state.transcript = joinSpeech(state.transcript, state.partial);
+  state.partial = "";
+  state.pendingInterim = false;
+  state.handsFree = false;
+  // Avoid a browser onend event re-triggering an automatic retry loop.
+  try { speech.abort(); } catch {}
+  pauseSpeech("Microphone didn't reconnect. Tap the microphone to continue. Your conversation is saved.");
+  ui.error.textContent = "Automatic microphone restart failed. Tap the microphone once to continue speaking.";
+  ui.error.hidden = false;
+}
 function noteSpeechActivity() {
   state.lastSpeechActivity = Date.now();
   clearAutoTurn();
@@ -435,6 +466,8 @@ function scheduleAutoTurn() {
   say("Keep talking if you need to. Sparkle will respond when you're done.");
 }
 function pauseSpeech(message) {
+  clearMicStartWatchdog();
+  state.awaitingMicStart = false;
   clearAutoTurn();
   clearTimeout(state.restartTimer);
   state.restartTimer = null;
@@ -467,8 +500,15 @@ function startSpeechSegment() {
   speech.interimResults = true;
   speech.maxAlternatives = 1;
   state.recognition = speech;
+  // onstart alone confirms the service, not live microphone audio on iOS.
+  speech.onstart = () => {
+    if (state.recognition === speech && state.awaitingMicStart) say("Reconnecting microphone audio…");
+  };
+  speech.onaudiostart = () => confirmMicStarted(speech);
+  speech.onsoundstart = () => confirmMicStarted(speech);
   // Event support varies across browsers; finalized results provide a fallback.
   speech.onspeechstart = () => {
+    confirmMicStarted(speech);
     if (state.recognition !== speech || !state.listening) return;
     state.pendingInterim = true;
     noteSpeechActivity();
@@ -492,6 +532,7 @@ function startSpeechSegment() {
     state.partial = joinSpeech(finals.join(" "), interims.join(" "));
     state.pendingInterim = interims.length > 0;
     if (state.partial) {
+      confirmMicStarted(speech);
       state.restartFailures = 0;
       noteSpeechActivity();
     }
@@ -501,6 +542,10 @@ function startSpeechSegment() {
   speech.onerror = event => {
     if (state.recognition !== speech || state.cancelled) return;
     const error = event.error || "unknown";
+    if (state.awaitingMicStart && error !== "aborted") {
+      failAutoMicRestart(speech);
+      return;
+    }
     if (["not-allowed", "service-not-allowed", "audio-capture", "language-not-supported"].includes(error)) {
       state.listening = false;
       ui.error.textContent = "Microphone access stopped. Your captured words are saved. Tap to try again or type instead.";
@@ -513,6 +558,10 @@ function startSpeechSegment() {
   };
   speech.onend = () => {
     if (state.recognition !== speech) return;
+    if (state.awaitingMicStart) {
+      failAutoMicRestart(speech);
+      return;
+    }
     state.recognition = null;
     const segmentWords = state.partial;
     state.transcript = joinSpeech(state.transcript, segmentWords);
@@ -536,7 +585,13 @@ function startSpeechSegment() {
       startSpeechSegment();
     }, state.restartFailures ? 850 : 250);
   };
-  try { speech.start(); }
+  try {
+    speech.start();
+    if (state.awaitingMicStart && state.recognition === speech) {
+      clearMicStartWatchdog();
+      state.micStartTimer = setTimeout(() => failAutoMicRestart(speech), MIC_START_TIMEOUT_MS);
+    }
+  }
   catch {
     if (state.recognition !== speech) return;
     state.recognition = null;
@@ -549,6 +604,8 @@ function startSpeechSegment() {
 }
 function finishListening() {
   if (!state.listening) return;
+  clearMicStartWatchdog();
+  state.awaitingMicStart = false;
   clearAutoTurn();
   state.listening = false;
   state.finishRequested = true;
@@ -578,7 +635,7 @@ function finishListening() {
     completeSpeechTurn();
   }, 1800);
 }
-function startListening() {
+function startListening({ automatic = false } = {}) {
   if (!SpeechRecognition) {
     state.handsFree = false;
     ui.endConversation.hidden = true;
@@ -593,16 +650,28 @@ function startListening() {
   state.resumeDraft = false;
   state.listening = true;
   state.cancelled = false;
+  state.awaitingMicStart = automatic;
   state.restartFailures = 0;
   state.pendingInterim = false;
   state.lastSpeechActivity = Date.now();
   clearAutoTurn();
   ui.error.hidden = true;
-  phase("listening", "I'm listening", "Keep talking naturally. I'll respond when you're done.");
-  say("Listening… Short pauses are okay. Tap again to send sooner.");
+  phase("listening", automatic ? "Reconnecting microphone" : "I'm listening", "Keep talking naturally. I'll respond when you're done.");
+  say(automatic ? "Reopening your microphone… Tap to reconnect manually if needed." : "Listening… Short pauses are okay. Tap again to send sooner.");
   startSpeechSegment();
 }
 ui.talk.addEventListener("click", () => {
+  if (state.awaitingMicStart && state.recognition) {
+    // User gesture is the reliable Safari fallback after silent auto-resume.
+    const stalled = state.recognition;
+    clearMicStartWatchdog();
+    state.awaitingMicStart = false;
+    state.recognition = null;
+    state.listening = false;
+    state.transcript = joinSpeech(state.transcript, state.partial);
+    state.partial = "";
+    try { stalled.abort(); } catch {}
+  }
   if (state.listening) { finishListening(); return; }
   if (state.busy || state.finishRequested) return;
   ui.typeForm.hidden = true;
@@ -640,6 +709,8 @@ ui.replay.addEventListener("click", async () => {
 });
 window.addEventListener("pagehide", () => {
   state.handsFree = false;
+  clearMicStartWatchdog();
+  state.awaitingMicStart = false;
   clearTimeout(state.followUpTimer);
   clearTimeout(state.restartTimer);
   clearTimeout(state.finishTimer);
