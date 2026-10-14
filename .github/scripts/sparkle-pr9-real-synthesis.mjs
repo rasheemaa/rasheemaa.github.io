@@ -94,8 +94,10 @@ try {
 
     function base64(arr) {
       let out = "";
-      for (let i = 0; i < arr.length; i += 32768)
-        out += btoa(String.fromCharCode(...arr.subarray(i, i + 32768)));
+      // Each intermediate base64 block must be a multiple of 3 bytes.
+      // Otherwise btoa pads every block and Node stops decoding at the first '='.
+      for (let i = 0; i < arr.length; i += 32766)
+        out += btoa(String.fromCharCode(...arr.subarray(i, i + 32766)));
       return out;
     }
     function measure(chunks) {
@@ -166,8 +168,18 @@ try {
   for (const r of result.results) {
     const naturalPath = OUT + "/sparkle-pr9-" + r.name + ".wav";
     const baselinePath = OUT + "/sparkle-reconstructed-250ms-" + r.name + ".wav";
-    writeFileSync(naturalPath, Buffer.from(r.naturalWavBase64, "base64"));
-    writeFileSync(baselinePath, Buffer.from(r.legacyWavBase64, "base64"));
+    const naturalWav = Buffer.from(r.naturalWavBase64, "base64");
+    const baselineWav = Buffer.from(r.legacyWavBase64, "base64");
+    // Do not report success on partially-decoded or truncated WAV exports.
+    for (const [audio, stats] of [[naturalWav, r.natural], [baselineWav, r.legacy]]) {
+      assert.equal(audio.toString("ascii", 0, 4), "RIFF");
+      assert.equal(audio.toString("ascii", 8, 12), "WAVE");
+      assert.equal(audio.readUInt32LE(24), r.sampleRate);
+      assert.equal(audio.readUInt32LE(40), stats.samples * 2);
+      assert.equal(audio.byteLength, 44 + stats.samples * 2);
+    }
+    writeFileSync(naturalPath, naturalWav);
+    writeFileSync(baselinePath, baselineWav);
     const {naturalWavBase64,legacyWavBase64,...details} = r;
     summary.tests.push({...details, naturalPath, baselinePath});
     assert(r.natural.nonFinite === 0 && r.natural.rms > 0.001 && r.natural.seconds > 0.1);
