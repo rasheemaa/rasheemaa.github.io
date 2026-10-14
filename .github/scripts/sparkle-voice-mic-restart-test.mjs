@@ -181,6 +181,46 @@ for (const kind of ["error", "end"]) {
   assert.equal(t.timers.size, 0);
 }
 
+// Safari may terminate a previously confirmed recognition session and
+// restart without another user gesture. This secondary automatic path must
+// also detect a hung microphone instead of falsely claiming to be listening.
+{
+  const t = createFixture();
+  t.startListening({ automatic: true });
+  const first = t.FakeSpeechRecognition.instances[0];
+  first.onaudiostart();
+  first.onend();
+  t.advance(249);
+  assert.equal(t.FakeSpeechRecognition.instances.length, 1);
+  t.advance(1);
+  const second = t.FakeSpeechRecognition.instances[1];
+  assert.equal(second.started, true);
+  assert.equal(t.state.awaitingMicStart, true);
+  t.advance(6500);
+  assert.equal(t.state.listening, false);
+  assert.equal(second.aborted, true);
+  assert.equal(t.ui.error.hidden, false);
+  t.handlers.click();
+  assert.equal(t.state.listening, true);
+  assert.equal(t.FakeSpeechRecognition.instances.length, 3);
+}
+// A healthy recognition restart after browser onend must cancel that
+// watchdog as soon as the microphone reports actual audio activity.
+{
+  const t = createFixture();
+  t.startListening({ automatic: true });
+  const first = t.FakeSpeechRecognition.instances[0];
+  first.onaudiostart();
+  first.onend();
+  t.advance(250);
+  const second = t.FakeSpeechRecognition.instances[1];
+  second.onaudiostart();
+  assert.equal(t.state.awaitingMicStart, false);
+  t.advance(6500);
+  assert.equal(t.state.listening, true);
+  assert.equal(t.ui.error.hidden, true);
+}
+
 // Starting from a physical tap should not impose an unnecessary watchdog.
 {
   const t = createFixture();
@@ -190,4 +230,4 @@ for (const kind of ["error", "end"]) {
   assert.equal(t.state.listening, true);
 }
 
-console.log("PASS: iPhone silent auto-mic failure, audio confirmation, two consecutive turns, timeout, onend, onerror, and one-tap recovery");
+console.log("PASS: iPhone microphone restart checks, browser-ended session restart, confirmed audio, two turns, timeout and one-tap recovery");
