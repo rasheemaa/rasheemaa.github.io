@@ -4,10 +4,11 @@
 import assert from "node:assert/strict";
 import { spawn, execFileSync } from "node:child_process";
 import { writeFileSync, mkdirSync } from "node:fs";
-import { chromium } from "playwright-core";
+import { chromium, webkit, devices } from "playwright-core";
 
 const HOST = "http://127.0.0.1:8765";
-const OUT = "sparkle-real-tts-artifacts";
+const BROWSER = process.env.SPARKLE_BROWSER === "webkit" ? "webkit" : "chromium";
+const OUT = BROWSER === "webkit" ? "sparkle-real-webkit-artifacts" : "sparkle-real-tts-artifacts";
 const CHROME_CANDIDATES = [
   "/usr/bin/google-chrome", "/usr/bin/google-chrome-stable",
   "/usr/bin/chromium", "/usr/bin/chromium-browser"
@@ -29,15 +30,19 @@ const server = spawn("python3", ["-m", "http.server", "8765", "--bind", "127.0.0
 let browser;
 try {
   await waitForServer(HOST + "/what-do-i-say/voice-beta/Sparkle_reference.wav");
-  browser = await chromium.launch({
-    headless: true,
-    executablePath: findChrome(),
-    args: ["--no-sandbox", "--disable-dev-shm-usage", "--autoplay-policy=no-user-gesture-required"]
-  });
-  const page = await browser.newPage({ viewport: { width: 420, height: 850 } });
+  browser = BROWSER === "webkit"
+    ? await webkit.launch({ headless: true })
+    : await chromium.launch({
+        headless: true,
+        executablePath: findChrome(),
+        args: ["--no-sandbox", "--disable-dev-shm-usage", "--autoplay-policy=no-user-gesture-required"]
+      });
+  const device = BROWSER === "webkit" ? devices["iPhone 13"] : { viewport: { width: 420, height: 850 } };
+  const context = await browser.newContext(device);
+  const page = await context.newPage();
   page.on("console", msg => { if (msg.type() === "error") console.log("BROWSER-CONSOLE:", msg.text().slice(0, 900)); });
   page.on("pageerror", err => console.log("PAGEERROR:", err.message.slice(0, 1500)));
-  console.log("CHROME:", await browser.version());
+  console.log("BROWSER ENGINE:", BROWSER, "VERSION:", await browser.version());
   await page.goto(HOST + "/what-do-i-say/voice-beta/", { waitUntil: "domcontentloaded" });
   page.setDefaultTimeout(90000);
 
@@ -164,7 +169,7 @@ try {
   }, { timeout: 0 });
 
   mkdirSync(OUT, { recursive: true });
-  const summary = { source: result.source, referenceSha: result.referenceSha, head: process.env.GITHUB_SHA, tests: [] };
+  const summary = { source: result.source, browserEngine: BROWSER, referenceSha: result.referenceSha, head: process.env.GITHUB_SHA, tests: [] };
   for (const r of result.results) {
     const naturalPath = OUT + "/sparkle-pr9-" + r.name + ".wav";
     const baselinePath = OUT + "/sparkle-reconstructed-250ms-" + r.name + ".wav";
