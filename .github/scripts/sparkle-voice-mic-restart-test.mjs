@@ -143,7 +143,9 @@ for (const eventName of ["onsoundstart", "onspeechstart"]) {
   output(t, "An audio result also proves listening was working.");
   assert.equal(t.state.awaitingMicStart, false);
   t.advance(6500);
-  assert.equal(t.state.listening, true);
+  // Finalized speech may auto-send during this interval; that is expected.
+  assert.equal(t.ui.error.hidden, true, "No false failed-restart warning");
+  assert.equal(t.state.handsFree, true, "Keep the active hands-free conversation");
 }
 
 // If WebKit dispatches an error or ends the session before audio started,
