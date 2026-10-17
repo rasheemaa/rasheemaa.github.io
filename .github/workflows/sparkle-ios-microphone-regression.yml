@@ -1,0 +1,50 @@
+name: Sparkle iOS microphone recovery regression
+
+on:
+  push:
+    branches:
+      - "fix/sparkle-ios-mic-resume-after-playback-20261014"
+    paths:
+      - "what-do-i-say/voice-beta/lab.js"
+      - "what-do-i-say/voice-beta/index.html"
+      - ".github/scripts/sparkle-voice-mic-restart-test.mjs"
+      - ".github/scripts/sparkle-voice-beta-check.mjs"
+      - ".github/workflows/sparkle-ios-microphone-regression.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout the isolated microphone fix
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+      - name: Guard approved audio and Pocket TTS generation implementation
+        run: |
+          set -euo pipefail
+          echo 'b59e9c4d70864fcd0cb0b4e9c5f4a25b4854464e53104b7a6a5449d24a54ea20  what-do-i-say/voice-beta/Sparkle_reference.wav' | sha256sum -c -
+          if git diff --name-only 63e5c1ee6f2875f8cfecd9b1b3d27f33fa4f3983 HEAD | grep -E '^(what-do-i-say/voice-beta/pocket-tts/|what-do-i-say/voice-beta/Sparkle_reference.wav$|what-do-i-say/voice-beta/reference-prep.mjs$)'; then
+            echo 'ERROR: approved voice or synthesis engine changed' >&2
+            exit 1
+          fi
+          echo 'Approved audio and PR9 synthesis engine unchanged'
+      - name: Check JavaScript syntax
+        run: |
+          node --check what-do-i-say/voice-beta/lab.js
+          node --check .github/scripts/sparkle-voice-mic-restart-test.mjs
+      - name: Existing voice beta assertions
+        run: node .github/scripts/sparkle-voice-beta-check.mjs
+      - name: Existing voice turn detection assertions
+        run: node .github/scripts/sparkle-voice-turn-detection-test.mjs
+      - name: New iOS microphone silent restart and two-turn recovery assertions
+        run: node .github/scripts/sparkle-voice-mic-restart-test.mjs
