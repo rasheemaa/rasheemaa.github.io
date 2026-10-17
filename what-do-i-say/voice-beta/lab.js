@@ -386,7 +386,9 @@ async function processTurn(text) {
   }
 }
 async function cancel() {
-  const draft = joinSpeech(state.transcript, state.partial);
+  // Once a turn is submitted, the recording buffer is cleared while Sparkle
+  // thinks or speaks. The original submitted words must survive a Stop.
+  const draft = joinSpeech(state.transcript, state.partial) || (state.busy ? String(state.lastHeard || "").trim() : "");
   state.cancelled = true;
   state.handsFree = false;
   clearMicStartWatchdog();
@@ -409,7 +411,10 @@ async function cancel() {
   state.partial = "";
   state.transcript = draft;
   state.resumeDraft = Boolean(draft);
-  if (draft && !ui.typed.value) ui.typed.value = draft;
+  if (draft) {
+    if (!ui.typed.value) ui.typed.value = draft;
+    ui.typeForm.hidden = false;
+  }
   if (state.tts && state.busy) { try { await state.tts.stop(); } catch {} }
   state.player?.stop();
   state.busy = false;
