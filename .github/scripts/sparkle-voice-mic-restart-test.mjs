@@ -327,6 +327,29 @@ console.log("PASS: iPhone microphone restart checks, browser-ended session resta
 }
 console.log('PASS stopped capture preserves words and abort cannot restart the microphone');
 
+// A submitted turn clears the speech buffer while the API and synthesizer run.
+// Stop must restore that exact submitted message, not silently lose it.
+{
+  const t = createFixture();
+  t.state.busy = true;
+  t.state.lastHeard = 'This was my entire submitted message.';
+  t.state.transcript = '';
+  t.state.partial = '';
+  t.ui.typeForm.hidden = true;
+  t.ui.typed.value = '';
+  t.state.request = { abort() { t.state.requestAborted = true; } };
+  await t.cancel();
+  assert.equal(t.state.requestAborted, true);
+  assert.equal(t.state.transcript, 'This was my entire submitted message.');
+  assert.equal(t.ui.typed.value, 'This was my entire submitted message.');
+  assert.equal(t.ui.typeForm.hidden, false, 'Make the stopped draft editable immediately');
+  assert.equal(t.state.resumeDraft, true);
+  assert.equal(t.state.history.length, 1, 'Do not invent a completed conversation turn');
+  assert.equal(t.state.handsFree, false);
+}
+console.log('PASS Stop during voice processing restores the submitted editable draft');
+
+
 // The longer permission-prompt allowance must not leak into a later
 // browser-initiated restart in that same conversation.
 {
