@@ -28,7 +28,7 @@ const state = {
   transcript: "", partial: "", resumeDraft: false, finishRequested: false,
   restartTimer: null, finishTimer: null, autoTimer: null,
   handsFree: false, followUpTimer: null,
-  micStartTimer: null, awaitingMicStart: false, micConfirmationPending: false,
+  micStartTimer: null, awaitingMicStart: false, micConfirmationPending: false, micStartTimeoutMs: 6500,
   pendingInterim: false, lastSpeechActivity: 0, restartFailures: 0,
   lastHeard: "", history: [], request: null,
   tts: null, player: null, playback: null, voice: null,
@@ -625,7 +625,7 @@ function startSpeechSegment() {
     speech.start();
     if (state.awaitingMicStart && state.recognition === speech) {
       clearMicStartWatchdog();
-      state.micStartTimer = setTimeout(() => failAutoMicRestart(speech), MIC_START_TIMEOUT_MS);
+      state.micStartTimer = setTimeout(() => failAutoMicRestart(speech), state.micStartTimeoutMs || MIC_START_TIMEOUT_MS);
     }
   }
   catch {
@@ -688,6 +688,9 @@ function startListening({ automatic = false } = {}) {
   state.cancelled = false;
   state.awaitingMicStart = true;
   state.micConfirmationPending = true;
+  // A first tap may show a permission prompt. Automatic reopen is already
+  // authorized and should fail quickly; a person choosing Allow needs time.
+  state.micStartTimeoutMs = automatic ? MIC_START_TIMEOUT_MS : 30000;
   state.restartFailures = 0;
   state.pendingInterim = false;
   state.lastSpeechActivity = Date.now();

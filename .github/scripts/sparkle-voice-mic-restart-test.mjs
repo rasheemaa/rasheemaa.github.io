@@ -274,6 +274,9 @@ for (const kind of ["error", "end"]) {
   assert.equal(t.state.phase, 'connecting');
   assert.equal(t.cues.length, 0);
   t.advance(6500);
+  assert.equal(t.state.listening, true, 'Allow time to answer the initial permission prompt');
+  assert.equal(t.ui.error.hidden, true);
+  t.advance(23500);
   assert.equal(t.state.listening, false);
   assert.equal(t.ui.error.hidden, false);
   t.handlers.click();
