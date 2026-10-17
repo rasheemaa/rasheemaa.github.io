@@ -4,6 +4,11 @@ const base='what-do-i-say/voice-beta/';
 const html=readFileSync(base+'index.html','utf8');
 const js=readFileSync(base+'lab.js','utf8');
 const css=readFileSync(base+'voice.css','utf8');
+const worker=readFileSync(base+'pocket-tts/worker.js','utf8');
+const adapter=readFileSync(base+'pocket-tts/index.js','utf8');
+assert(!worker.includes('CHUNK_GAP_SEC') && !worker.includes('isSilence: true'), 'No fixed silent PCM chunk may be inserted between synthesized text spans');
+assert(worker.includes('chunkStart: isFirstAudioChunkOfTextChunk') && worker.includes('isSilence: false'), 'Keep the original synthesized chunk metadata');
+assert(adapter.includes('./worker.js?v=4') && js.includes('./pocket-tts/index.js?v=4'), 'Load the updated voice worker without stale browser cache');
 assert(html.includes('name="robots" content="noindex,nofollow"'));
 for(const id of ['voice-file','audio','talk','settings','stop','type-form','replay']) assert(html.includes('id="'+id+'"'));
 assert(!html.includes('class="step"') && !html.includes('Give her something NEW to say'), 'No three-box test interface');
@@ -24,7 +29,7 @@ assert(!js.includes('ui.voiceFile.click()'), 'Microphone must never ask users to
 assert(!html.includes('Choose Sparkle\'s voice <span'), 'No visible voice selection requirement');
 
 assert(html.includes('The reference recording is publicly accessible'), 'Disclose public reference audio');
-assert(html.includes('voice.css?v=6') && html.includes('lab.js?v=17'), 'Cache-bust the redesigned voice interface');
+assert(html.includes('voice.css?v=6') && html.includes('lab.js?v=20'), 'Cache-bust the redesigned voice interface');
 assert(js.includes('await loadDefaultVoice();'), 'Voice must be fetched before generating speech');
 assert(!html.includes("Choose Sparkle's recording once"), 'No setup instructions');
 
@@ -32,7 +37,7 @@ assert(!js.includes('VoiceClarityProcessor') && !js.includes('clarity.process'),
 assert(js.includes('state.player.play(samples, meta)') && js.includes('chunks.push(samples.slice())'), 'Preserve unprocessed native audio chunks');
 assert(js.indexOf('await state.tts.generate(text,') < js.indexOf('state.player.play(samples, meta)'), 'Buffer full synthesis before playback');
 assert(!js.includes('text.slice(0, 1500)'), 'Do not cut off spoken answers mid-sentence');
-assert(html.includes('lab.js?v=17'), 'Voice listening fix must bypass cached JavaScript');
+assert(html.includes('lab.js?v=20'), 'Voice listening fix must bypass cached JavaScript');
 
 assert(js.includes('prepareVoiceReference(mono, decoded.sampleRate)'), 'Use phrase-complete clip before cloning');
 assert(js.includes('state.player.play(samples, meta)') && !js.includes('VoiceClarityProcessor'), 'Keep unprocessed playback after reference fix');

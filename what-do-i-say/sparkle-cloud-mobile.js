@@ -133,24 +133,6 @@
       throw error;
     }
 
-    if (payload?.refine === 'custom') {
-      onStatus?.({
-        type: 'status',
-        phase: 'generating',
-        message: 'Sparkle is reworking it…',
-        profile: 'Sparkle Mobile',
-        backend: 'mobile-safe-refinement'
-      });
-      const custom = customRefinement(payload);
-      if (!custom) {
-        const error = new Error('Sparkle could not rework that message. Please try again.');
-        error.code = 'sparkle_refine_error';
-        throw error;
-      }
-      onStatus?.({ type: 'status', phase: 'complete', message: 'Sparkle is ready.', profile: 'Sparkle Mobile', backend: 'mobile-safe-refinement' });
-      return custom;
-    }
-
     const controller = new AbortController();
     activeController = controller;
     onStatus?.({
@@ -192,7 +174,7 @@
         throw error;
       }
 
-      if (payload?.refine && payload?.currentMessage && !preservesFacts(message, payload.currentMessage, payload)) {
+      if (payload?.refine && payload.refine !== 'custom' && payload?.currentMessage && !preservesFacts(message, payload.currentMessage, payload)) {
         const fallback = safeRefinement(payload);
         if (fallback) message = fallback;
       }

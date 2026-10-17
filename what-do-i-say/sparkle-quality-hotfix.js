@@ -212,19 +212,7 @@
     };
 
     if (safePayload.refine === 'custom') {
-      try {
-        const edited = await sparkle.generate(customEditPayload(safePayload), options);
-        if (!looksLikeCapabilityRefusal(edited, customEditPayload(safePayload))) return edited;
-        options.onStatus?.({ phase: 'checking', message: 'Sparkle is keeping the edit focused on your message…' });
-        return sparkle.generate(communicationRetryPayload(customEditPayload(safePayload)), options);
-      } catch (error) {
-        if (error?.code === 'sparkle_cancelled') throw error;
-        const fallback = fallbackRefinement('custom', safePayload.currentMessage, extractCustomInstruction(safePayload));
-        if (!fallback) throw error;
-        options.onStatus?.({ phase: 'generating', message: 'Sparkle is polishing the wording…' });
-        options.onStatus?.({ phase: 'complete', message: 'Ready on this device.' });
-        return fallback;
-      }
+      return sparkle.generate({ ...safePayload, text: extractCustomInstruction(safePayload) }, options);
     }
 
     if (safePayload.refine === 'shorter') {

@@ -88,6 +88,7 @@
   function assistant(text, refinable = true) {
     const m = message('assistant', text);
     if (!refinable) return;
+    const base = { ...(S.base || initialPayload(text)) };
     const actions = document.createElement('div'); actions.className = 'response-actions';
     const right = document.createElement('button'); right.type = 'button'; right.className = 'just-right'; right.textContent = 'Just right ✓';
     const more = document.createElement('button'); more.type = 'button'; more.className = 'more-options'; more.textContent = 'More options'; more.setAttribute('aria-expanded','false');
@@ -97,7 +98,7 @@
       await copy(text,right);
     };
     more.onclick = () => { const open = more.getAttribute('aria-expanded') === 'true'; more.setAttribute('aria-expanded',String(!open)); more.textContent = open ? 'More options' : 'Fewer options'; options.hidden = open; };
-    Object.entries(labels).forEach(([key,label]) => { const b=document.createElement('button'); b.type='button'; b.textContent=label; b.onclick=()=>{ if(!S.pending) refine(key,label); }; options.append(b); });
+    Object.entries(labels).forEach(([key,label]) => { const b=document.createElement('button'); b.type='button'; b.textContent=label; b.onclick=()=>{ if(!S.pending) refine(key,label,'',{message:text,base}); }; options.append(b); });
     actions.append(right,more,options); m.stack.append(actions); scrollDown();
   }
 
@@ -119,13 +120,14 @@
     const mode = window.__WDIS_MOBILE_CLOUD_SPARKLE === true ? 'auto' : inferDesktopIntent(source);
     return { mode, tone:'warm', situation:'general', personName:inferRecipient(source), text:source, refine:'', currentMessage:'' };
   }
-  function refinePayload(kind, instruction='') {
-    const base = S.base || initialPayload(S.last);
-    if (kind === 'custom') return { ...base, text:instruction, refine:'custom', currentMessage:S.last };
-    return { ...base, refine:kind, currentMessage:S.last };
+  function refinePayload(kind, instruction='', selection=null) {
+    const current = selection?.message || S.last;
+    const base = selection?.base || S.base || initialPayload(current);
+    if (kind === 'custom') return { ...base, text:instruction, refine:'custom', currentMessage:current };
+    return { ...base, refine:kind, currentMessage:current };
   }
 
-  async function generate(payload, kind='') {
+  async function generate(payload, kind='', base=null) {
     if (!window.Sparkle?.generate) { showError('Sparkle has not loaded yet. Refresh the page and try again.'); return; }
     clearError(); loading(true, kind ? 'Sparkle is reworking it…' : 'Sparkle is finding the words…');
     try {
@@ -134,12 +136,14 @@
       const validDraft = !isNonDraftResponse(out, payload);
       if (validDraft) {
         S.last = out;
-        if (!kind) S.base = {...payload, refine:'', currentMessage:''};
+        if (base) S.base = {...base};
+        else if (!kind) S.base = {...payload, refine:'', currentMessage:''};
       }
       assistant(out, validDraft);
       updateAccess();
       if (validDraft) el.prompt.placeholder='Tell Sparkle what to change…';
     } catch (e) {
+      if (!el.prompt.value && (!kind || kind === 'custom')) { el.prompt.value = payload.text; resize(); }
       if (e?.code === 'sparkle_cancelled') status({phase:'idle',message:'Stopped. Your message is still here.'});
       else { status({phase:'error',message:'Sparkle could not run on this device right now.'}); showError(e?.message || 'Sparkle could not answer right now. Please try again.'); }
     } finally { loading(false); el.prompt.focus(); }
@@ -151,10 +155,10 @@
     message('user',text); el.prompt.value=''; resize();
     const payload=initialPayload(text); S.retry={payload,kind:''}; await generate(payload,'');
   }
-  async function refine(kind, display, instruction='') {
+  async function refine(kind, display, instruction='', selection=null) {
     if (S.pending || !S.last) return;
     if (kind === 'custom') { el.prompt.value=''; resize(); }
-    message('user',display); const payload=refinePayload(kind,instruction); S.retry={payload,kind}; await generate(payload,kind);
+    message('user',display); const payload=refinePayload(kind,instruction,selection); const base=selection?.base || S.base; S.retry={payload,kind,base}; await generate(payload,kind,base);
   }
 
   function reset() {
@@ -166,7 +170,7 @@
   el.form.onsubmit = e => { e.preventDefault(); const text=el.prompt.value.trim(); if(!text)return; S.last ? refine('custom',text,text) : first(text); };
   el.prompt.oninput = resize;
   el.stop.onclick = () => window.Sparkle?.cancel();
-  el.retry.onclick = () => { if(S.retry && !S.pending) generate(S.retry.payload,S.retry.kind); };
+  el.retry.onclick = () => { if(S.retry && !S.pending) generate(S.retry.payload,S.retry.kind,S.retry.base); };
   el.newTop.onclick = reset;
   window.addEventListener('beforeinstallprompt', event => {
     event.preventDefault(); S.installPrompt = event;
