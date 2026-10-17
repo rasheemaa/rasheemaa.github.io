@@ -354,15 +354,21 @@ async function processTurn(text) {
     const reply = String(data?.message || "").trim();
     if (!reply) throw new Error("Sparkle returned an empty answer.");
     if (state.cancelled) return;
-    state.history = [...state.history, { role: "user", content: text }, { role: "assistant", content: reply }].slice(-8);
     showTurn(text, reply);
     await speak(reply);
     playedReply = !state.cancelled;
+    // A reply only joins the conversation after its audio actually finishes.
+    // Failed synthesis or playback must not poison a retry with unheard turns.
+    if (playedReply) state.history = [...state.history, { role: "user", content: text }, { role: "assistant", content: reply }].slice(-8);
   } catch (e) {
     if (!state.cancelled && e?.name !== "AbortError") {
       state.transcript = text;
       state.resumeDraft = true;
       ui.typed.value = text;
+      // Keep the entire unsent message visible and editable if the model or
+      // audio engine fails; a retry must never require repeating speech.
+      ui.typeForm.hidden = false;
+      state.handsFree = false;
       report(e);
     }
   } finally {
