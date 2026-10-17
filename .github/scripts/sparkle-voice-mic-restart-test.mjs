@@ -326,3 +326,16 @@ console.log("PASS: iPhone microphone restart checks, browser-ended session resta
   assert.equal(t.state.history.length, 1);
 }
 console.log('PASS stopped capture preserves words and abort cannot restart the microphone');
+
+// The longer permission-prompt allowance must not leak into a later
+// browser-initiated restart in that same conversation.
+{
+  const t = createFixture();
+  t.handlers.click();
+  t.state.recognition.onaudiostart();
+  t.state.recognition.onend();
+  t.advance(250);
+  t.advance(6500);
+  assert.equal(t.state.listening, false);
+  assert.equal(t.ui.error.hidden, false);
+}

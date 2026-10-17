@@ -617,6 +617,7 @@ function startSpeechSegment() {
       // A completed phrase may already have a scheduled auto-send. Preserve
       // that timer instead of letting a silent restart fail and discard it.
       state.awaitingMicStart = !state.autoTimer;
+      state.micStartTimeoutMs = MIC_START_TIMEOUT_MS;
       if (state.awaitingMicStart) phase("connecting", "Reconnecting microphone", "Waiting for microphone audio. Tap to retry if needed.");
       startSpeechSegment();
     }, state.restartFailures ? 850 : 250);
