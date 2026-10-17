@@ -29,7 +29,7 @@ assert(!js.includes('ui.voiceFile.click()'), 'Microphone must never ask users to
 assert(!html.includes('Choose Sparkle\'s voice <span'), 'No visible voice selection requirement');
 
 assert(html.includes('The reference recording is publicly accessible'), 'Disclose public reference audio');
-assert(html.includes('voice.css?v=6') && html.includes('lab.js?v=21'), 'Cache-bust the redesigned voice interface');
+assert(html.includes('voice.css?v=6') && html.includes('lab.js?v=22'), 'Cache-bust the redesigned voice interface');
 assert(js.includes('await loadDefaultVoice();'), 'Voice must be fetched before generating speech');
 assert(!html.includes("Choose Sparkle's recording once"), 'No setup instructions');
 
@@ -37,7 +37,7 @@ assert(!js.includes('VoiceClarityProcessor') && !js.includes('clarity.process'),
 assert(js.includes('state.player.play(samples, meta)') && js.includes('chunks.push(samples.slice())'), 'Preserve unprocessed native audio chunks');
 assert(js.indexOf('await state.tts.generate(text,') < js.indexOf('state.player.play(samples, meta)'), 'Buffer full synthesis before playback');
 assert(!js.includes('text.slice(0, 1500)'), 'Do not cut off spoken answers mid-sentence');
-assert(html.includes('lab.js?v=21'), 'Voice listening fix must bypass cached JavaScript');
+assert(html.includes('lab.js?v=22'), 'Voice listening fix must bypass cached JavaScript');
 
 assert(js.includes('prepareVoiceReference(mono, decoded.sampleRate)'), 'Use phrase-complete clip before cloning');
 assert(js.includes('state.player.play(samples, meta)') && !js.includes('VoiceClarityProcessor'), 'Keep unprocessed playback after reference fix');
