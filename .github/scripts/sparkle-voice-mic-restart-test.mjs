@@ -339,3 +339,48 @@ console.log('PASS stopped capture preserves words and abort cannot restart the m
   assert.equal(t.state.listening, false);
   assert.equal(t.ui.error.hidden, false);
 }
+
+
+// Failed playback must reveal the full editable draft without committing an
+// unheard answer to conversation history. Exercise the real processTurn body.
+{
+  const begin = source.indexOf("async function processTurn(text)");
+  const end = source.indexOf("async function cancel()", begin);
+  assert(begin > 0 && end > begin, "Need the actual voice request and playback logic");
+  const state = {
+    busy: false, cancelled: false, phase: "idle", handsFree: false,
+    history: [{ role: "assistant", content: "Earlier turn" }],
+    transcript: "", resumeDraft: false, request: null, followUpTimer: null
+  };
+  const ui = {
+    error: { hidden: true }, typed: { value: "" },
+    typeForm: { hidden: true }, progress: { hidden: true }
+  };
+  const spoken = [];
+  let failPlayback = true;
+  const respond = new Function(
+    "state", "ui", "window", "fetch", "AbortController", "showTurn",
+    "phase", "say", "speak", "report", "clearTimeout", "setTimeout",
+    "MAX_VOICE_MESSAGE_CHARS",
+    source.slice(begin, end) + "\nreturn processTurn;"
+  )(
+    state, ui, { WDIS_API_BASE: "https://example.test" },
+    async () => ({ ok: true, json: async () => ({ message: "I hear you." }) }),
+    AbortController, () => {}, (name) => { state.phase = name; },
+    () => {}, async reply => { spoken.push(reply); if (failPlayback) throw Error("Audio unavailable"); },
+    () => { state.phase = "idle"; }, clearTimeout, setTimeout, 6000
+  );
+  await respond("Keep my complete message.");
+  assert.equal(state.transcript, "Keep my complete message.");
+  assert.equal(ui.typed.value, "Keep my complete message.");
+  assert.equal(ui.typeForm.hidden, false, "Failed voice playback must expose the edit field");
+  assert.equal(state.handsFree, false, "Do not restart mic while showing an unsent draft");
+  assert.equal(state.history.length, 1, "An unheard reply must not enter conversation history");
+  assert.equal(state.busy, false);
+  failPlayback = false;
+  await respond("Keep my complete message.");
+  assert.equal(state.history.length, 3, "A heard response is added once after playback completes");
+  assert.equal(state.history[1].content, "Keep my complete message.");
+  assert.equal(spoken.length, 2);
+}
+console.log("PASS voice playback failure keeps full editable text and unheard replies out of history");
