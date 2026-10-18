@@ -1,4 +1,4 @@
-const CACHE = 'wdis-v43';
+const CACHE = 'wdis-v44';
 const SHELL = [
   '/what-do-i-say/',
   '/what-do-i-say/index.html',
@@ -7,17 +7,18 @@ const SHELL = [
   '/what-do-i-say/trust.css?v=1',
   '/what-do-i-say/bootstrap.js?v=2',
   '/what-do-i-say/config.js?v=9',
-  '/what-do-i-say/chat-app.js?v=29',
-  '/what-do-i-say/sparkle.js?v=22',
-  '/what-do-i-say/sparkle-cloud-mobile.js?v=2',
-  '/what-do-i-say/sparkle-quality-hotfix.js?v=4',
+  '/what-do-i-say/chat-app.js?v=30',
+  '/what-do-i-say/sparkle.js?v=23',
+  '/what-do-i-say/sparkle-cloud-mobile.js?v=3',
+  '/what-do-i-say/sparkle-quality-hotfix.js?v=5',
   '/what-do-i-say/sparkle-first-draft-polish.js?v=1',
-  '/what-do-i-say/sparkle-worker.js?v=21',
+  '/what-do-i-say/sparkle-worker.js?v=22',
+  '/what-do-i-say/message-meaning.mjs?v=1',
   '/what-do-i-say/manifest.webmanifest',
   '/assets/images/app-icon-192.png',
   '/assets/images/app-icon-512.png'
 ];
-const FRESH = new Set(SHELL.map(path => new URL(path, self.location.origin).pathname).filter(path => /\.(js|css)$/.test(path)));
+const FRESH = new Set(SHELL.map(path => new URL(path, self.location.origin).pathname).filter(path => /\.(m?js|css)$/.test(path)));
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE)

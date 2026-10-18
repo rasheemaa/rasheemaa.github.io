@@ -129,6 +129,8 @@ async function createGenerator(id, preferLite = false) {
   }
 }
 
+import { requestProblem } from './message-meaning.mjs?v=1';
+
 function compact(value, max = 3000) {
   return String(value || '').replace(/\u0000/g, '').trim().slice(0, max);
 }
@@ -179,12 +181,12 @@ function buildPrompt(payload) {
     softer: 'Rewrite in a gentle, considerate tone. Make requests polite while keeping the same decision.',
     firmer: 'Rewrite confidently with different wording. Keep every refusal, name, date, and time. Remove unnecessary apologies. Do not add dangling words such as “Please” by themselves.',
     professional: 'Rewrite professionally. Use a natural professional greeting, no contractions, and complete sentences. Keep every concrete fact and decision.',
-    another: 'Rewrite with different sentence structure and wording. Keep the same meaning.'
+    another: 'Rewrite with different sentence structure and wording. Keep the same meaning.',
+    custom: `Apply only this requested edit: ${compact(payload.text, 3500)}. Preserve all other facts, perspective, requests, and boundaries. Do not invent details.`
   })[refine];
   if (instruction && current) {
-    const preserve = refine === 'firmer'
-      ? 'Keep all names, dates, times, amounts, and refusals.'
-      : 'Keep all names, dates, times, amounts, refusals, and questions.';
+    const preserve = refine === 'custom' ? 'Change a fact or question only when the edit explicitly asks for that change.'
+      : 'Keep all names, dates, times, amounts, refusals, and questions. An open question must not become a confirmed plan.';
     return `${instruction} ${preserve} Return only the rewritten message.\n\n${current}`;
   }
   const task = instruction || (payload.mode === 'fix'
@@ -199,6 +201,7 @@ function buildPrompt(payload) {
     name ? `Recipient: ${name}. Address ${name} directly.` : '',
     payload.mode === 'write' ? recipientPerspectiveHint(source, name) : '',
     'Preserve the user’s facts, important people and relationships, names, dates, times including AM/PM, amounts, requests, and refusals. Do not invent promises, reasons, people, dates, or events.',
+    'When the notes ask if a proposed time works, ask the recipient directly. Do not say that the plan is agreed or that either person has confirmed it.',
     payload.mode === 'reply' && replyIntentText !== source ? `Conversation and incoming message:\n${source}\n\nMy reply intent:\n${replyIntentText}` : '',
     instruction ? `My message to edit:\n${current}` : payload.mode === 'reply' && replyIntentText !== source ? '' : `My ${payload.mode === 'fix' ? 'draft' : 'notes'}:\n${source}`,
     'Output only my complete sendable message, with no explanation or instructions.'
@@ -246,6 +249,10 @@ function wordCount(text) {
 }
 
 function outputProblem(text, payload) {
+  if (!text || /<\/?think>|<\|/i.test(text)) return 'The message was empty or contained model markup.';
+  const requestIssue = requestProblem(payload, text);
+  if (requestIssue) return requestIssue;
+  if (payload.refine === 'custom') return '';
   if (payload.refine && text.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '') === String(payload.currentMessage || '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '')) return 'Use different wording to make the requested change. Do not copy the original.';
   if (payload.refine === 'shorter' && wordCount(payload.currentMessage) > 12 && wordCount(text) > Math.ceil(wordCount(payload.currentMessage) * 0.85)) return 'Make the message meaningfully shorter without losing any facts. Combine sentences and remove filler.';
   if (!text || /<\/?think>|<\|/i.test(text)) return 'The message was empty or contained model markup.';

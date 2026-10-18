@@ -13,7 +13,7 @@ for (let i = 0; i < 35; i++) {
     const html = response.ok ? await response.text() : '';
     const scriptResponse = await fetch(url + 'chat-app.js?smoke=' + Date.now(), {cache:'no-store'});
     const controller = scriptResponse.ok ? (await scriptResponse.text()).trim() : '';
-    if (html.includes('chat-app.js?v=29') && controller === expectedController && !/data-mode=|class="mode-tabs"|id="paywall"/.test(html)) {
+    if (html.includes('chat-app.js?v=30') && controller === expectedController && !/data-mode=|class="mode-tabs"|id="paywall"/.test(html)) {
       deployed = true; break;
     }
   } catch {}

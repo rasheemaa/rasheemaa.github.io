@@ -9,9 +9,11 @@ assert(!/data-mode=|class="mode|class="mode-tabs"|id="paywall"|data-checkout-off
 const schema = JSON.parse(html.match(/application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
 assert.equal(schema.isAccessibleForFree, true);
 assert.equal(schema.offers.price, '0');
-assert(html.includes('chat-app.js?v=29'), 'Fresh chat controller is referenced');
+assert(html.includes('chat-app.js?v=30'), 'Fresh chat controller is referenced');
 
 class Element {
+  set innerHTML(value) { this.children = []; this.html = value; }
+  get innerHTML() { return this.html || ''; }
   constructor() {
     this.children = []; this.style = {}; this.dataset = {}; this.value = ''; this.textContent = ''; this.className = ''; this.hidden = false;
     this.classList = { add() {}, toggle() {} };
@@ -22,7 +24,14 @@ class Element {
   setAttribute() {}
   getAttribute() { return 'false'; }
   addEventListener() {}
-  querySelector(selector) { return this.children.find(child => selector === '.bubble' && child.className === 'bubble') || null; }
+  querySelector(selector) {
+    for (const child of this.children) {
+      if (selector.startsWith('.') && child.className.split(/\s+/).includes(selector.slice(1))) return child;
+      const nested = child.querySelector(selector);
+      if (nested) return nested;
+    }
+    return null;
+  }
 }
 const cases = [
   { description: 'direct writing', text: 'Tell Alex thank you.', desktop: 'write' },
@@ -42,7 +51,7 @@ for (const scenario of ['new visitor', 'expired trial', 'past purchaser', 'block
     const window = {
       __WDIS_MOBILE_CLOUD_SPARKLE: cloud,
       addEventListener() {},
-      Sparkle: { generate: async payload => { calls.push(payload); return 'Thanks for checking in.'; } }
+      Sparkle: { generate: async payload => { calls.push(payload); return `Draft ${calls.length}.`; } }
     };
     const context = { document, navigator: {}, window, localStorage: {
       getItem() { throw Error('Access must not depend on storage'); },
@@ -64,10 +73,22 @@ for (const scenario of ['new visitor', 'expired trial', 'past purchaser', 'block
     const buttons = walk(nodes.get('#conversation')).filter(element => element.onclick && /^(?:Make it|Try another)/.test(element.textContent));
     for (const button of buttons.slice(-5)) { button.onclick(); await new Promise(resolve => setImmediate(resolve)); }
     assert.deepEqual(calls.slice(-5).map(payload => payload.refine), ['shorter','softer','firmer','professional','another']);
+    assert(calls.slice(-5).every(payload => payload.currentMessage === 'Draft 4.'), 'Each original-response button must keep targeting that response');
     nodes.get('#prompt').value = 'Make it warmer';
     nodes.get('#message-form').onsubmit({ preventDefault() {} });
     await new Promise(resolve => setImmediate(resolve));
     assert.equal(calls.at(-1).refine, 'custom');
+    const earlierMessage = buttons.at(-5);
+    earlierMessage.onclick();
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(calls.at(-1).currentMessage, 'Draft 4.', 'An earlier response button edits that response');
+    nodes.get('#new-message-top').onclick();
+    window.Sparkle.generate = async () => { throw new Error('Service unavailable'); };
+    nodes.get('#prompt').value = 'Tell Jordan I cannot make tonight.';
+    nodes.get('#message-form').onsubmit({ preventDefault() {} });
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(nodes.get('#prompt').value, 'Tell Jordan I cannot make tonight.', 'A failed first generation restores the editable draft');
+    assert.equal(nodes.get('#ai-error').hidden, false);
     console.log(`PASS ${scenario} / ${cloud ? 'mobile cloud' : 'desktop local'}: universal chat, inferred intent, refinements, no paid gate`);
   }
 }

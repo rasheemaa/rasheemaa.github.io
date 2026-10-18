@@ -116,7 +116,7 @@
 
   function repairRefinementPolarity(message, payload) {
     let output = String(message || '').trim();
-    if (!output || !payload?.refine || !payload.currentMessage) return output;
+    if (!output || !payload?.refine || payload.refine === 'custom' || !payload.currentMessage) return output;
 
     const expected = polarityByAnchor(payload.currentMessage);
     if (!expected.size) return output;
@@ -153,7 +153,7 @@
   }
 
   function refinementPolarityMismatch(message, payload) {
-    if (!payload?.refine || !payload.currentMessage) return false;
+    if (!payload?.refine || payload.refine === 'custom' || !payload.currentMessage) return false;
     const expected = polarityByAnchor(payload.currentMessage);
     const actual = polarityByAnchor(message);
     for (const [anchor, polarity] of expected.entries()) {
@@ -279,7 +279,7 @@
 
   function ensureWorker() {
     if (worker) return worker;
-    worker = new Worker('/what-do-i-say/sparkle-worker.js?v=21', { type: 'module' });
+    worker = new Worker('/what-do-i-say/sparkle-worker.js?v=22', { type: 'module' });
 
     const currentWorker = worker;
     worker.addEventListener('message', (event) => {
