@@ -61,4 +61,4 @@ I’ve spent so much time thinking about the person I’ll become when I’m fin
 
 **The person I am right now deserves happiness, too.**
 
-*xo, Sheema*
+*With Love, Sheema*
