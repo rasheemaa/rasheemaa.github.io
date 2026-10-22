@@ -71,6 +71,8 @@ function environment() {
   assert.equal(e.el('idea').value,'Boundaries and confidence');
   assert.equal(e.triggerUnload().prevented,false);
   assert.equal(e.sessionStorage.getItem('sparkle_creator_unsaved_draft_v1'),null);
+  e.el('idea').dispatchEvent(new Event('input'));
+  assert.equal(e.sessionStorage.getItem('sparkle_creator_unsaved_draft_v1'),null);
   e.el('idea').value = 'Updated original idea';
   e.el('save').click();
   const updated = JSON.parse(e.localStorage.getItem('sparkle_creator_projects_v1'));
