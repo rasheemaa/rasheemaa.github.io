@@ -11,9 +11,14 @@
   };
   const refresh = () => {
     const selector = $('saved');
+    const previous = selector.value;
+    const query = $('project-search').value.trim().toLocaleLowerCase();
     selector.replaceChildren(new Option('Select project', ''));
-    read().forEach(p => selector.add(new Option(p.name || 'Untitled', p.id)));
+    read().filter(p => String(p.name || '').toLocaleLowerCase().includes(query))
+      .forEach(p => selector.add(new Option(p.name || 'Untitled', p.id)));
+    if ([...selector.options].some(o => o.value === previous)) selector.value = previous;
   };
+  $('project-search').addEventListener('input', refresh);
   $('save').addEventListener('click', () => {
     const name = $('project').value.trim();
     if (!name || !$('idea').value.trim()) { status('Enter a project name and idea first.'); return; }
@@ -31,6 +36,7 @@
     };
     try {
       localStorage.setItem(KEY, JSON.stringify([record, ...projects.filter(p => p.id !== record.id)].slice(0, 30)));
+      $('project-search').value = '';
       refresh(); $('saved').value = record.id; status(existing ? 'Selected project updated on this device.' : 'New project saved on this device.');
     } catch (_) { status('Browser storage is unavailable or full.'); }
   });
