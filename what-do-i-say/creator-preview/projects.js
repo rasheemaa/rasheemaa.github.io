@@ -42,6 +42,19 @@
     if ([...$('tone').options].some(o => o.value === p.tone)) $('tone').value = p.tone;
     status('Project loaded. Review it before sending anything.');
   });
+  $('delete').addEventListener('click', () => {
+    const selected = $('saved').value;
+    if (!selected) { status('Choose a saved project first.'); return; }
+    const projects = read();
+    const match = projects.find(p => p.id === selected);
+    if (!match) { status('This project is no longer saved.'); refresh(); return; }
+    if (!window.confirm('Delete selected project from this browser?')) return;
+    try {
+      localStorage.setItem(KEY, JSON.stringify(projects.filter(p => p.id !== selected)));
+      refresh();
+      status('Selected project deleted. Other projects are unchanged.');
+    } catch (_) { status('Could not delete selected project.'); }
+  });
   $('clear').addEventListener('click', () => {
     if (!window.confirm('Delete all saved Creator Studio projects from this browser?')) return;
     try { localStorage.removeItem(KEY); refresh(); status('Saved projects deleted from this browser.'); }
