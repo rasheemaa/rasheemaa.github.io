@@ -185,5 +185,19 @@
   window.addEventListener('appinstalled', () => { S.installPrompt = null; if (el.install) el.install.hidden = true; });
 
   if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('/what-do-i-say/service-worker.js',{scope:'/what-do-i-say/',updateViaCache:'none'}).then(r=>r.update()).catch(()=>{}));
+  // Creator preview handoff: prefills only, never submits automatically.
+  try {
+    const raw = sessionStorage.getItem('sparkle_creator_handoff_v1');
+    if (raw) {
+      sessionStorage.removeItem('sparkle_creator_handoff_v1');
+      const handoff = JSON.parse(raw);
+      if (handoff && typeof handoff.text === 'string' && handoff.text.length <= 6000
+          && Number.isFinite(handoff.created) && Date.now() - handoff.created < 300000
+          && Date.now() >= handoff.created) {
+        el.prompt.value = handoff.text.slice(0, el.prompt.maxLength || 3500);
+        el.prompt.placeholder = 'Review your Creator Studio brief, then press Send…';
+      }
+    }
+  } catch (_) {}
   updateAccess(); resize();
 })();
