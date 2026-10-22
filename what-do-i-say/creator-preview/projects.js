@@ -69,6 +69,10 @@
     if (!name || !$('idea').value.trim()) { status('Enter a project name and idea first.'); return; }
     const projects = read();
     const existing = projects.find(p => p.id === editingId);
+    if (!existing && projects.length >= 30) {
+      status('You have reached 30 saved projects. Delete one before saving a new project. Nothing was overwritten.');
+      return;
+    }
     const record = {
       id: existing ? existing.id : String(Date.now()) + '_' + Math.random().toString(36).slice(2, 9),
       name: name.slice(0, 80),
@@ -79,7 +83,7 @@
       saved: new Date().toISOString()
     };
     try {
-      localStorage.setItem(KEY, JSON.stringify([record, ...projects.filter(p => p.id !== record.id)].slice(0, 30)));
+      localStorage.setItem(KEY, JSON.stringify([record, ...projects.filter(p => p.id !== record.id)]));
       $('project-search').value = '';
       refresh(); $('saved').value = record.id; editingId = record.id; cleanSnapshot = snapshot(); clearDraft(); status(existing ? 'Selected project updated on this device.' : 'New project saved on this device.');
     } catch (_) { status('Browser storage is unavailable or full.'); }
