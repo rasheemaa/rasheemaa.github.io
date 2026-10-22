@@ -54,6 +54,7 @@
 @media(prefers-reduced-motion:reduce){.home-editorial main{animation:none}.home-editorial *{scroll-behavior:auto}}
 
 /* Mobile cover notes are absent from approved desktop composition. */
+@media(max-width:720px){.home-editorial .marquee{display:none}}
 .mobile-cover-note{display:none}
 @media(max-width:720px){
 .home-editorial .marquee-track span{display:block;color:#FAF5F0;font-size:.57rem;letter-spacing:.07em;line-height:1.5;padding:9px 20px}.home-editorial .marquee-track span+span{display:none}
