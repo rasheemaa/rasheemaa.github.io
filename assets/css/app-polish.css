@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&display=swap');
 /* The Sheema Edit: consumer app polish layer */
 :root{--app-tap:48px;--app-ease:cubic-bezier(.2,.8,.2,1)}
 html{-webkit-text-size-adjust:100%;text-rendering:optimizeLegibility}
@@ -28,3 +29,69 @@ body{-webkit-font-smoothing:antialiased}
  .footer-links a{display:flex;min-height:44px;align-items:center}
 }
 @media(max-width:420px){.site-shell{width:min(calc(100% - 20px),var(--max))}.section{margin-block:44px}.eyebrow{font-size:.68rem}.button{min-height:50px;width:100%}.button-row{width:100%}}
+
+/* ============================================================
+   Editorial restyle — warm ivory / deep plum / muted rose.
+   Loads on posts, shop and about (every page that includes this
+   file); the homepage keeps its Y2K theme.
+   ============================================================ */
+:root{--ink:#39203a;--muted:#7c6a84;--paper:#faf5f0;--paper-pink:#e8d5d8;--pink:#794356;--hot-pink:#794356;--baby-pink:#e8d5d8;--purple:#794356;--lavender:#e8d5d8;--blue:#e8d5d8;--lime:#39203a;--shadow:none;--shadow-small:none;--border:1px solid rgba(57,32,58,.16);--radius:0px}
+body{background:#faf5f0;font-family:"DM Sans",Arial,sans-serif;line-height:1.7}
+body::before{content:none}
+.skip-link{background:#39203a;color:#faf5f0;border-color:#39203a}
+.site-header{background:rgba(250,245,240,.92);border-bottom:1px solid rgba(57,32,58,.14)}
+.brand{font-family:"Playfair Display",Georgia,serif;font-weight:500;letter-spacing:.01em;text-transform:none;font-size:clamp(1.1rem,2vw,1.35rem)}
+.brand-mark{border:1px solid rgba(57,32,58,.25);border-radius:50%;background:#39203a;box-shadow:none;transform:none}
+.brand-mark::after{content:"S";color:#faf5f0;font-family:"Playfair Display",Georgia,serif;font-size:1.15rem;font-weight:600}
+.site-nav a{font-weight:500;letter-spacing:.1em}
+.site-nav a:not(.nav-pill)::after{height:2px;background:#794356;border-radius:0}
+.nav-pill{border:1px solid rgba(57,32,58,.35);border-radius:0;background:transparent;box-shadow:none;font-weight:500}
+.menu-toggle{border-radius:0;background:#e8d5d8;box-shadow:none;border-color:rgba(57,32,58,.3)}
+.eyebrow{border-radius:0;background:#e8d5d8;box-shadow:none;font-weight:700}
+.tiny-note{font-family:"DM Sans",Arial,sans-serif;transform:none;font-weight:500}
+.hero-title,.page-title,.section-title,.post-title{font-family:"Playfair Display",Georgia,serif;font-weight:500;letter-spacing:-.02em;line-height:1.05}
+.hero-title .chrome,.page-title .chrome{color:#794356;background:none;-webkit-text-fill-color:currentColor;-webkit-text-stroke:0;filter:none}
+.button{border-radius:0;border-color:#39203a;background:#39203a;color:#faf5f0;box-shadow:none;font-weight:500;text-transform:none;letter-spacing:.04em}
+.button:hover,.button:focus-visible{box-shadow:none;transform:none;background:#4b2c4f}
+.button.secondary{background:transparent;color:#39203a}
+.button.lime{background:#39203a;color:#faf5f0}
+.section-kicker{color:#794356;font-weight:700}
+.scribble::after{display:none}
+.category-tag{border-radius:0;background:transparent;color:#794356;border-color:rgba(121,67,86,.4);font-weight:700}
+.featured-copy h3,.post-card h3{font-family:"Playfair Display",Georgia,serif;font-weight:500}
+.text-link{text-decoration-color:#794356}
+.filter-button{border-radius:0}
+.filter-button:hover,.filter-button:focus-visible,.filter-button[aria-pressed="true"]{background:#e8d5d8;transform:none;color:#39203a}
+.post-card{border-radius:0}
+.post-card:nth-child(even),.post-card:nth-child(odd){transform:none}
+.post-art::after{animation:none;border-style:solid;border-color:rgba(255,255,255,.5)}
+.post-meta span+span::before{color:#794356}
+.about-slice{border-radius:0}
+.about-slice::after{font-family:"DM Sans",Arial,sans-serif;transform:none}
+.about-sticker{border-radius:50%;background:#39203a;color:#faf5f0;box-shadow:none;transform:none}
+.social-strip{background:#39203a;box-shadow:none;border-radius:0}
+.site-footer{background:#e8d5d8;border-top:1px solid rgba(57,32,58,.14)}
+.footer-bottom{border-top:1px solid rgba(57,32,58,.14)}
+.page-hero{border-radius:0;background:linear-gradient(150deg,#e8d5d8,#f3e9ea)}
+.page-hero::before{display:none}
+.value-card{border-radius:0}
+.reading-progress{background:#794356}
+.back-link{font-weight:700}
+.article-cover{border-radius:0;box-shadow:none;background:linear-gradient(150deg,#e8d5d8 0%,#f0e4e6 60%,#e3d3da 100%)}
+.article-cover::before,.article-cover::after{content:none}
+.cover-unmasking,.cover-motherhood,.cover-chronic,.cover-lifestyle{background:linear-gradient(150deg,#e8d5d8 0%,#f0e4e6 60%,#e3d3da 100%)}
+.article-cover .cover-note{background:#faf5f0;border:1px solid rgba(57,32,58,.2);box-shadow:none;transform:none;font-family:"Playfair Display",Georgia,serif;font-weight:500;font-style:italic}
+.article-body{font-family:"DM Sans",Arial,sans-serif}
+.article-body>p:first-child::first-letter{color:#794356;font-family:"Playfair Display",Georgia,serif;font-weight:600}
+.article-body h2{font-family:"Playfair Display",Georgia,serif;font-weight:500}
+.article-body blockquote{border:0;border-left:2px solid #794356;border-radius:0;background:#e8d5d8;box-shadow:none;font-weight:400;font-style:italic}
+.article-body blockquote::before{content:none}
+.article-body li::marker{color:#794356}
+.article-body a{color:#794356}
+.article-aside{background:#e8d5d8;border:1px solid rgba(57,32,58,.16);border-radius:0;box-shadow:none;transform:none}
+.article-aside strong{font-family:"Playfair Display",Georgia,serif;font-weight:600}
+.article-end{border-radius:0;background:#e8d5d8;box-shadow:none;border:1px solid rgba(57,32,58,.12)}
+.article-end h2{font-family:"Playfair Display",Georgia,serif;font-weight:500}
+.not-found-card{border-radius:0;box-shadow:none;background:#faf5f0;border:1px solid rgba(57,32,58,.16)}
+.not-found-card .big{color:#794356}
+.support-edit-float{background:#39203a;color:#faf5f0;border:1px solid #39203a;box-shadow:none;border-radius:0;font-weight:500}
