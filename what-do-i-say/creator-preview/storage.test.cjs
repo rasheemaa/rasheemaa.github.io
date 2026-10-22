@@ -15,7 +15,7 @@ function environment() {
     replaceChildren(...items) { this.options = items; },
     add(item) { this.options.push(item); }
   });
-  for (const id of ['save','load','delete','clear','saved','project','task','idea','audience','tone','save-status','profile-save','profile-clear','profile-status','creator-name','creator-niche','creator-style','creator-avoid']) elements.set(id, make(id));
+  for (const id of ['save','load','delete','clear','saved','project-search','project','task','idea','audience','tone','save-status','profile-save','profile-clear','profile-status','creator-name','creator-niche','creator-style','creator-avoid']) elements.set(id, make(id));
   elements.get('task').options = [{value:'content'},{value:'reply'}];
   elements.get('tone').options = [{value:'Warm and conversational'},{value:'Playful and bold'}];
   elements.get('task').value = 'content';
@@ -62,6 +62,12 @@ function environment() {
   e.el('idea').value = 'Another idea';
   e.el('save').click();
   assert.equal(JSON.parse(e.localStorage.getItem('sparkle_creator_projects_v1')).length,2);
+  e.el('project-search').value = 'second';
+  e.el('project-search').listeners.input();
+  assert.equal(e.el('saved').options.length,2);
+  e.el('project-search').value = '';
+  e.el('project-search').listeners.input();
+  e.el('saved').value = JSON.parse(e.localStorage.getItem('sparkle_creator_projects_v1'))[0].id;
   e.el('delete').click();
   const remaining = JSON.parse(e.localStorage.getItem('sparkle_creator_projects_v1'));
   assert.equal(remaining.length,1);
