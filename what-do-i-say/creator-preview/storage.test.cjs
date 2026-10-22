@@ -8,6 +8,7 @@ const vm = require('node:vm');
 function environment() {
   const data = new Map(), elements = new Map();
   let allowDiscard = true;
+  const windowListeners = {};
   const make = id => ({
     id, value: '', textContent: '', options: [],
     listeners: {},
@@ -32,13 +33,13 @@ function environment() {
     document: {getElementById: id => elements.get(id)},
     localStorage,
     Option: function(text,value) { this.text = text; this.value = value; },
-    window: {confirm: () => allowDiscard},
+    window: {confirm: () => allowDiscard, addEventListener: (type,fn) => {windowListeners[type] = fn;}},
     Date, Math, JSON, String,
     Event: function(type) { this.type = type; }
   });
   const run = file => vm.runInContext(fs.readFileSync(path.join(__dirname,file),'utf8'),context);
   const el = id => elements.get(id);
-  return {run,el,localStorage,context,setAllowDiscard: value => {allowDiscard = value;}};
+  return {run,el,localStorage,context,setAllowDiscard: value => {allowDiscard = value;},triggerUnload: () => {const event = {returnValue:undefined,prevented:false,preventDefault(){this.prevented=true;}};windowListeners.beforeunload?.(event);return event;}};
 }
 
 {
@@ -54,12 +55,14 @@ function environment() {
   assert.equal(saved.length,1);
   assert.equal(saved[0].idea,'Boundaries and confidence');
   e.el('idea').value = 'Changed';
+  assert.equal(e.triggerUnload().prevented,true);
   e.setAllowDiscard(false);
   e.el('load').click();
   assert.equal(e.el('idea').value,'Changed');
   e.setAllowDiscard(true);
   e.el('load').click();
   assert.equal(e.el('idea').value,'Boundaries and confidence');
+  assert.equal(e.triggerUnload().prevented,false);
   e.el('idea').value = 'Updated original idea';
   e.el('save').click();
   const updated = JSON.parse(e.localStorage.getItem('sparkle_creator_projects_v1'));
