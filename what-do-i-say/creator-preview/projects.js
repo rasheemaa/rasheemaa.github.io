@@ -3,6 +3,7 @@
   const KEY = 'sparkle_creator_projects_v1';
   const $ = id => document.getElementById(id);
   const status = message => { $('save-status').textContent = message; };
+  let editingId = null;
   const read = () => {
     try {
       const parsed = JSON.parse(localStorage.getItem(KEY) || '[]');
@@ -19,12 +20,14 @@
     if ([...selector.options].some(o => o.value === previous)) selector.value = previous;
   };
   $('project-search').addEventListener('input', refresh);
+  $('saved').addEventListener('change', () => {
+    if ($('saved').value !== editingId) status('Selection changed. Load a project before editing it; Save updates the last loaded project.');
+  });
   $('save').addEventListener('click', () => {
     const name = $('project').value.trim();
     if (!name || !$('idea').value.trim()) { status('Enter a project name and idea first.'); return; }
     const projects = read();
-    const selected = $('saved').value;
-    const existing = projects.find(p => p.id === selected);
+    const existing = projects.find(p => p.id === editingId);
     const record = {
       id: existing ? existing.id : String(Date.now()) + '_' + Math.random().toString(36).slice(2, 9),
       name: name.slice(0, 80),
@@ -37,12 +40,13 @@
     try {
       localStorage.setItem(KEY, JSON.stringify([record, ...projects.filter(p => p.id !== record.id)].slice(0, 30)));
       $('project-search').value = '';
-      refresh(); $('saved').value = record.id; status(existing ? 'Selected project updated on this device.' : 'New project saved on this device.');
+      refresh(); $('saved').value = record.id; editingId = record.id; status(existing ? 'Selected project updated on this device.' : 'New project saved on this device.');
     } catch (_) { status('Browser storage is unavailable or full.'); }
   });
   $('load').addEventListener('click', () => {
     const p = read().find(item => item.id === $('saved').value);
     if (!p) { status('Choose a saved project first.'); return; }
+    editingId = p.id;
     $('project').value = p.name || '';
     $('idea').value = p.idea || '';
     $('audience').value = p.audience || '';
@@ -60,6 +64,7 @@
     if (!window.confirm('Delete selected project from this browser?')) return;
     try {
       localStorage.setItem(KEY, JSON.stringify(projects.filter(p => p.id !== selected)));
+      if (editingId === selected) editingId = null;
       refresh();
       status('Selected project deleted. Other projects are unchanged.');
     } catch (_) { status('Could not delete selected project.'); }
