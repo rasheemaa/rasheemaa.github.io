@@ -64,6 +64,13 @@ function environment() {
   e.el('idea').value = 'Another idea';
   e.el('save').click();
   assert.equal(JSON.parse(e.localStorage.getItem('sparkle_creator_projects_v1')).length,2);
+  const records = JSON.parse(e.localStorage.getItem('sparkle_creator_projects_v1'));
+  e.el('saved').value = records[1].id;
+  e.el('project').value = 'Second project revised';
+  e.el('save').click();
+  const afterSelection = JSON.parse(e.localStorage.getItem('sparkle_creator_projects_v1'));
+  assert.equal(afterSelection.length,2);
+  assert.equal(afterSelection.find(p => p.id === records[1].id).name,'POV idea');
   e.el('project-search').value = 'second';
   e.el('project-search').listeners.input();
   assert.equal(e.el('saved').options.length,2);
