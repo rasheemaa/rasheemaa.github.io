@@ -1,12 +1,25 @@
 (() => {
   'use strict';
   const KEY = 'sparkle_creator_projects_v1';
+  const DRAFT_KEY = 'sparkle_creator_unsaved_draft_v1';
   const $ = id => document.getElementById(id);
   const status = message => { $('save-status').textContent = message; };
   let editingId = null;
   const fields = ['project','idea','audience','task','tone'];
   const snapshot = () => JSON.stringify(fields.map(id => $(id).value));
   let cleanSnapshot = snapshot();
+  let draftTimer = null;
+  const clearDraft = () => { try { sessionStorage.removeItem(DRAFT_KEY); } catch (_) {} };
+  const saveDraft = () => {
+    try {
+      if (snapshot() === cleanSnapshot) { clearDraft(); return; }
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ fields: fields.map(id => $(id).value), time: Date.now() }));
+    } catch (_) {}
+  };
+  fields.forEach(id => {
+    $(id).addEventListener('input', saveDraft);
+    $(id).addEventListener('change', saveDraft);
+  });
   const confirmDiscard = () => snapshot() === cleanSnapshot || window.confirm('Discard unsaved changes to the current project?');
   window.addEventListener('beforeunload', event => {
     if (snapshot() === cleanSnapshot) return;
@@ -41,7 +54,7 @@
     refresh();
     $('saved').value = '';
     $('idea').dispatchEvent(new Event('input', { bubbles: true }));
-    cleanSnapshot = snapshot();
+    cleanSnapshot = snapshot(); clearDraft();
     status('New project started. Saved projects remain unchanged.');
     $('project').focus();
   });
@@ -65,7 +78,7 @@
     try {
       localStorage.setItem(KEY, JSON.stringify([record, ...projects.filter(p => p.id !== record.id)].slice(0, 30)));
       $('project-search').value = '';
-      refresh(); $('saved').value = record.id; editingId = record.id; cleanSnapshot = snapshot(); status(existing ? 'Selected project updated on this device.' : 'New project saved on this device.');
+      refresh(); $('saved').value = record.id; editingId = record.id; cleanSnapshot = snapshot(); clearDraft(); status(existing ? 'Selected project updated on this device.' : 'New project saved on this device.');
     } catch (_) { status('Browser storage is unavailable or full.'); }
   });
   $('load').addEventListener('click', () => {
@@ -79,7 +92,7 @@
     if ([...$('task').options].some(o => o.value === p.task)) $('task').value = p.task;
     if ([...$('tone').options].some(o => o.value === p.tone)) $('tone').value = p.tone;
     $('idea').dispatchEvent(new Event('input', { bubbles: true }));
-    cleanSnapshot = snapshot();
+    cleanSnapshot = snapshot(); clearDraft();
     status('Project loaded. Save again to update this selected project.');
   });
   $('delete').addEventListener('click', () => {
@@ -102,4 +115,12 @@
     catch (_) { status('Could not clear browser storage.'); }
   });
   refresh();
+  try {
+    const draft = JSON.parse(sessionStorage.getItem(DRAFT_KEY) || 'null');
+    if (draft && Array.isArray(draft.fields) && draft.fields.length === fields.length && Number.isFinite(draft.time) && Date.now() - draft.time < 86400000 && window.confirm('Restore your unsaved Creator Studio draft from this tab?')) {
+      fields.forEach((id, i) => { if (typeof draft.fields[i] === 'string') $(id).value = draft.fields[i]; });
+      $('idea').dispatchEvent(new Event('input', { bubbles: true }));
+      status('Unsaved draft restored. Save your project to keep it.');
+    } else if (draft) clearDraft();
+  } catch (_) { clearDraft(); }
 })();
