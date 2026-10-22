@@ -4,6 +4,10 @@
   const $ = id => document.getElementById(id);
   const status = message => { $('save-status').textContent = message; };
   let editingId = null;
+  const fields = ['project','idea','audience','task','tone'];
+  const snapshot = () => JSON.stringify(fields.map(id => $(id).value));
+  let cleanSnapshot = snapshot();
+  const confirmDiscard = () => snapshot() === cleanSnapshot || window.confirm('Discard unsaved changes to the current project?');
   const read = () => {
     try {
       const parsed = JSON.parse(localStorage.getItem(KEY) || '[]');
@@ -21,6 +25,7 @@
   };
   $('project-search').addEventListener('input', refresh);
   $('new-project').addEventListener('click', () => {
+    if (!confirmDiscard()) return;
     editingId = null;
     $('project').value = '';
     $('idea').value = '';
@@ -31,6 +36,7 @@
     refresh();
     $('saved').value = '';
     $('idea').dispatchEvent(new Event('input', { bubbles: true }));
+    cleanSnapshot = snapshot();
     status('New project started. Saved projects remain unchanged.');
     $('project').focus();
   });
@@ -54,12 +60,13 @@
     try {
       localStorage.setItem(KEY, JSON.stringify([record, ...projects.filter(p => p.id !== record.id)].slice(0, 30)));
       $('project-search').value = '';
-      refresh(); $('saved').value = record.id; editingId = record.id; status(existing ? 'Selected project updated on this device.' : 'New project saved on this device.');
+      refresh(); $('saved').value = record.id; editingId = record.id; cleanSnapshot = snapshot(); status(existing ? 'Selected project updated on this device.' : 'New project saved on this device.');
     } catch (_) { status('Browser storage is unavailable or full.'); }
   });
   $('load').addEventListener('click', () => {
     const p = read().find(item => item.id === $('saved').value);
     if (!p) { status('Choose a saved project first.'); return; }
+    if (!confirmDiscard()) return;
     editingId = p.id;
     $('project').value = p.name || '';
     $('idea').value = p.idea || '';
@@ -67,6 +74,7 @@
     if ([...$('task').options].some(o => o.value === p.task)) $('task').value = p.task;
     if ([...$('tone').options].some(o => o.value === p.tone)) $('tone').value = p.tone;
     $('idea').dispatchEvent(new Event('input', { bubbles: true }));
+    cleanSnapshot = snapshot();
     status('Project loaded. Save again to update this selected project.');
   });
   $('delete').addEventListener('click', () => {
