@@ -7,7 +7,7 @@ const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const profile = fs.readFileSync(path.join(root, 'profile.js'), 'utf8');
 const projects = fs.readFileSync(path.join(root, 'projects.js'), 'utf8');
 const chat = fs.readFileSync(path.join(root, '..', 'chat-app.js'), 'utf8');
-for (const id of ['task', 'idea', 'tone', 'audience', 'project', 'saved', 'save', 'load', 'delete', 'clear', 'creator-name', 'creator-niche', 'creator-style', 'creator-avoid', 'profile-save', 'profile-clear', 'sparkle']) {
+for (const id of ['task', 'idea', 'tone', 'audience', 'project', 'project-search', 'saved', 'save', 'load', 'delete', 'clear', 'creator-name', 'creator-niche', 'creator-style', 'creator-avoid', 'profile-save', 'profile-clear', 'sparkle']) {
   assert.match(html, new RegExp('id="' + id + '"'), 'Missing control: ' + id);
 }
 assert.match(html, /noindex,nofollow/);
