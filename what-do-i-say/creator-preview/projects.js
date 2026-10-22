@@ -21,7 +21,7 @@
   };
   $('project-search').addEventListener('input', refresh);
   $('saved').addEventListener('change', () => {
-    if ($('saved').value !== editingId) status('Selection changed. Load a project before editing it; Save updates the last loaded project.');
+    if ($('saved').value !== editingId) { editingId = null; status('Selection changed. Load a project to edit it, or Save to create a new project.'); }
   });
   $('save').addEventListener('click', () => {
     const name = $('project').value.trim();
