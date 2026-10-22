@@ -7,6 +7,7 @@ const vm = require('node:vm');
 
 function environment() {
   const data = new Map(), elements = new Map();
+  let allowDiscard = true;
   const make = id => ({
     id, value: '', textContent: '', options: [],
     listeners: {},
@@ -31,13 +32,13 @@ function environment() {
     document: {getElementById: id => elements.get(id)},
     localStorage,
     Option: function(text,value) { this.text = text; this.value = value; },
-    window: {confirm: () => true},
+    window: {confirm: () => allowDiscard},
     Date, Math, JSON, String,
     Event: function(type) { this.type = type; }
   });
   const run = file => vm.runInContext(fs.readFileSync(path.join(__dirname,file),'utf8'),context);
   const el = id => elements.get(id);
-  return {run,el,localStorage,context};
+  return {run,el,localStorage,context,setAllowDiscard: value => {allowDiscard = value;}};
 }
 
 {
@@ -53,6 +54,10 @@ function environment() {
   assert.equal(saved.length,1);
   assert.equal(saved[0].idea,'Boundaries and confidence');
   e.el('idea').value = 'Changed';
+  e.setAllowDiscard(false);
+  e.el('load').click();
+  assert.equal(e.el('idea').value,'Changed');
+  e.setAllowDiscard(true);
   e.el('load').click();
   assert.equal(e.el('idea').value,'Boundaries and confidence');
   e.el('idea').value = 'Updated original idea';
@@ -60,6 +65,11 @@ function environment() {
   const updated = JSON.parse(e.localStorage.getItem('sparkle_creator_projects_v1'));
   assert.equal(updated.length,1);
   assert.equal(updated[0].idea,'Updated original idea');
+  e.el('idea').value = 'Unsaved idea';
+  e.setAllowDiscard(false);
+  e.el('new-project').click();
+  assert.equal(e.el('idea').value,'Unsaved idea');
+  e.setAllowDiscard(true);
   e.el('new-project').click();
   assert.equal(e.el('project').value,'');
   assert.equal(e.el('idea').value,'');
