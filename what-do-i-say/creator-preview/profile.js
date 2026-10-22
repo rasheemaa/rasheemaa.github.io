@@ -33,7 +33,7 @@
   });
   $('profile-clear').addEventListener('click', () => {
     if (!window.confirm('Delete your saved Creator Brain from this browser?')) return;
-    try { localStorage.removeItem(KEY); fields.forEach(id => { $(id).value = ''; }); status('Creator Brain deleted.'); }
+    try { localStorage.removeItem(KEY); fields.forEach(id => { $(id).value = ''; }); $('creator-name').dispatchEvent(new Event('input', { bubbles: true })); status('Creator Brain deleted.'); }
     catch (_) { status('Could not delete Creator Brain.'); }
   });
   window.SparkleCreatorProfile = { profileText };
