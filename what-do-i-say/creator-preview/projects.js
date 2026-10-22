@@ -18,8 +18,10 @@
     const name = $('project').value.trim();
     if (!name || !$('idea').value.trim()) { status('Enter a project name and idea first.'); return; }
     const projects = read();
+    const selected = $('saved').value;
+    const existing = projects.find(p => p.id === selected);
     const record = {
-      id: String(Date.now()) + '_' + Math.random().toString(36).slice(2, 9),
+      id: existing ? existing.id : String(Date.now()) + '_' + Math.random().toString(36).slice(2, 9),
       name: name.slice(0, 80),
       task: $('task').value,
       idea: $('idea').value.slice(0, 4000),
@@ -28,8 +30,8 @@
       saved: new Date().toISOString()
     };
     try {
-      localStorage.setItem(KEY, JSON.stringify([record, ...projects].slice(0, 30)));
-      refresh(); $('saved').value = record.id; status('Saved on this device.');
+      localStorage.setItem(KEY, JSON.stringify([record, ...projects.filter(p => p.id !== record.id)].slice(0, 30)));
+      refresh(); $('saved').value = record.id; status(existing ? 'Selected project updated on this device.' : 'New project saved on this device.');
     } catch (_) { status('Browser storage is unavailable or full.'); }
   });
   $('load').addEventListener('click', () => {
@@ -40,7 +42,7 @@
     $('audience').value = p.audience || '';
     if ([...$('task').options].some(o => o.value === p.task)) $('task').value = p.task;
     if ([...$('tone').options].some(o => o.value === p.tone)) $('tone').value = p.tone;
-    status('Project loaded. Review it before sending anything.');
+    status('Project loaded. Save again to update this selected project.');
   });
   $('delete').addEventListener('click', () => {
     const selected = $('saved').value;
