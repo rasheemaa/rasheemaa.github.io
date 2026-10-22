@@ -48,6 +48,7 @@
     $('audience').value = p.audience || '';
     if ([...$('task').options].some(o => o.value === p.task)) $('task').value = p.task;
     if ([...$('tone').options].some(o => o.value === p.tone)) $('tone').value = p.tone;
+    $('idea').dispatchEvent(new Event('input', { bubbles: true }));
     status('Project loaded. Save again to update this selected project.');
   });
   $('delete').addEventListener('click', () => {
