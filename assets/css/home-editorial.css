@@ -56,7 +56,7 @@
 /* Mobile cover notes are absent from approved desktop composition. */
 .mobile-cover-note{display:none}
 @media(max-width:720px){
-.home-editorial .marquee-track span{display:block;font-size:.57rem;letter-spacing:.07em;line-height:1.5;padding:9px 20px}.home-editorial .marquee-track span+span{display:none}
+.home-editorial .marquee-track span{display:block;color:#FAF5F0;font-size:.57rem;letter-spacing:.07em;line-height:1.5;padding:9px 20px}.home-editorial .marquee-track span+span{display:none}
 .home-editorial .editorial-feature{margin-top:22px;margin-bottom:28px;padding-bottom:28px}
 .editorial-feature-inner{gap:18px}.editorial-feature-copy{padding:0}.editorial-feature-copy .section-kicker{font-size:.65rem;letter-spacing:.14em;margin-bottom:8px;color:#794356}.editorial-feature-copy .eyebrow{font-size:.62rem;letter-spacing:.07em;margin-bottom:0}
 .editorial-feature-copy .hero-title{font-size:clamp(2.25rem,9.5vw,2.7rem);line-height:1.12;letter-spacing:-.025em;text-wrap:balance;margin:14px 0 18px}
