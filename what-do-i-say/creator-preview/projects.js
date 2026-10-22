@@ -20,6 +20,20 @@
     if ([...selector.options].some(o => o.value === previous)) selector.value = previous;
   };
   $('project-search').addEventListener('input', refresh);
+  $('new-project').addEventListener('click', () => {
+    editingId = null;
+    $('project').value = '';
+    $('idea').value = '';
+    $('audience').value = '';
+    $('task').selectedIndex = 0;
+    $('tone').selectedIndex = 0;
+    $('project-search').value = '';
+    refresh();
+    $('saved').value = '';
+    $('idea').dispatchEvent(new Event('input', { bubbles: true }));
+    status('New project started. Saved projects remain unchanged.');
+    $('project').focus();
+  });
   $('saved').addEventListener('change', () => {
     if ($('saved').value !== editingId) { editingId = null; status('Selection changed. Load a project to edit it, or Save to create a new project.'); }
   });
