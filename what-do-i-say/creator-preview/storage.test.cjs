@@ -13,10 +13,11 @@ function environment() {
     addEventListener(type, fn) { this.listeners[type] = fn; },
     click() { this.listeners.click?.(); },
     dispatchEvent(event) { this.listeners[event.type]?.(); },
+    focus() { this.focused = true; },
     replaceChildren(...items) { this.options = items; },
     add(item) { this.options.push(item); }
   });
-  for (const id of ['save','load','delete','clear','saved','project-search','project','task','idea','audience','tone','save-status','profile-save','profile-clear','profile-status','creator-name','creator-niche','creator-style','creator-avoid']) elements.set(id, make(id));
+  for (const id of ['save','new-project','load','delete','clear','saved','project-search','project','task','idea','audience','tone','save-status','profile-save','profile-clear','profile-status','creator-name','creator-niche','creator-style','creator-avoid']) elements.set(id, make(id));
   elements.get('task').options = [{value:'content'},{value:'reply'}];
   elements.get('tone').options = [{value:'Warm and conversational'},{value:'Playful and bold'}];
   elements.get('task').value = 'content';
@@ -59,8 +60,10 @@ function environment() {
   const updated = JSON.parse(e.localStorage.getItem('sparkle_creator_projects_v1'));
   assert.equal(updated.length,1);
   assert.equal(updated[0].idea,'Updated original idea');
-  e.el('saved').value = '';
-  e.el('saved').dispatchEvent(new Event('change'));
+  e.el('new-project').click();
+  assert.equal(e.el('project').value,'');
+  assert.equal(e.el('idea').value,'');
+  assert.equal(JSON.parse(e.localStorage.getItem('sparkle_creator_projects_v1')).length,1);
   e.el('project').value = 'Second project';
   e.el('idea').value = 'Another idea';
   e.el('save').click();
