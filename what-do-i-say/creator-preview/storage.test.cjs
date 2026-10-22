@@ -66,10 +66,11 @@ function environment() {
   assert.equal(JSON.parse(e.localStorage.getItem('sparkle_creator_projects_v1')).length,2);
   const records = JSON.parse(e.localStorage.getItem('sparkle_creator_projects_v1'));
   e.el('saved').value = records[1].id;
-  e.el('project').value = 'Second project revised';
+  e.el('saved').dispatchEvent(new Event('change'));
+  e.el('project').value = 'Third project';
   e.el('save').click();
   const afterSelection = JSON.parse(e.localStorage.getItem('sparkle_creator_projects_v1'));
-  assert.equal(afterSelection.length,2);
+  assert.equal(afterSelection.length,3);
   assert.equal(afterSelection.find(p => p.id === records[1].id).name,'POV idea');
   e.el('project-search').value = 'second';
   e.el('project-search').listeners.input();
@@ -79,7 +80,7 @@ function environment() {
   e.el('saved').value = JSON.parse(e.localStorage.getItem('sparkle_creator_projects_v1'))[0].id;
   e.el('delete').click();
   const remaining = JSON.parse(e.localStorage.getItem('sparkle_creator_projects_v1'));
-  assert.equal(remaining.length,1);
+  assert.equal(remaining.length,2);
   assert.equal(remaining[0].name,'POV idea');
   e.el('clear').click();
   assert.equal(e.localStorage.getItem('sparkle_creator_projects_v1'),null);
