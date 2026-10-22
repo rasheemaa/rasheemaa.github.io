@@ -11,6 +11,10 @@ for (const id of ['task', 'idea', 'tone', 'audience', 'project', 'project-search
   assert.match(html, new RegExp('id="' + id + '"'), 'Missing control: ' + id);
 }
 assert.match(html, /noindex,nofollow/);
+assert.match(html, /class="skip-link" href="#creator-workspace"/);
+assert.match(html, /id="creator-workspace" tabindex="-1"/);
+assert.match(html, /role="region" aria-label="Generated creative brief"/);
+assert.match(html, /aria-atomic="true"/);
 assert.match(html, /@media\(max-width:560px\)/);
 assert.match(html, /@media\(prefers-reduced-motion:reduce\)/);
 assert.match(html, /min-height:46px/);
