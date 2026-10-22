@@ -5,37 +5,30 @@ layout: null
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>{{ site.url }}/</loc>
-    <lastmod>2026-10-11</lastmod>
   </url>
   <url>
     <loc>{{ site.url }}/about.html</loc>
-    <lastmod>2026-09-28</lastmod>
   </url>
   <url>
     <loc>{{ site.url }}/shop/</loc>
-    <lastmod>2026-10-06</lastmod>
   </url>
   <url>
     <loc>{{ site.url }}/what-do-i-say/</loc>
-    <lastmod>2026-10-06</lastmod>
   </url>
   <url>
     <loc>{{ site.url }}/shop/reflection-journal-product.html</loc>
-    <lastmod>2026-10-06</lastmod>
   </url>
   <url>
     <loc>{{ site.url }}/shop/gentle-weekly-planner.html</loc>
-    <lastmod>2026-10-06</lastmod>
   </url>
   <url>
     <loc>{{ site.url }}/shop/reset-bundle.html</loc>
-    <lastmod>2026-10-06</lastmod>
   </url>
-  {% assign edits = site.edits | sort: "date" | reverse %}
+  {% assign edits = site.edits | where_exp: "edit", "edit.date <= site.time" | sort: "date" | reverse %}
   {% for edit in edits %}
   <url>
     <loc>{{ site.url }}{{ edit.url }}</loc>
-    <lastmod>{{ edit.date | date: "%Y-%m-%d" }}</lastmod>
+    <lastmod>{{ edit.last_modified | default: edit.date | date: "%Y-%m-%d" }}</lastmod>
   </url>
   {% endfor %}
 </urlset>

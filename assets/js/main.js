@@ -31,25 +31,27 @@ const menuButton = document.querySelector(".menu-toggle");
 const siteNav = document.querySelector(".site-nav");
 
 if (menuButton && siteNav) {
+  const setMenuOpen = (open) => {
+    menuButton.setAttribute("aria-expanded", String(open));
+    menuButton.setAttribute("aria-label", open ? "Close navigation menu" : "Open navigation menu");
+    siteNav.dataset.open = String(open);
+  };
   menuButton.addEventListener("click", () => {
-    const isOpen = menuButton.getAttribute("aria-expanded") === "true";
-    menuButton.setAttribute("aria-expanded", String(!isOpen));
-    siteNav.dataset.open = String(!isOpen);
+    setMenuOpen(menuButton.getAttribute("aria-expanded") !== "true");
   });
-
   siteNav.addEventListener("click", (event) => {
-    if (event.target.closest("a")) {
-      menuButton.setAttribute("aria-expanded", "false");
-      siteNav.dataset.open = "false";
-    }
+    if (event.target.closest("a")) setMenuOpen(false);
   });
-
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      menuButton.setAttribute("aria-expanded", "false");
-      siteNav.dataset.open = "false";
+    if (event.key === "Escape" && menuButton.getAttribute("aria-expanded") === "true") {
+      setMenuOpen(false);
+      menuButton.focus();
     }
   });
+  document.addEventListener("click", (event) => {
+    if (!siteNav.contains(event.target) && !menuButton.contains(event.target)) setMenuOpen(false);
+  });
+  window.matchMedia("(max-width: 720px)").addEventListener("change", () => setMenuOpen(false));
 }
 
 const filterButtons = document.querySelectorAll("[data-filter]");
