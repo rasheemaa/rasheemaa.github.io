@@ -52,6 +52,12 @@ function environment() {
   e.el('idea').value = 'Changed';
   e.el('load').click();
   assert.equal(e.el('idea').value,'Boundaries and confidence');
+  e.el('idea').value = 'Updated original idea';
+  e.el('save').click();
+  const updated = JSON.parse(e.localStorage.getItem('sparkle_creator_projects_v1'));
+  assert.equal(updated.length,1);
+  assert.equal(updated[0].idea,'Updated original idea');
+  e.el('saved').value = '';
   e.el('project').value = 'Second project';
   e.el('idea').value = 'Another idea';
   e.el('save').click();
