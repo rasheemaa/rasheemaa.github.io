@@ -28,7 +28,7 @@
   $('profile-save').addEventListener('click', () => {
     const p = {};
     fields.forEach((id, i) => { p[id] = $(id).value.trim().slice(0, limits[i]); });
-    try { localStorage.setItem(KEY, JSON.stringify(p)); status('Creator Brain saved in this browser.'); }
+    try { localStorage.setItem(KEY, JSON.stringify(p)); $('creator-name').dispatchEvent(new Event('input', { bubbles: true })); status('Creator Brain saved in this browser.'); }
     catch (_) { status('Could not save profile. Browser storage may be disabled.'); }
   });
   $('profile-clear').addEventListener('click', () => {
