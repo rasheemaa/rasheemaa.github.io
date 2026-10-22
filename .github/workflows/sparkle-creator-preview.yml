@@ -1,0 +1,24 @@
+name: Sparkle Creator preview checks
+on:
+  pull_request:
+    paths:
+      - 'what-do-i-say/creator-preview/**'
+      - 'what-do-i-say/chat-app.js'
+      - '.github/workflows/sparkle-creator-preview.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  creator-static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate creator preview
+        run: |
+          node --check what-do-i-say/creator-preview/projects.js
+          node --check what-do-i-say/creator-preview/profile.js
+          node --check what-do-i-say/chat-app.js
+          node what-do-i-say/creator-preview/smoke.test.cjs
