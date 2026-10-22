@@ -60,6 +60,7 @@ function environment() {
   assert.equal(updated.length,1);
   assert.equal(updated[0].idea,'Updated original idea');
   e.el('saved').value = '';
+  e.el('saved').dispatchEvent(new Event('change'));
   e.el('project').value = 'Second project';
   e.el('idea').value = 'Another idea';
   e.el('save').click();
@@ -81,7 +82,8 @@ function environment() {
   e.el('delete').click();
   const remaining = JSON.parse(e.localStorage.getItem('sparkle_creator_projects_v1'));
   assert.equal(remaining.length,2);
-  assert.equal(remaining[0].name,'POV idea');
+  assert.ok(remaining.some(p => p.name === 'POV idea'));
+  assert.ok(remaining.some(p => p.name === 'Second project'));
   e.el('clear').click();
   assert.equal(e.localStorage.getItem('sparkle_creator_projects_v1'),null);
 }
