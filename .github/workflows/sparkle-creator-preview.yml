@@ -22,3 +22,4 @@ jobs:
           node --check what-do-i-say/creator-preview/profile.js
           node --check what-do-i-say/chat-app.js
           node what-do-i-say/creator-preview/smoke.test.cjs
+          node what-do-i-say/creator-preview/storage.test.cjs
