@@ -9,7 +9,7 @@ layout: null
     <atom:link href="{{ site.url }}/feed.xml" rel="self" type="application/rss+xml" />
     <description>{{ site.description | xml_escape }}</description>
     <dc:creator>Rasheema Abdullah (Sheema)</dc:creator>
-    {% assign edits = site.edits | sort: "date" | reverse %}
+    {% assign edits = site.edits | where_exp: "edit", "edit.date <= site.time" | sort: "date" | reverse %}
     {% for edit in edits %}
     <item>
       <title>{{ edit.title | xml_escape }}</title>

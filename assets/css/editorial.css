@@ -10,3 +10,13 @@
 .article-header{padding:28px 0 24px}.article-header .back-link{margin-bottom:18px}.article-header .post-title{font-size:clamp(2.25rem,9.5vw,2.8rem);line-height:1.14;text-wrap:balance;margin:14px auto 22px}.article-cover{min-height:0;padding:32px 24px;margin-bottom:32px}.article-cover .cover-note{font-size:1.65rem;line-height:1.35}.article-body{line-height:1.85}.article-body>p:first-child:first-letter{font-size:3.5rem;margin-top:10px}.article-body blockquote{margin:28px 0}.article-end{margin-top:44px}.article-aside{padding:22px}
 .page-hero{padding:28px 24px;margin:24px auto 40px}.page-hero .page-title{font-size:2.65rem;line-height:1.12}.page-lede{font-size:1rem;line-height:1.75}.value-card{padding:26px}.about-slice{gap:24px}.shop-hero .page-title{font-size:2.65rem;line-height:1.12}.shop-hero .page-lede{font-size:1rem;line-height:1.7}.shop-grid{gap:24px}.product-card h2{font-size:1.85rem;line-height:1.2}.product-card p{font-size:.96rem;line-height:1.75}.product-card .price{font-size:2.2rem;padding-top:10px}.product-page{padding-top:28px}.product-detail{gap:26px}.product-copy .page-title{font-size:2.55rem;line-height:1.13;margin-bottom:18px}.product-visual{padding:12px}.product-price{font-size:2.25rem;margin-bottom:18px}.product-description{font-size:1rem;line-height:1.75}.product-points{gap:0;margin:20px 0}.product-actions .button{white-space:normal;text-align:center}.utility-card{padding:28px 22px}.utility-card h1{font-size:2.25rem;line-height:1.15}.utility-icon{width:72px;margin-bottom:22px}.site-footer{padding-top:36px}.footer-grid{gap:24px}.footer-grid p{font-size:.94rem;line-height:1.75}
 }
+
+/* Imported guides share the site's reading layout and stay contained on phones. */
+.article-layout-solo{grid-template-columns:minmax(0,1fr);max-width:760px}
+.article-cover-photo{padding:0;min-height:0;overflow:hidden}
+.article-cover-photo img{width:100%;aspect-ratio:16/9;object-fit:cover;max-height:600px}
+.article-body{overflow-wrap:anywhere}
+.article-body pre{max-width:100%;overflow-x:auto;white-space:pre}
+.article-body table{display:block;max-width:100%;overflow-x:auto;border-collapse:collapse}
+.article-body th,.article-body td{padding:12px;border:var(--border);text-align:left}
+@media(max-width:720px){body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}}

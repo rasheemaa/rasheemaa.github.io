@@ -1,0 +1,34 @@
+name: Verify article publishing and search metadata
+
+on:
+  pull_request:
+    paths:
+      - .github/scripts/*ryze*
+      - .github/workflows/ryze-*.yml
+      - _config.yml
+      - _layouts/post.html
+      - index.html
+      - feed.xml
+      - sitemap.xml
+      - assets/css/editorial.css
+      - assets/js/main.js
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify import contracts
+        run: python3 -m unittest discover -s .github/scripts -p test_ryze_import.py
+      - name: Prepare temporary integration articles
+        run: python3 .github/scripts/check_ryze_site.py prepare
+      - uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site
+      - name: Verify rendered pages and search feeds
+        run: python3 .github/scripts/check_ryze_site.py verify
