@@ -8,8 +8,8 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#fff9ef",
-  "theme_color": "#ff4fa3",
+  "background_color": "#FAF5F0",
+  "theme_color": "#FAF5F0",
   "categories": [
     "lifestyle",
     "personalization"
