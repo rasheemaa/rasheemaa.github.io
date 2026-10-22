@@ -11,6 +11,9 @@ for (const id of ['task', 'idea', 'tone', 'audience', 'project', 'project-search
   assert.match(html, new RegExp('id="' + id + '"'), 'Missing control: ' + id);
 }
 assert.match(html, /noindex,nofollow/);
+assert.match(html, /@media\(max-width:560px\)/);
+assert.match(html, /@media\(prefers-reduced-motion:reduce\)/);
+assert.match(html, /min-height:46px/);
 assert.ok(html.indexOf('creator-preview/profile.js?v=1') < html.indexOf('const updateBriefLength='), 'Creator Brain must initialize before the handoff meter');
 assert.match(html, /document.getElementById\('sparkle'\)\.disabled=!length\|\|length>3500/);
 assert.match(html, /v\.length>3500/);
