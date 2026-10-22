@@ -1,0 +1,311 @@
+{
+  "results": [
+    {
+      "name": "home",
+      "width": 360,
+      "overflow": false,
+      "readingButtonBottom": 496.3125
+    },
+    {
+      "name": "edit",
+      "width": 360,
+      "overflow": false
+    },
+    {
+      "name": "about",
+      "width": 360,
+      "overflow": false
+    },
+    {
+      "name": "shop",
+      "width": 360,
+      "overflow": false
+    },
+    {
+      "name": "journal",
+      "width": 360,
+      "overflow": false
+    },
+    {
+      "name": "planner",
+      "width": 360,
+      "overflow": false
+    },
+    {
+      "name": "bundle",
+      "width": 360,
+      "overflow": false
+    },
+    {
+      "name": "thanks",
+      "width": 360,
+      "overflow": false
+    },
+    {
+      "name": "offline",
+      "width": 360,
+      "overflow": false
+    },
+    {
+      "name": "404",
+      "width": 360,
+      "overflow": false
+    },
+    {
+      "name": "home",
+      "width": 375,
+      "overflow": false,
+      "readingButtonBottom": 496.3125
+    },
+    {
+      "name": "edit",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "name": "about",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "name": "shop",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "name": "journal",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "name": "planner",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "name": "bundle",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "name": "thanks",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "name": "offline",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "name": "404",
+      "width": 375,
+      "overflow": false
+    },
+    {
+      "name": "home",
+      "width": 390,
+      "overflow": false,
+      "readingButtonBottom": 499.828125
+    },
+    {
+      "name": "edit",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "about",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "shop",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "journal",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "planner",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "bundle",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "thanks",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "offline",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "404",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "home",
+      "width": 430,
+      "overflow": false,
+      "readingButtonBottom": 498.890625
+    },
+    {
+      "name": "edit",
+      "width": 430,
+      "overflow": false
+    },
+    {
+      "name": "about",
+      "width": 430,
+      "overflow": false
+    },
+    {
+      "name": "shop",
+      "width": 430,
+      "overflow": false
+    },
+    {
+      "name": "journal",
+      "width": 430,
+      "overflow": false
+    },
+    {
+      "name": "planner",
+      "width": 430,
+      "overflow": false
+    },
+    {
+      "name": "bundle",
+      "width": 430,
+      "overflow": false
+    },
+    {
+      "name": "thanks",
+      "width": 430,
+      "overflow": false
+    },
+    {
+      "name": "offline",
+      "width": 430,
+      "overflow": false
+    },
+    {
+      "name": "404",
+      "width": 430,
+      "overflow": false
+    },
+    {
+      "name": "home",
+      "width": 1280,
+      "overflow": false,
+      "readingButtonBottom": 598.109375
+    },
+    {
+      "name": "edit",
+      "width": 1280,
+      "overflow": false
+    },
+    {
+      "name": "about",
+      "width": 1280,
+      "overflow": false
+    },
+    {
+      "name": "shop",
+      "width": 1280,
+      "overflow": false
+    },
+    {
+      "name": "journal",
+      "width": 1280,
+      "overflow": false
+    },
+    {
+      "name": "planner",
+      "width": 1280,
+      "overflow": false
+    },
+    {
+      "name": "bundle",
+      "width": 1280,
+      "overflow": false
+    },
+    {
+      "name": "thanks",
+      "width": 1280,
+      "overflow": false
+    },
+    {
+      "name": "offline",
+      "width": 1280,
+      "overflow": false
+    },
+    {
+      "name": "404",
+      "width": 1280,
+      "overflow": false
+    },
+    {
+      "name": "home",
+      "width": 1440,
+      "overflow": false,
+      "readingButtonBottom": 698.796875
+    },
+    {
+      "name": "edit",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "about",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "shop",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "journal",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "planner",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "bundle",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "thanks",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "offline",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "404",
+      "width": 1440,
+      "overflow": false
+    }
+  ],
+  "failures": []
+}
