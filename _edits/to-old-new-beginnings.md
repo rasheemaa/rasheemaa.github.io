@@ -28,5 +28,4 @@ So if you’re beginning again, hey. Same.
 
 You can come as you are, even if this beginning feels familiar, unfinished, or a little uncertain. We can make room for the old and the new at the same time.
 
-With love,
-Sheema
+With Love, Sheema
