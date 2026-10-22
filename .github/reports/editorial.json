@@ -1,0 +1,383 @@
+{
+  "checkedAt": "2026-10-22T05:49:08.874Z",
+  "results": [
+    {
+      "name": "home",
+      "path": "/",
+      "width": 1440,
+      "status": 200,
+      "scrollWidth": 1440,
+      "bg": "rgb(250, 245, 240)",
+      "font": "\"DM Sans\", Arial, sans-serif",
+      "title": "I’m Allowed to Be Happy Before I’m Okay",
+      "headingFont": "\"Playfair Display\", Georgia, serif",
+      "oldStyles": [],
+      "analytics": true,
+      "canonical": "https://thesheemaedit.com/",
+      "featured": "/posts/im-allowed-to-be-happy-before-im-okay.html",
+      "filters": [
+        {
+          "key": "mind",
+          "pressed": "true",
+          "visible": 9
+        },
+        {
+          "key": "motherhood",
+          "pressed": "true",
+          "visible": 1
+        },
+        {
+          "key": "chronic",
+          "pressed": "true",
+          "visible": 2
+        },
+        {
+          "key": "lifestyle",
+          "pressed": "true",
+          "visible": 2
+        },
+        {
+          "key": "all",
+          "pressed": "true",
+          "visible": 14
+        }
+      ]
+    },
+    {
+      "name": "edit",
+      "path": "/posts/im-allowed-to-be-happy-before-im-okay.html",
+      "width": 1440,
+      "status": 200,
+      "scrollWidth": 1440,
+      "bg": "rgb(250, 245, 240)",
+      "font": "\"DM Sans\", Arial, sans-serif",
+      "title": "I’m Allowed to Be Happy Before I’m Okay",
+      "headingFont": "\"Playfair Display\", Georgia, serif",
+      "oldStyles": [],
+      "analytics": true,
+      "canonical": "https://thesheemaedit.com/posts/im-allowed-to-be-happy-before-im-okay.html"
+    },
+    {
+      "name": "about",
+      "path": "/about.html",
+      "width": 1440,
+      "status": 200,
+      "scrollWidth": 1440,
+      "bg": "rgb(250, 245, 240)",
+      "font": "\"DM Sans\", Arial, sans-serif",
+      "title": "Hi, I’m Sheema.",
+      "headingFont": "\"Playfair Display\", Georgia, serif",
+      "oldStyles": [],
+      "analytics": true,
+      "canonical": "https://thesheemaedit.com/about.html"
+    },
+    {
+      "name": "shop",
+      "path": "/shop/",
+      "width": 1440,
+      "status": 200,
+      "scrollWidth": 1440,
+      "bg": "rgb(250, 245, 240)",
+      "font": "\"DM Sans\", Arial, sans-serif",
+      "title": "Useful little things for real life.",
+      "headingFont": "\"Playfair Display\", Georgia, serif",
+      "oldStyles": [],
+      "analytics": true,
+      "canonical": "https://thesheemaedit.com/shop/",
+      "sparkle": "https://sparkle.rasheema-abdullah.workers.dev/"
+    },
+    {
+      "name": "journal",
+      "path": "/shop/reflection-journal-product.html",
+      "width": 1440,
+      "status": 200,
+      "scrollWidth": 1440,
+      "bg": "rgb(250, 245, 240)",
+      "font": "\"DM Sans\", Arial, sans-serif",
+      "title": "Reflection Journal",
+      "headingFont": "\"Playfair Display\", Georgia, serif",
+      "oldStyles": [],
+      "analytics": true,
+      "canonical": "https://thesheemaedit.com/shop/reflection-journal-product.html",
+      "checkout": [
+        "https://payhip.com/b/V9zXw"
+      ]
+    },
+    {
+      "name": "planner",
+      "path": "/shop/gentle-weekly-planner.html",
+      "width": 1440,
+      "status": 200,
+      "scrollWidth": 1440,
+      "bg": "rgb(250, 245, 240)",
+      "font": "\"DM Sans\", Arial, sans-serif",
+      "title": "Gentle Weekly Planner",
+      "headingFont": "\"Playfair Display\", Georgia, serif",
+      "oldStyles": [],
+      "analytics": true,
+      "canonical": "https://thesheemaedit.com/shop/gentle-weekly-planner.html",
+      "checkout": [
+        "https://payhip.com/b/xnDwY"
+      ]
+    },
+    {
+      "name": "bundle",
+      "path": "/shop/reset-bundle.html",
+      "width": 1440,
+      "status": 200,
+      "scrollWidth": 1440,
+      "bg": "rgb(250, 245, 240)",
+      "font": "\"DM Sans\", Arial, sans-serif",
+      "title": "Reset Bundle",
+      "headingFont": "\"Playfair Display\", Georgia, serif",
+      "oldStyles": [],
+      "analytics": true,
+      "canonical": "https://thesheemaedit.com/shop/reset-bundle.html",
+      "checkout": [
+        "https://payhip.com/b/JeC9S"
+      ]
+    },
+    {
+      "name": "thanks",
+      "path": "/thank-you/",
+      "width": 1440,
+      "status": 200,
+      "scrollWidth": 1440,
+      "bg": "rgb(250, 245, 240)",
+      "font": "\"DM Sans\", Arial, sans-serif",
+      "title": "Your Edit Is On Its Way",
+      "headingFont": "\"Playfair Display\", Georgia, serif",
+      "oldStyles": [],
+      "analytics": true
+    },
+    {
+      "name": "offline",
+      "path": "/offline.html",
+      "width": 1440,
+      "status": 200,
+      "scrollWidth": 1440,
+      "bg": "rgb(250, 245, 240)",
+      "font": "\"DM Sans\", Arial, sans-serif",
+      "title": "The Wi-Fi left the group chat.",
+      "headingFont": "\"Playfair Display\", Georgia, serif",
+      "oldStyles": [],
+      "analytics": true
+    },
+    {
+      "name": "not-found",
+      "path": "/404.html",
+      "width": 1440,
+      "status": 200,
+      "scrollWidth": 1440,
+      "bg": "rgb(250, 245, 240)",
+      "font": "\"DM Sans\", Arial, sans-serif",
+      "title": "This page left the group chat.",
+      "headingFont": "\"Playfair Display\", Georgia, serif",
+      "oldStyles": [],
+      "analytics": true
+    },
+    {
+      "name": "privacy",
+      "path": "/what-do-i-say/privacy/",
+      "width": 1440,
+      "status": 200,
+      "scrollWidth": 1440,
+      "bg": "rgb(250, 245, 240)",
+      "font": "\"DM Sans\", Arial, sans-serif",
+      "title": "Privacy",
+      "headingFont": "\"Playfair Display\", Georgia, serif",
+      "oldStyles": [],
+      "analytics": false
+    },
+    {
+      "name": "home",
+      "path": "/",
+      "width": 390,
+      "status": 200,
+      "scrollWidth": 390,
+      "bg": "rgb(250, 245, 240)",
+      "font": "\"DM Sans\", Arial, sans-serif",
+      "title": "I’m Allowed to Be Happy Before I’m Okay",
+      "headingFont": "\"Playfair Display\", Georgia, serif",
+      "oldStyles": [],
+      "analytics": true,
+      "canonical": "https://thesheemaedit.com/",
+      "featured": "/posts/im-allowed-to-be-happy-before-im-okay.html",
+      "filters": [
+        {
+          "key": "mind",
+          "pressed": "true",
+          "visible": 9
+        },
+        {
+          "key": "motherhood",
+          "pressed": "true",
+          "visible": 1
+        },
+        {
+          "key": "chronic",
+          "pressed": "true",
+          "visible": 2
+        },
+        {
+          "key": "lifestyle",
+          "pressed": "true",
+          "visible": 2
+        },
+        {
+          "key": "all",
+          "pressed": "true",
+          "visible": 14
+        }
+      ],
+      "menu": true
+    },
+    {
+      "name": "edit",
+      "path": "/posts/im-allowed-to-be-happy-before-im-okay.html",
+      "width": 390,
+      "status": 200,
+      "scrollWidth": 390,
+      "bg": "rgb(250, 245, 240)",
+      "font": "\"DM Sans\", Arial, sans-serif",
+      "title": "I’m Allowed to Be Happy Before I’m Okay",
+      "headingFont": "\"Playfair Display\", Georgia, serif",
+      "oldStyles": [],
+      "analytics": true,
+      "canonical": "https://thesheemaedit.com/posts/im-allowed-to-be-happy-before-im-okay.html"
+    },
+    {
+      "name": "about",
+      "path": "/about.html",
+      "width": 390,
+      "status": 200,
+      "scrollWidth": 390,
+      "bg": "rgb(250, 245, 240)",
+      "font": "\"DM Sans\", Arial, sans-serif",
+      "title": "Hi, I’m Sheema.",
+      "headingFont": "\"Playfair Display\", Georgia, serif",
+      "oldStyles": [],
+      "analytics": true,
+      "canonical": "https://thesheemaedit.com/about.html"
+    },
+    {
+      "name": "shop",
+      "path": "/shop/",
+      "width": 390,
+      "status": 200,
+      "scrollWidth": 390,
+      "bg": "rgb(250, 245, 240)",
+      "font": "\"DM Sans\", Arial, sans-serif",
+      "title": "Useful little things for real life.",
+      "headingFont": "\"Playfair Display\", Georgia, serif",
+      "oldStyles": [],
+      "analytics": true,
+      "canonical": "https://thesheemaedit.com/shop/",
+      "sparkle": "https://sparkle.rasheema-abdullah.workers.dev/"
+    },
+    {
+      "name": "journal",
+      "path": "/shop/reflection-journal-product.html",
+      "width": 390,
+      "status": 200,
+      "scrollWidth": 390,
+      "bg": "rgb(250, 245, 240)",
+      "font": "\"DM Sans\", Arial, sans-serif",
+      "title": "Reflection Journal",
+      "headingFont": "\"Playfair Display\", Georgia, serif",
+      "oldStyles": [],
+      "analytics": true,
+      "canonical": "https://thesheemaedit.com/shop/reflection-journal-product.html",
+      "checkout": [
+        "https://payhip.com/b/V9zXw"
+      ]
+    },
+    {
+      "name": "planner",
+      "path": "/shop/gentle-weekly-planner.html",
+      "width": 390,
+      "status": 200,
+      "scrollWidth": 390,
+      "bg": "rgb(250, 245, 240)",
+      "font": "\"DM Sans\", Arial, sans-serif",
+      "title": "Gentle Weekly Planner",
+      "headingFont": "\"Playfair Display\", Georgia, serif",
+      "oldStyles": [],
+      "analytics": true,
+      "canonical": "https://thesheemaedit.com/shop/gentle-weekly-planner.html",
+      "checkout": [
+        "https://payhip.com/b/xnDwY"
+      ]
+    },
+    {
+      "name": "bundle",
+      "path": "/shop/reset-bundle.html",
+      "width": 390,
+      "status": 200,
+      "scrollWidth": 390,
+      "bg": "rgb(250, 245, 240)",
+      "font": "\"DM Sans\", Arial, sans-serif",
+      "title": "Reset Bundle",
+      "headingFont": "\"Playfair Display\", Georgia, serif",
+      "oldStyles": [],
+      "analytics": true,
+      "canonical": "https://thesheemaedit.com/shop/reset-bundle.html",
+      "checkout": [
+        "https://payhip.com/b/JeC9S"
+      ]
+    },
+    {
+      "name": "thanks",
+      "path": "/thank-you/",
+      "width": 390,
+      "status": 200,
+      "scrollWidth": 390,
+      "bg": "rgb(250, 245, 240)",
+      "font": "\"DM Sans\", Arial, sans-serif",
+      "title": "Your Edit Is On Its Way",
+      "headingFont": "\"Playfair Display\", Georgia, serif",
+      "oldStyles": [],
+      "analytics": true
+    },
+    {
+      "name": "offline",
+      "path": "/offline.html",
+      "width": 390,
+      "status": 200,
+      "scrollWidth": 390,
+      "bg": "rgb(250, 245, 240)",
+      "font": "\"DM Sans\", Arial, sans-serif",
+      "title": "The Wi-Fi left the group chat.",
+      "headingFont": "\"Playfair Display\", Georgia, serif",
+      "oldStyles": [],
+      "analytics": true
+    },
+    {
+      "name": "not-found",
+      "path": "/404.html",
+      "width": 390,
+      "status": 200,
+      "scrollWidth": 390,
+      "bg": "rgb(250, 245, 240)",
+      "font": "\"DM Sans\", Arial, sans-serif",
+      "title": "This page left the group chat.",
+      "headingFont": "\"Playfair Display\", Georgia, serif",
+      "oldStyles": [],
+      "analytics": true
+    },
+    {
+      "name": "privacy",
+      "path": "/what-do-i-say/privacy/",
+      "width": 390,
+      "status": 200,
+      "scrollWidth": 390,
+      "bg": "rgb(250, 245, 240)",
+      "font": "\"DM Sans\", Arial, sans-serif",
+      "title": "Privacy",
+      "headingFont": "\"Playfair Display\", Georgia, serif",
+      "oldStyles": [],
+      "analytics": false
+    }
+  ],
+  "failures": []
+}
