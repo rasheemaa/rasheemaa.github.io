@@ -115,6 +115,26 @@ function environment() {
 }
 {
   const e = environment();
+  e.run('projects.js');
+  for (let i = 0; i < 30; i++) {
+    e.el('new-project').click();
+    e.el('project').value = 'Project ' + i;
+    e.el('idea').value = 'Idea ' + i;
+    e.el('save').click();
+  }
+  const before = JSON.parse(e.localStorage.getItem('sparkle_creator_projects_v1'));
+  assert.equal(before.length,30);
+  e.el('new-project').click();
+  e.el('project').value = 'Overflow project';
+  e.el('idea').value = 'Do not discard any project';
+  e.el('save').click();
+  const after = JSON.parse(e.localStorage.getItem('sparkle_creator_projects_v1'));
+  assert.equal(after.length,30);
+  assert.deepEqual(after,before);
+  assert.match(e.el('save-status').textContent,/reached 30 saved projects/);
+}
+{
+  const e = environment();
   e.run('profile.js');
   e.el('creator-name').value = 'Sample creator';
   e.el('creator-style').value = 'Original and friendly';
