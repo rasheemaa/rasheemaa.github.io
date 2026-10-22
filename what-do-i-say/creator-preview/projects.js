@@ -8,6 +8,11 @@
   const snapshot = () => JSON.stringify(fields.map(id => $(id).value));
   let cleanSnapshot = snapshot();
   const confirmDiscard = () => snapshot() === cleanSnapshot || window.confirm('Discard unsaved changes to the current project?');
+  window.addEventListener('beforeunload', event => {
+    if (snapshot() === cleanSnapshot) return;
+    event.preventDefault();
+    event.returnValue = '';
+  });
   const read = () => {
     try {
       const parsed = JSON.parse(localStorage.getItem(KEY) || '[]');
