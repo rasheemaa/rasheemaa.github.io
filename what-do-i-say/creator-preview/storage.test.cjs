@@ -12,6 +12,7 @@ function environment() {
     listeners: {},
     addEventListener(type, fn) { this.listeners[type] = fn; },
     click() { this.listeners.click?.(); },
+    dispatchEvent(event) { this.listeners[event.type]?.(); },
     replaceChildren(...items) { this.options = items; },
     add(item) { this.options.push(item); }
   });
@@ -30,7 +31,8 @@ function environment() {
     localStorage,
     Option: function(text,value) { this.text = text; this.value = value; },
     window: {confirm: () => true},
-    Date, Math, JSON, String
+    Date, Math, JSON, String,
+    Event: function(type) { this.type = type; }
   });
   const run = file => vm.runInContext(fs.readFileSync(path.join(__dirname,file),'utf8'),context);
   const el = id => elements.get(id);
