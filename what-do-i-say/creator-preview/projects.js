@@ -8,9 +8,10 @@
   const fields = ['project','idea','audience','task','tone'];
   const snapshot = () => JSON.stringify(fields.map(id => $(id).value));
   let cleanSnapshot = snapshot();
-  let draftTimer = null;
   const clearDraft = () => { try { sessionStorage.removeItem(DRAFT_KEY); } catch (_) {} };
+  let suspendDraft = false;
   const saveDraft = () => {
+    if (suspendDraft) return;
     try {
       if (snapshot() === cleanSnapshot) { clearDraft(); return; }
       sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ fields: fields.map(id => $(id).value), time: Date.now() }));
@@ -53,7 +54,9 @@
     $('project-search').value = '';
     refresh();
     $('saved').value = '';
+    suspendDraft = true;
     $('idea').dispatchEvent(new Event('input', { bubbles: true }));
+    suspendDraft = false;
     cleanSnapshot = snapshot(); clearDraft();
     status('New project started. Saved projects remain unchanged.');
     $('project').focus();
@@ -119,7 +122,9 @@
     const draft = JSON.parse(sessionStorage.getItem(DRAFT_KEY) || 'null');
     if (draft && Array.isArray(draft.fields) && draft.fields.length === fields.length && Number.isFinite(draft.time) && Date.now() - draft.time < 86400000 && window.confirm('Restore your unsaved Creator Studio draft from this tab?')) {
       fields.forEach((id, i) => { if (typeof draft.fields[i] === 'string') $(id).value = draft.fields[i]; });
+      suspendDraft = true;
       $('idea').dispatchEvent(new Event('input', { bubbles: true }));
+      suspendDraft = false;
       status('Unsaved draft restored. Save your project to keep it.');
     } else if (draft) clearDraft();
   } catch (_) { clearDraft(); }
