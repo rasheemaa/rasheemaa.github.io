@@ -4,7 +4,7 @@
       "name": "home",
       "width": 360,
       "overflow": false,
-      "readingButtonBottom": 496.3125
+      "readingButtonBottom": 450.9375
     },
     {
       "name": "edit",
@@ -55,7 +55,7 @@
       "name": "home",
       "width": 375,
       "overflow": false,
-      "readingButtonBottom": 496.3125
+      "readingButtonBottom": 450.9375
     },
     {
       "name": "edit",
@@ -106,7 +106,7 @@
       "name": "home",
       "width": 390,
       "overflow": false,
-      "readingButtonBottom": 499.828125
+      "readingButtonBottom": 454.453125
     },
     {
       "name": "edit",
@@ -157,7 +157,7 @@
       "name": "home",
       "width": 430,
       "overflow": false,
-      "readingButtonBottom": 498.890625
+      "readingButtonBottom": 467.203125
     },
     {
       "name": "edit",
