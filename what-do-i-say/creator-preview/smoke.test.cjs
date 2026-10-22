@@ -15,6 +15,8 @@ assert.ok(html.indexOf('creator-preview/profile.js?v=1') < html.indexOf('const u
 assert.match(html, /document.getElementById\('sparkle'\)\.disabled=!length\|\|length>3500/);
 assert.match(html, /v\.length>3500/);
 assert.match(html, /sessionStorage\.setItem\('sparkle_creator_handoff_v1'/);
+assert.match(html, /sessionStorage\.removeItem\('sparkle_creator_handoff_v1'\)/);
+assert.match(html, /Could not open Sparkle automatically/);
 assert.match(chat, /sessionStorage\.removeItem\('sparkle_creator_handoff_v1'/);
 assert.match(chat, /Date\.now\(\) - handoff\.created < 300000/);
 assert.match(profile, /localStorage\.removeItem\(KEY\)/);
