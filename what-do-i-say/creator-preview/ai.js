@@ -24,6 +24,8 @@
   });
   button.addEventListener('click',async () => {
     if (busy) return;
+    const editor = $('draft-editor');
+    if (editor && !editor.hidden && editor.value !== output.textContent && !window.confirm('Generate a new AI draft and discard unapplied edits?')) return;
     const data = payload();
     if (!allowedTasks.has(data.task) || !data.idea) {
       status.textContent = 'Choose a creator task and describe your idea first.';
@@ -57,6 +59,7 @@
       if (!response.ok) throw new Error(typeof result?.error === 'string' ? result.error : 'Creator AI is not available yet.');
       if (typeof result?.output !== 'string' || !result.output.trim() || result.task !== data.task) throw new Error('The AI response could not be verified.');
       output.textContent = result.output.slice(0,12000);
+      if (editor) { editor.hidden = true; $('draft-editor-label').hidden = true; $('apply-draft').hidden = true; }
       status.textContent = 'AI draft ready to review and copy. Nothing has been posted or sent.';
     } catch (error) {
       output.textContent = previous;
