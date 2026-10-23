@@ -12,16 +12,28 @@
     $('apply-draft').hidden = true;
   };
   const currentText = () => editor.hidden ? output.textContent : editor.value;
+  const initialPlaceholder = 'Choose a goal and describe your idea to see a structured starter brief.';
+  let lastGenerated = initialPlaceholder;
+  const hasUnsavedOutput = () => {
+    const text = currentText();
+    return Boolean(text.trim() && text !== initialPlaceholder && text !== savedText);
+  };
   let savedText = null;
   const readSaved = () => { try { const v = JSON.parse(localStorage.getItem(KEY) || 'null'); return v && typeof v.text === 'string' ? v.text : null; } catch (_) { return null; } };
   savedText = readSaved();
   window.SparkleCreatorDrafts = {
+    hasUnsavedOutput,
     confirmReplace: () => {
       const text = currentText();
-      if (!text.trim() || text === savedText || text === 'Choose a goal and describe your idea to see a structured starter brief.') return true;
+      if (!hasUnsavedOutput()) return true;
       return window.confirm('Replace your current unsaved draft? Save or copy it first if you want to keep it.');
     }
   };
+  window.addEventListener('beforeunload', event => {
+    if (!hasUnsavedOutput()) return;
+    event.preventDefault();
+    event.returnValue = '';
+  });
   $('save-output').addEventListener('click', () => {
     const text = currentText();
     if (!text.trim() || text.length > 12000) {
