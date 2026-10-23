@@ -41,6 +41,7 @@
     busy = true;
     button.disabled = true;
     const previous = output.textContent;
+    const previousEditor = editor && !editor.hidden ? editor.value : null;
     status.textContent = 'Requesting an AI draft. Only the reviewed task, idea, audience, tone and saved Creator Brain are sent. Nothing is posted.';
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(),30000);
@@ -65,6 +66,7 @@
       status.textContent = 'AI draft ready to review and copy. Nothing has been posted or sent.';
     } catch (error) {
       output.textContent = previous;
+      if (editor && previousEditor !== null) { editor.value = previousEditor; editor.hidden = false; $('draft-editor-label').hidden = false; $('apply-draft').hidden = false; }
       status.textContent = error.name === 'AbortError'
         ? 'Creator AI timed out. Your previous draft is preserved.'
         : error instanceof TypeError
