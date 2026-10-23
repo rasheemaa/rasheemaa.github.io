@@ -1,22 +1,22 @@
-# Creator Studio AI integration gate
+# Creator Studio AI integration and release gates
 
-Status: **not approved for direct AI generation**. The preview remains local-only and hands off a user-reviewed prompt to the existing Sparkle chat.
+Status: **draft, unmerged, not approved for live Creator AI generation.**
 
-## Existing interfaces confirmed from repository source
-- `/what-do-i-say/index.html` loads `config.js`, `sparkle.js`, `sparkle-cloud-mobile.js`, and `chat-app.js`.
-- The existing chat calls `window.Sparkle.generate(payload, { onStatus })` with `{ mode, tone, situation, personName, text, refine, currentMessage }`.
-- On Apple mobile devices, `sparkle-cloud-mobile.js` replaces the generation implementation and sends the payload to `WDIS_API_BASE/api/generate`.
-- The desktop `sparkle.js` implementation uses a local worker, with message-oriented processing.
-- Creator Studio currently produces a reviewed prompt and transfers it via same-origin sessionStorage. No AI call occurs on the preview page.
+## Implemented
+- Private `noindex` Creator Studio route with seven workflows, locally saved Creator Brain, saved projects, editable draft output, and user-reviewed handoff to existing Sparkle chat.
+- The `Generate with AI` button can POST to `${window.WDIS_API_BASE}/api/creator/generate` with task, idea, audience, tone, and a bounded Creator Brain profile only after a user click. Requests do **not** post or send messages automatically.
+- The companion backend PR #7 in `rasheemaa/what-do-i-say-ai-sheema` provides the separate Creator endpoint, input validation, explicit free-plan rollout gate, CORS/origin isolation, rate limiting, request timeouts, and sanitized error responses.
+- The backend `CREATOR_AI_ENABLED` setting defaults to `false`. A client button and passing mocked tests **do not prove live inference is available**.
+- Scripted static tests, API-client tests, persistence tests, and simulated Chromium mobile browser tests run in the frontend PR. The build protects existing drafts from failed requests and clipboard fallback.
 
-## Must pass before enabling direct generation
-1. Inspect the Cloudflare API repository's actual request schema, prompt policy, error contract, and rate limits. Confirm creator tasks are supported. A successful chat response alone is not proof.
-2. Define a separate creator-task contract for content, growth, replies, sales, brand deals, digital products, and performance. Prevent unsupported analytics or posting claims.
-3. Verify desktop worker behavior separately from the Apple mobile Cloudflare path; do not assume identical outputs or capabilities.
-4. Add request cancellation, timeout, rate-limit, retry, and user-visible failure handling; never auto-post or auto-send messages.
-5. Add tests for input size, prompt-injection attempts, invented claims, unsafe disclosures, and service failures.
-6. Test on a physical iPhone and desktop browser, including network loss, keyboard and screen-reader navigation.
-7. Review CSP, privacy disclosure, and production domain boundaries before changing any live route.
+## Unfinished release gates
+1. Verify the actual Cloudflare account, target Worker, model entitlement, free-plan billing boundary, rate-limit binding, and domain/HTTPS state without enabling paid plans.
+2. Test **all seven tasks** using real Cloudflare inference in a separate, approved nonproduction Worker, including quota, error, timeout, CORS and free-plan limits. Mocked API/browser tests are not a substitute.
+3. Complete physical iPhone, desktop Safari, VoiceOver/keyboard and offline/recovery acceptance. A browser viewport simulation is not a physical device test.
+4. Confirm frontend CSP, privacy disclosures, live Worker origin config, and any standalone `sparklerma.com` configuration after real environment verification.
+5. Review both PRs and obtain explicit approval before merging or deploying user-facing changes.
 
-## Release boundary
-Keep PR #14 draft and unmerged until all gates pass. Do not alter the approved voice reference, production Sparkle generation code, payments, or domain settings as a shortcut. A separate backend change may be necessary, pending inspection.
+## Production protections
+Do **not** modify the approved original voice WAV, audio engine, paid APIs, payments, domains, or existing Sparkle chat route. Keep the Creator Studio PR draft and production untouched until the checks and final release approval are complete.
+
+The branch was recovered from an accidental whole-tree deletion on October 23, 2026. Verify the PR remains scoped to Creator Studio, the workflow and the narrow chat handoff change; reject unexpected site-wide removals.
