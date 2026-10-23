@@ -61,5 +61,7 @@ assert.match(drafts, /beforeunload/);
 assert.match(drafts, /hasUnsavedOutput/);
 assert.match(ai, /SparkleCreatorDrafts\.confirmReplace/);
 assert.match(html, /SparkleCreatorDrafts\.confirmReplace/);
+assert.match(html, /Describe your idea before replacing the current draft/);
+assert.match(html, /editor\.hidden=true;document\.getElementById\('draft-editor-label'\)\.hidden=true/);
 assert.match(drafts, /window\.confirm/);
 console.log('Creator Studio static checks passed.');
