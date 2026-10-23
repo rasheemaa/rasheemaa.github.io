@@ -185,8 +185,10 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
       assert.equal(JSON.parse(fs.readFileSync(await download.path(),'utf8')).length,2);
       await page.locator('#idea').fill('A fresh creator idea');
       await page.locator('#copy-prompt').click();
+      await page.waitForFunction(()=>/copied|Clipboard unavailable/.test(document.getElementById('copy-status').textContent));
       assert.match(await page.locator('#copy-status').innerText(),/copied|Clipboard unavailable/);
       await page.locator('#copy').click();
+      await page.waitForFunction(()=>/copied|Clipboard unavailable/.test(document.getElementById('copy-status').textContent));
       assert.match(await page.locator('#copy-status').innerText(),/copied|Clipboard unavailable/);
       await page.locator('#saved').selectOption(first);
       acceptDialogs=false;await page.locator('#delete').click();acceptDialogs=true;
