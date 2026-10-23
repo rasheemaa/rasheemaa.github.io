@@ -51,5 +51,8 @@ assert.match(html, /creator-preview\/drafts\.js\?v=1/);
 assert.match(drafts, /localStorage\.setItem\(KEY/);
 assert.match(drafts, /localStorage\.removeItem\(KEY/);
 assert.match(drafts, /MAX_AGE/);
+assert.match(drafts, /confirmReplace/);
+assert.match(ai, /SparkleCreatorDrafts\.confirmReplace/);
+assert.match(html, /SparkleCreatorDrafts\.confirmReplace/);
 assert.match(drafts, /window\.confirm/);
 console.log('Creator Studio static checks passed.');
