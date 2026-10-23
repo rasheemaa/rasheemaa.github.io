@@ -58,3 +58,9 @@ Check the importer locally with `python3 -m unittest discover -s .github/scripts
 ## Visual identity
 
 Keep the established editorial page structure and readable Playfair Display and DM Sans typography. The Sheema Edit's personal identity comes through in cream, pink and lilac surfaces, plum text, small sparkle details and the handwritten With Love, Sheema signature. Shared styles live in `assets/css/editorial.css`; homepage refinements live in `assets/css/home-editorial.css`. Update stylesheet versions and the service worker cache together when changing the presentation.
+
+## Free website operation
+
+The public site uses GitHub Pages and static files. Writing and publishing personal Edits does not require Ryze, a paid CMS, or a paid API: add Markdown with front matter to `_edits` using GitHub, or use the existing editor. Ryze is an optional external authoring service; the site and already published articles continue working without it. Its subscription is separate from hosting.
+
+Keep `thesheemaedit.com`, as requested by Sheema. Custom domain registration and renewal remain separate from the free hosting. This repository's layout checks use standard `ubuntu-latest` runners for a public repository, open source browser tests and one-day diagnostic artifacts. Do not add paid testing services, larger runners, paid AI APIs or new subscriptions.
