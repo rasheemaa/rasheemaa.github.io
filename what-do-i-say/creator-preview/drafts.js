@@ -18,7 +18,13 @@
     return Boolean(text.trim() && text !== initialPlaceholder && text !== savedText);
   };
   let savedText = null;
-  const readSaved = () => { try { const v = JSON.parse(localStorage.getItem(KEY) || 'null'); return v && typeof v.text === 'string' ? v.text : null; } catch (_) { return null; } };
+  const readSaved = () => {
+    try {
+      const v = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if (!v || typeof v.text !== 'string' || v.text.length > 12000 || !Number.isFinite(v.saved) || v.saved > Date.now() || Date.now() - v.saved >= MAX_AGE) return null;
+      return v.text;
+    } catch (_) { return null; }
+  };
   savedText = readSaved();
   window.SparkleCreatorDrafts = {
     hasUnsavedOutput,
