@@ -25,8 +25,6 @@
   button.addEventListener('click',async () => {
     if (busy) return;
     const editor = $('draft-editor');
-    if (editor && !editor.hidden && editor.value !== output.textContent && !window.confirm('Generate a new AI draft and discard unapplied edits?')) return;
-    if (window.SparkleCreatorDrafts && !window.SparkleCreatorDrafts.confirmReplace()) return;
     const data = payload();
     if (!allowedTasks.has(data.task) || !data.idea) {
       status.textContent = 'Choose a creator task and describe your idea first.';
@@ -39,6 +37,7 @@
     }
     const url = endpoint();
     if (!url) { status.textContent = 'Creator AI is not configured in this preview. Your local creative brief is still available.'; return; }
+    if (window.SparkleCreatorDrafts && !window.SparkleCreatorDrafts.confirmReplace()) return;
     busy = true;
     button.disabled = true;
     const previous = output.textContent;
