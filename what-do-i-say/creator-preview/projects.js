@@ -129,7 +129,7 @@
   });
   $('clear').addEventListener('click', () => {
     if (!window.confirm('Delete all saved Creator Studio projects from this browser?')) return;
-    try { localStorage.removeItem(KEY); refresh(); status('Saved projects deleted from this browser.'); }
+    try { localStorage.removeItem(KEY); editingId = null; refresh(); $('saved').value = ''; status('Saved projects deleted from this browser. The current form remains available as an unsaved project.'); }
     catch (_) { status('Could not clear browser storage.'); }
   });
   refresh();
