@@ -83,6 +83,10 @@ function environment() {
   e.el('new-project').click();
   assert.equal(e.el('idea').value,'Unsaved idea');
   e.setAllowDiscard(true);
+  e.context.window.SparkleCreatorDrafts = {confirmReplace: () => false};
+  e.el('new-project').click();
+  assert.equal(e.el('idea').value,'Unsaved idea');
+  e.context.window.SparkleCreatorDrafts = {confirmReplace: () => true};
   e.el('new-project').click();
   assert.equal(e.el('project').value,'');
   assert.equal(e.el('idea').value,'');
