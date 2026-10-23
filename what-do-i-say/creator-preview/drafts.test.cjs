@@ -49,5 +49,7 @@ function boot({stored,confirm=true}={}) {
 {
  const e=boot({stored:{text:'Old draft',task:'content',saved:Date.now()-31*86400000}});
  assert.equal(e.localStorage.getItem('sparkle_creator_saved_output_v1'),null);
+ e.el('output').textContent='Old draft';
+ assert.equal(e.unload().prevented,true);
 }
 console.log('Creator Studio output persistence behavior checks passed.');
