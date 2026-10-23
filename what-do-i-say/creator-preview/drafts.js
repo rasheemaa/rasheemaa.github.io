@@ -13,7 +13,6 @@
   };
   const currentText = () => editor.hidden ? output.textContent : editor.value;
   const initialPlaceholder = 'Choose a goal and describe your idea to see a structured starter brief.';
-  let lastGenerated = initialPlaceholder;
   const hasUnsavedOutput = () => {
     const text = currentText();
     return Boolean(text.trim() && text !== initialPlaceholder && text !== savedText);
@@ -24,7 +23,6 @@
   window.SparkleCreatorDrafts = {
     hasUnsavedOutput,
     confirmReplace: () => {
-      const text = currentText();
       if (!hasUnsavedOutput()) return true;
       return window.confirm('Replace your current unsaved draft? Save or copy it first if you want to keep it.');
     }
