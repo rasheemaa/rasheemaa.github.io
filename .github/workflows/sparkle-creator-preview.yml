@@ -27,3 +27,11 @@ jobs:
           node what-do-i-say/creator-preview/storage.test.cjs
           node what-do-i-say/creator-preview/drafts.test.cjs
           node what-do-i-say/creator-preview/ai.test.cjs
+      - name: Install Chromium for browser acceptance
+        run: |
+          npm install --no-save --no-package-lock playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Test real mobile browser interactions
+        env:
+          CREATOR_BROWSER_TEST: '1'
+        run: node what-do-i-say/creator-preview/smoke.test.cjs
