@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 const source=fs.readFileSync(path.join(__dirname,'ai.js'),'utf8');
-async function scenario({response,idea='A strong opening',confirm=true,networkError=false}={}) {
+async function scenario({response,idea='A strong opening',confirm=true,networkError=false,editorText=null}={}) {
  const elements=new Map();
  for(const id of ['generate-ai','ai-status','output','task','idea','audience','tone','draft-editor','draft-editor-label','apply-draft']){
   elements.set(id,{value:'',textContent:'',hidden:true,disabled:false,focus(){this.focused=true;},addEventListener(type,fn){this[type]=fn;}});
@@ -12,6 +12,7 @@ async function scenario({response,idea='A strong opening',confirm=true,networkEr
  const el=id=>elements.get(id);
  el('task').value='content';el('idea').value=idea;el('tone').value='Warm';
  el('output').textContent='Previous draft';
+ if(editorText!==null){el('draft-editor').hidden=false;el('draft-editor').value=editorText;}
  let calls=0, confirms=0;
  const context=vm.createContext({
   document:{getElementById:el},
@@ -35,7 +36,8 @@ async function scenario({response,idea='A strong opening',confirm=true,networkEr
  assert.equal(r.el('output').textContent,'Previous draft');assert.match(r.el('ai-status').textContent,/could not be verified/);
  r=await scenario({response:{ok:false,status:429,json:async()=>({error:'PRIVATE ERROR'})}});
  assert.equal(r.el('output').textContent,'Previous draft');assert.match(r.el('ai-status').textContent,/busy/);assert.doesNotMatch(r.el('ai-status').textContent,/PRIVATE ERROR/);
- r=await scenario({networkError:true});
+ r=await scenario({networkError:true,editorText:'Unapplied edit'});
  assert.equal(r.el('output').textContent,'Previous draft');assert.match(r.el('ai-status').textContent,/not reachable/);
+ assert.equal(r.el('draft-editor').value,'Unapplied edit');assert.equal(r.el('draft-editor').hidden,false);
  console.log('Creator AI client behavior checks passed.');
 })().catch(error=>{console.error(error);process.exitCode=1;});
