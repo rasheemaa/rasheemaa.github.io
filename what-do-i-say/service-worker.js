@@ -1,5 +1,8 @@
-const CACHE = 'wdis-v44';
+const CACHE = 'wdis-v45';
 const SHELL = [
+  '/assets/css/tool-editorial.css?v=2',
+  '/what-do-i-say/creator-preview/',
+  ...['config.js','creator.css','profile.js','projects.js','ai.js','drafts.js','app.js'].map(file=>'/what-do-i-say/creator-preview/'+file+'?v=2'),
   '/what-do-i-say/',
   '/what-do-i-say/index.html',
   '/what-do-i-say/styles.css?v=10',

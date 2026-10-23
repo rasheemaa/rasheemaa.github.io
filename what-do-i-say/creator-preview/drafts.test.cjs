@@ -14,11 +14,13 @@ function boot({stored,confirm=true}={}) {
  elements.get('task').value='content';
  const window={confirm:()=>consent,addEventListener:(type,fn)=>{listeners[type]=fn;}};
  const localStorage={getItem:key=>data.get(key)??null,setItem:(key,value)=>data.set(key,String(value)),removeItem:key=>data.delete(key)};
- const ctx=vm.createContext({window,localStorage,document:{getElementById:id=>elements.get(id)},Date,JSON,String,Number});
+ const recovery=new Map();
+ const sessionStorage={getItem:key=>recovery.get(key)??null,setItem:(key,value)=>recovery.set(key,String(value)),removeItem:key=>recovery.delete(key)};
+ const ctx=vm.createContext({window,localStorage,sessionStorage,document:{getElementById:id=>elements.get(id)},Date,JSON,String,Number});
  vm.runInContext(fs.readFileSync(path.join(__dirname,'drafts.js'),'utf8'),ctx);
  const el=id=>elements.get(id);
  const unload=()=>{const e={prevented:false,preventDefault(){this.prevented=true;}};listeners.beforeunload?.(e);return e;};
- return {el,window,localStorage,unload,setConsent:value=>{consent=value;}};
+ return {el,window,localStorage,sessionStorage,unload,setConsent:value=>{consent=value;}};
 }
 {
  const e=boot();
@@ -48,8 +50,8 @@ function boot({stored,confirm=true}={}) {
 }
 {
  const e=boot({stored:{text:'Old draft',task:'content',saved:Date.now()-31*86400000}});
- assert.equal(e.localStorage.getItem('sparkle_creator_saved_output_v1'),null);
- e.el('output').textContent='Old draft';
- assert.equal(e.unload().prevented,true);
+ assert.equal(JSON.parse(e.localStorage.getItem('sparkle_creator_saved_output_v1')).text,'Old draft');
+ assert.equal(e.el('output').textContent,'Old draft','Older drafts remain recoverable instead of being silently deleted');
+ assert.equal(e.unload().prevented,false);
 }
 console.log('Creator Studio output persistence behavior checks passed.');
