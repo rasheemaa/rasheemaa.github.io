@@ -26,3 +26,4 @@ jobs:
           node what-do-i-say/creator-preview/smoke.test.cjs
           node what-do-i-say/creator-preview/storage.test.cjs
           node what-do-i-say/creator-preview/drafts.test.cjs
+          node what-do-i-say/creator-preview/ai.test.cjs
