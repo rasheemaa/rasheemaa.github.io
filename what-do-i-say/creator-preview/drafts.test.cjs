@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
-function boot({stored,confirm=true}={}) {
+function boot({stored,confirm=true,recovered}={}) {
  const data=new Map(stored ? [['sparkle_creator_saved_output_v1',JSON.stringify(stored)]] : []);
  const elements=new Map();
  const listeners={};
@@ -14,7 +14,7 @@ function boot({stored,confirm=true}={}) {
  elements.get('task').value='content';
  const window={confirm:()=>consent,addEventListener:(type,fn)=>{listeners[type]=fn;}};
  const localStorage={getItem:key=>data.get(key)??null,setItem:(key,value)=>data.set(key,String(value)),removeItem:key=>data.delete(key)};
- const recovery=new Map();
+ const recovery=new Map(recovered ? [['sparkle_creator_output_recovery_v1',JSON.stringify(recovered)]] : []);
  const sessionStorage={getItem:key=>recovery.get(key)??null,setItem:(key,value)=>recovery.set(key,String(value)),removeItem:key=>recovery.delete(key)};
  const ctx=vm.createContext({window,localStorage,sessionStorage,document:{getElementById:id=>elements.get(id)},Date,JSON,String,Number});
  vm.runInContext(fs.readFileSync(path.join(__dirname,'drafts.js'),'utf8'),ctx);
@@ -53,5 +53,12 @@ function boot({stored,confirm=true}={}) {
  assert.equal(JSON.parse(e.localStorage.getItem('sparkle_creator_saved_output_v1')).text,'Old draft');
  assert.equal(e.el('output').textContent,'Old draft','Older drafts remain recoverable instead of being silently deleted');
  assert.equal(e.unload().prevented,false);
+}
+{
+ const e=boot({recovered:{text:'Do not expire this unfinished edit',displayed:'Earlier output',editing:true,time:Date.now()-40*86400000}});
+ assert.equal(e.el('draft-editor').hidden,false);
+ assert.equal(e.el('draft-editor').value,'Do not expire this unfinished edit');
+ assert.equal(e.el('output').textContent,'Earlier output');
+ assert.equal(e.unload().prevented,true);
 }
 console.log('Creator Studio output persistence behavior checks passed.');

@@ -73,12 +73,18 @@ assert.match(drafts,/window\.confirm/);
 console.log('Creator Studio static checks passed: controls, CSP, design tokens and data protections.');
 
 if(process.env.CREATOR_BROWSER_TEST==='1'){
- const http=require('node:http');
+ const https=require('node:https');
+ const os=require('node:os');
+ const {execFileSync}=require('node:child_process');
+ // An ephemeral local certificate lets WebKit honor upgrade-insecure-requests.
+ // Trust is relaxed only for this isolated test context, never in the product.
+ const tlsDir=fs.mkdtempSync(path.join(os.tmpdir(),'sparkle-browser-tls-'));
+ execFileSync('openssl',['req','-x509','-newkey','rsa:2048','-nodes','-keyout',path.join(tlsDir,'key.pem'),'-out',path.join(tlsDir,'cert.pem'),'-days','1','-subj','/CN=localhost','-addext','subjectAltName=IP:127.0.0.1,DNS:localhost'],{stdio:'ignore'});
  const {chromium,webkit,devices}=require('playwright');
  const AxeBuilder=require('@axe-core/playwright').default;
  const siteRoot=path.resolve(root,'../..');
  const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.mjs':'text/javascript; charset=utf-8'};
- const server=http.createServer((req,res)=>{
+ const server=https.createServer({key:fs.readFileSync(path.join(tlsDir,'key.pem')),cert:fs.readFileSync(path.join(tlsDir,'cert.pem'))},(req,res)=>{
   let pathname;
   try{pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);}catch{res.writeHead(400).end();return;}
   const file=path.resolve(siteRoot,'.'+(pathname.endsWith('/')?pathname+'index.html':pathname));
@@ -91,7 +97,7 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
  });
  (async()=>{
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
-  const origin='http://127.0.0.1:'+server.address().port;
+  const origin='https://127.0.0.1:'+server.address().port;
   const api='https://sparkle.rasheema-abdullah.workers.dev/api/creator/generate';
   const outputDir=path.join(siteRoot,'.github/reports/creator-studio');
   fs.mkdirSync(outputDir,{recursive:true});
@@ -102,7 +108,7 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
    try{
     for(const width of [360,375,390,430,1280,1440]){
      const phone=width<761;
-     const context=await browser.newContext({viewport:{width,height:844},isMobile:phone,hasTouch:phone,userAgent:phone?devices['iPhone 13'].userAgent:undefined,serviceWorkers:'block',acceptDownloads:true});
+     const context=await browser.newContext({viewport:{width,height:844},isMobile:phone,hasTouch:phone,userAgent:phone?devices['iPhone 13'].userAgent:undefined,serviceWorkers:'block',acceptDownloads:true,ignoreHTTPSErrors:true});
      const page=await context.newPage();page.setDefaultTimeout(12000);
      try{
      let acceptDialogs=true,apiCalls=0,mode='ok',lastPayload;
@@ -121,6 +127,7 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
      const response=await page.goto(origin+'/what-do-i-say/creator-preview/');
      assert.equal(response.status(),200);
      await page.evaluate(()=>document.fonts.ready);
+     assert.equal(await page.evaluate(()=>getComputedStyle(document.body).backgroundColor),'rgb(250, 245, 240)','The production styles must load over HTTPS');
      if(width===390||width===1440){
       const name='initial-'+engine+'-'+width+'.png';
       await page.screenshot({path:path.join(outputDir,name)});report.screenshots.push(name);
@@ -259,5 +266,5 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
   }
   report.checks=count;fs.writeFileSync(path.join(outputDir,'report.json'),JSON.stringify(report,null,2));
   console.log('PASS '+count+' Creator browser checks across Chromium and WebKit, four phone widths and two desktop widths; axe reported zero violations.');
- })().catch(error=>{console.error(error);process.exitCode=1;}).finally(()=>server.close());
+ })().catch(error=>{console.error(error);process.exitCode=1;}).finally(()=>server.close(()=>fs.rmSync(tlsDir,{recursive:true,force:true})));
 }

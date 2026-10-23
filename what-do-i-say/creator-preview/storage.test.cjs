@@ -183,4 +183,18 @@ function environment() {
   assert.equal(after.length,3);assert.equal(after.find(p=>p.id===first.id).draft,'Newer version from another tab');
   assert(after.some(p=>p.draft==='This tab version'));
 }
+{
+ const e=environment();
+ const key='sparkle_creator_unsaved_draft_v1';
+ const raw=JSON.stringify({fields:['Old project','An idea worth keeping','Creators','content','Warm and conversational'],time:Date.now()-40*86400000});
+ e.sessionStorage.setItem(key,raw);e.run('projects.js');
+ assert.equal(e.el('idea').value,'An idea worth keeping','An old unsaved form must remain recoverable');
+ assert.equal(e.sessionStorage.getItem(key),raw);
+}
+{
+ const e=environment(),key='sparkle_creator_unsaved_draft_v1',raw='{unreadable unsaved form';
+ e.sessionStorage.setItem(key,raw);e.run('projects.js');
+ assert.equal(e.sessionStorage.getItem(key),raw,'Corrupt recovery data must never be silently deleted');
+ assert.match(e.el('save-status').textContent,/left untouched/);
+}
 console.log('Creator Studio storage behavior checks passed, including project drafts, cross-tab conflicts and unreadable-data preservation.');

@@ -167,12 +167,14 @@
   });
   try {
     const draft = JSON.parse(sessionStorage.getItem(DRAFT_KEY) || 'null');
-    if (draft && Array.isArray(draft.fields) && draft.fields.length === fields.length && Number.isFinite(draft.time) && Date.now() - draft.time < 86400000 && window.confirm('Restore your unsaved Creator Studio draft from this tab?')) {
-      fields.forEach((id, i) => { if (typeof draft.fields[i] === 'string') $(id).value = draft.fields[i]; });
-      suspendDraft = true;
-      $('idea').dispatchEvent(new Event('input', { bubbles: true }));
-      suspendDraft = false;
-      status('Unsaved draft restored. Save your project to keep it.');
-    } else if (draft) clearDraft();
-  } catch (_) { clearDraft(); }
+    if (draft && Array.isArray(draft.fields) && draft.fields.length === fields.length && draft.fields.every(value => typeof value === 'string') && Number.isFinite(draft.time) && draft.time <= Date.now()) {
+      if (window.confirm('Restore your unsaved Creator Studio draft from this tab?')) {
+        fields.forEach((id, i) => { $(id).value = draft.fields[i]; });
+        suspendDraft = true;
+        $('idea').dispatchEvent(new Event('input', { bubbles: true }));
+        suspendDraft = false;
+        status('Unsaved draft restored. Save your project to keep it.');
+      } else status('Your unsaved form remains in this tab until you start another project.');
+    } else if (draft) status('Your unsaved form could not be read. Its stored data was left untouched.');
+  } catch (_) { status('Your unsaved form could not be read. Its stored data was left untouched.'); }
 })();

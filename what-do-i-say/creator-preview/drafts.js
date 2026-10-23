@@ -76,7 +76,7 @@
   try {
     const stored = JSON.parse(localStorage.getItem(KEY) || 'null');
     const recovery = JSON.parse(sessionStorage.getItem(RECOVERY_KEY) || 'null');
-    if (recovery && typeof recovery.text === 'string' && recovery.text.length <= 12000 && Number.isFinite(recovery.time) && recovery.time <= Date.now() && Date.now()-recovery.time < 86400000 && recovery.text !== stored?.text) {
+    if (recovery && typeof recovery.text === 'string' && recovery.text.length <= 12000 && Number.isFinite(recovery.time) && recovery.time <= Date.now() && recovery.text !== stored?.text) {
       if (window.confirm('Restore your recent unsaved draft from this tab?')) {
         output.textContent = recovery.editing && typeof recovery.displayed === 'string' ? recovery.displayed.slice(0,12000) : recovery.text;
         if (recovery.editing) {
