@@ -116,6 +116,12 @@ function environment() {
   assert.ok(remaining.some(p => p.name === 'Second project'));
   e.el('clear').click();
   assert.equal(e.localStorage.getItem('sparkle_creator_projects_v1'),null);
+  assert.equal(e.el('saved').value,'');
+  assert.equal(e.el('project').value,'Third project');
+  e.el('save').click();
+  const fresh = JSON.parse(e.localStorage.getItem('sparkle_creator_projects_v1'));
+  assert.equal(fresh.length,1);
+  assert.equal(fresh[0].name,'Third project');
 }
 {
   const e = environment();
