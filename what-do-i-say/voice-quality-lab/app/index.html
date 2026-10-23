@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#FAF5F0">
+<script>
+(function () {
+  var ua=navigator.userAgent||"";
+  if (/iPhone|iPad|iPod/.test(ua) || (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1)) {
+    document.documentElement.classList.add("sparkle-mobile-guard");
+  }
+})();
+</script>
+<title>Sparkle Voice Quality Test · The Sheema Edit</title>
+<style>
+:root{font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;color:#3c2340;background:#fff8fb}
+*{box-sizing:border-box}
+body{margin:0;min-height:100dvh;background:radial-gradient(circle at 52% 38%,#f5d5ecaa,transparent 56%),linear-gradient(#fffafd,#f8eefa)}
+main{max-width:600px;margin:auto;padding:clamp(20px,5vw,38px);min-height:100dvh;display:flex;flex-direction:column}
+a{color:#992875;font-weight:650}.back{text-decoration:none;font-size:14px}
+.top{letter-spacing:.16em;font-size:12px;font-weight:800;color:#c24e93;margin-top:38px}
+.orb{width:140px;height:140px;border-radius:50%;margin:18px auto 22px;background:radial-gradient(circle at 30% 27%,#fff2ff,#ffb3d6 28%,#d477be 70%,#723782);box-shadow:0 5px 55px #cf79b6aa,inset 8px 7px 19px #fff8;display:grid;place-items:center}
+.orb span{font:90px Georgia,serif;color:#fff;text-shadow:0 0 12px #fff}
+h1{font:600 clamp(30px,7vw,46px)/1.1 Georgia,serif;letter-spacing:-.035em;text-align:center;margin:0}
+.desc{text-align:center;color:#7e627c;margin:12px 0 28px}
+.compare{display:grid;gap:23px}
+.compare h2{font-size:15px;margin:0 0 8px}
+audio{display:block;width:100%}
+.message{border:1px solid #ebd2e2;background:#ffffffd9;border-radius:22px;padding:19px;box-shadow:0 10px 24px #b2529710}
+small,.note{color:#7b687f;font-size:12px}
+textarea{width:100%;resize:vertical;min-height:76px;border:1px solid #dab7d0;border-radius:14px;padding:11px;color:#3c2340;background:#fff;font:inherit}
+button{cursor:pointer;font:750 16px system-ui;border:0;border-radius:17px;min-height:54px;padding:11px 18px}
+button:disabled{opacity:.5;cursor:default}
+button:focus-visible,a:focus-visible,textarea:focus-visible{outline:3px solid #8f61bd;outline-offset:3px}
+.cta{width:100%;background:linear-gradient(110deg,#d74b96,#b03a8d);color:white;margin:15px 0 5px}
+.muted{background:#f4e7ee;color:#6e3868}
+#status{text-align:center;font-weight:650;color:#724166;font-size:13px;margin:10px 0}
+#error{color:#ae2454;font-weight:650;font-size:13px}
+progress{accent-color:#cb4a98;width:100%}
+.warning{margin:12px 0 22px;font-size:13px;color:#6a5271}
+footer{font-size:12px;color:#7c647c;margin-top:auto;padding:25px 0 5px}
+[hidden]{display:none!important}
+.mobile-guard-note{display:none;background:#fff3f7;border:1px solid #e9b4d0;border-radius:17px;padding:17px;color:#6c3868;margin:12px 0;font-size:14px}
+.sparkle-mobile-guard .mobile-guard-note{display:block}
+.sparkle-mobile-guard #generate,.sparkle-mobile-guard #cancel,.sparkle-mobile-guard #progress,.sparkle-mobile-guard .warning{display:none!important}
+.mobile-only{display:none}
+.sparkle-mobile-guard #voice-model-test,.sparkle-mobile-guard .desktop-desc{display:none!important}
+.sparkle-mobile-guard .mobile-only{display:block}
+.mobile-safe{margin-top:17px;border:1px solid #ebcbdf;border-radius:20px;background:#fff9fd;padding:18px;box-shadow:0 10px 24px #b2529710}
+.mobile-safe h2{font-size:19px;margin:0 0 8px}
+.mobile-safe p{font-size:14px;color:#745674;margin:0 0 15px}
+.mobile-back{display:block;text-align:center;text-decoration:none;padding:13px 15px;border-radius:13px;background:#c84796;color:#fff!important;font-weight:800}
+.sparkle-mobile-guard footer{font-size:11px}
+@media(max-height:700px){.orb{width:110px;height:110px}.orb span{font-size:72px}.top{margin-top:15px}}
+</style>
+<link rel="stylesheet" href="/assets/css/tool-editorial.css?v=1">
+</head>
+<body>
+<main>
+<a class="back" href="/what-do-i-say/voice-beta/">← Back to regular Sparkle Voice</a>
+<p class="top">SPARKLE ✦ VOICE QUALITY LAB</p>
+<div class="orb" aria-hidden="true"><span>✦</span></div>
+<h1>Does she sound like herself?</h1>
+<p class="desc desktop-desc">Compare your approved Sparkle recording with a new voice-cloning model. Nothing here changes her normal chat.</p>
+<p class="desc mobile-only">Here's the original voice you approved. I won't run an oversized model or pretend the replacement is ready on your phone.</p>
+
+<div class="compare">
+<section class="message" aria-label="Approved reference recording">
+<h2>1. The real Sparkle</h2>
+<audio controls preload="metadata" src="/what-do-i-say/voice-beta/Sparkle_reference.wav" aria-label="Official Sparkle HD reference"></audio>
+<small>Your exact approved recording, not AI-generated speech.</small>
+</section>
+<section class="mobile-safe mobile-only" aria-label="iPhone voice comparison status">
+<h2>Voice comparison isn't ready on iPhone</h2>
+<p>I've paused the 1.5 GB Chatterbox experiment because it can crash Safari. You can still hear your exact Sparkle recording above, but a better custom voice hasn't been verified yet.</p>
+<a class="mobile-back" href="/what-do-i-say/">Back to Sparkle chat</a>
+</section>
+<section class="message" id="voice-model-test" aria-label="Voice model test">
+<h2>2. Hear a brand-new sentence</h2>
+<label for="words"><small>What Sparkle should say</small></label>
+<textarea id="words" maxlength="100" rows="2">Hey! It's Sparkle. I'm here with you, so tell me what's going on.</textarea>
+<p class="mobile-guard-note" role="status"><strong>This test is too heavy for an iPhone.</strong> The Chatterbox experiment needs about 1.5 GB of model files and can crash a mobile browser. I've disabled it on iPhone so the page stays usable. You can still listen to the approved Sparkle recording above. A computer with WebGPU is needed to try this voice comparison. <strong>Your regular Sparkle chat is unchanged.</strong></p>
+<p class="warning"><strong>Before you start:</strong> This experimental Chatterbox model downloads about 1.5 GB and may be very slow or run out of memory on iPhone. It uses your device, not a paid voice API. No download starts until you tap below.</p>
+<button type="button" class="cta" id="generate">Try the new voice model ✨</button>
+<button type="button" id="cancel" class="muted" hidden>Stop test</button>
+<progress id="progress" max="100" value="0" hidden aria-label="Model loading progress"></progress>
+<p id="status" role="status" aria-live="polite">Ready whenever you are.</p>
+<p id="error" role="alert" hidden></p>
+<div id="result" hidden>
+<audio id="rendered" controls preload="none" aria-label="New Chatterbox voice preview"></audio>
+<a id="save" download="Sparkle_new_voice_comparison.wav">Save comparison audio ↓</a>
+</div>
+</section>
+</div>
+<footer>
+This isolated test uses Resemble AI's Chatterbox model via Transformers.js on your device. It uses the approved publicly accessible Sparkle_reference.wav from The Sheema Edit. No audio or conversation is sent to a voice API. Quality and iPhone compatibility are unverified until we actually hear the result. <a href="https://github.com/resemble-ai/transformersjs-chatterbox-demo" target="_blank" rel="noopener noreferrer">Technology details</a>.
+</footer>
+</main>
+<script type="module" src="/main.js"></script>
+</body>
+</html>

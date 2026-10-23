@@ -1,0 +1,31 @@
+name: Sparkle Voice Beta static checks
+on:
+  push:
+    branches: [main]
+    paths:
+      - "what-do-i-say/voice-beta/**"
+      - ".github/scripts/sparkle-voice-beta-check.mjs"
+      - ".github/scripts/sparkle-voice-turn-detection-test.mjs"
+      - ".github/scripts/sparkle-voice-reference-prep-check.mjs"
+      - ".github/workflows/sparkle-voice-beta.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+      - run: node --check what-do-i-say/voice-beta/lab.js
+      - run: node .github/scripts/sparkle-voice-reference-prep-check.mjs
+      - run: |
+          for f in what-do-i-say/voice-beta/pocket-tts/*.js; do node --check "$f"; done
+      - run: node .github/scripts/sparkle-voice-beta-check.mjs
+      - run: node .github/scripts/sparkle-voice-turn-detection-test.mjs
+      - name: Confirm original approved HD audio bytes
+        run: echo 'b59e9c4d70864fcd0cb0b4e9c5f4a25b4854464e53104b7a6a5449d24a54ea20  what-do-i-say/voice-beta/Sparkle_reference.wav' | sha256sum -c -

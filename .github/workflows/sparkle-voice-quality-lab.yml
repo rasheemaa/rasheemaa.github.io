@@ -1,0 +1,79 @@
+name: Sparkle isolated voice quality lab
+on:
+  push:
+    branches: [main]
+    paths:
+      - "what-do-i-say/voice-quality-lab/app/**"
+      - "what-do-i-say/voice-quality-lab/package.json"
+      - "what-do-i-say/voice-quality-lab/vite.config.js"
+      - ".github/workflows/sparkle-voice-quality-lab.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Check approved reference file
+        run: echo 'b59e9c4d70864fcd0cb0b4e9c5f4a25b4854464e53104b7a6a5449d24a54ea20  what-do-i-say/voice-beta/Sparkle_reference.wav' | sha256sum -c -
+      - name: Build isolated web voice model interface
+        working-directory: what-do-i-say/voice-quality-lab
+        run: |
+          npm install --no-audit --no-fund
+          npm run check
+          npm run build
+      - name: Verify generated test (no production files)
+        run: |
+          test -f what-do-i-say/voice-quality-lab/index.html
+          test -f what-do-i-say/voice-quality-lab/assets/quality-v1.js
+          grep -q 'Does she sound like herself' what-do-i-say/voice-quality-lab/index.html
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+          const html=readFileSync('what-do-i-say/voice-quality-lab/index.html','utf8');
+          const source=readFileSync('what-do-i-say/voice-quality-lab/app/main.js','utf8');
+          assert(html.includes('sparkle-mobile-guard') && html.includes('This test is too heavy for an iPhone.'),
+            'Apple mobile users must receive the low-memory safe page');
+          assert(source.includes('if (!text || active || isAppleMobile) return;'),
+            'No Chatterbox worker may start from an iPhone event');
+          assert(html.includes('Sparkle_reference.wav'),'Original voice playback must remain available');
+          assert(html.includes('.sparkle-mobile-guard #voice-model-test,.sparkle-mobile-guard .desktop-desc{display:none!important}'),
+            'Hide nonfunctional generation form on iPhone');
+          assert(html.includes('Voice comparison isn\'t ready on iPhone') && html.includes('href="/what-do-i-say/"'),
+            'Show a truthful mobile alternative with a working return link');
+          console.log('PASS: iPhone safe guard blocks high-memory model and leaves reference playback');
+          NODE
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const dir='what-do-i-say/voice-quality-lab/assets/';
+          const main=fs.readFileSync(dir+'quality-v1.js','utf8');
+          const name=main.match(/worker-[A-Za-z0-9_-]+\.js/)?.[0];
+          assert(name,'Bundled main script must reference an actual worker');
+          const worker=fs.readFileSync(dir+name,'utf8');
+          assert(worker.startsWith('import'),'Worker must remain an ES module, never a broken IIFE');
+          assert(worker.includes('https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.0.0-next.2'),
+            'Use vetted pinned public Transformers.js module');
+          assert(!worker.includes('transformers_4_0_0Next_2)'),
+            'Must not depend on an unbound global library');
+          assert(worker.includes('onnx-community/chatterbox-ONNX'),'Test the official voice model');
+          console.log('PASS: model worker uses a real ES import, with no missing global');
+          NODE
+          git diff --name-only | grep -v '^what-do-i-say/voice-quality-lab/' && exit 1 || true
+      - name: Publish only isolated voice test assets
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add what-do-i-say/voice-quality-lab/index.html what-do-i-say/voice-quality-lab/assets/
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Publish isolated Chatterbox voice quality comparison beta"
+          git pull --rebase origin main
+          git push origin HEAD:main

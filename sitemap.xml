@@ -1,0 +1,34 @@
+---
+layout: null
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>{{ site.url }}/</loc>
+  </url>
+  <url>
+    <loc>{{ site.url }}/about.html</loc>
+  </url>
+  <url>
+    <loc>{{ site.url }}/shop/</loc>
+  </url>
+  <url>
+    <loc>{{ site.url }}/what-do-i-say/</loc>
+  </url>
+  <url>
+    <loc>{{ site.url }}/shop/reflection-journal-product.html</loc>
+  </url>
+  <url>
+    <loc>{{ site.url }}/shop/gentle-weekly-planner.html</loc>
+  </url>
+  <url>
+    <loc>{{ site.url }}/shop/reset-bundle.html</loc>
+  </url>
+  {% assign edits = site.edits | where_exp: "edit", "edit.date <= site.time" | sort: "date" | reverse %}
+  {% for edit in edits %}
+  <url>
+    <loc>{{ site.url }}{{ edit.url }}</loc>
+    <lastmod>{{ edit.last_modified | default: edit.date | date: "%Y-%m-%d" }}</lastmod>
+  </url>
+  {% endfor %}
+</urlset>

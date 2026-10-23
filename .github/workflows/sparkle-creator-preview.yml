@@ -1,0 +1,39 @@
+name: Sparkle Creator preview checks
+on:
+  pull_request:
+    paths:
+      - 'what-do-i-say/creator-preview/**'
+      - 'what-do-i-say/chat-app.js'
+      - '.github/workflows/sparkle-creator-preview.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  creator-static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Validate creator preview
+        run: |
+          node --check what-do-i-say/creator-preview/ai.js
+          node --check what-do-i-say/creator-preview/drafts.js
+          node --check what-do-i-say/creator-preview/projects.js
+          node --check what-do-i-say/creator-preview/profile.js
+          node --check what-do-i-say/chat-app.js
+          node what-do-i-say/creator-preview/smoke.test.cjs
+          node what-do-i-say/creator-preview/storage.test.cjs
+          node what-do-i-say/creator-preview/drafts.test.cjs
+          node what-do-i-say/creator-preview/ai.test.cjs
+      - name: Install Chromium for browser acceptance
+        timeout-minutes: 8
+        run: |
+          npm install --no-save --no-package-lock playwright@1.58.2
+          npx playwright install chromium
+      - name: Test real mobile browser interactions
+        timeout-minutes: 3
+        env:
+          CREATOR_BROWSER_TEST: '1'
+        run: node what-do-i-say/creator-preview/smoke.test.cjs

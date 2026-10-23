@@ -1,0 +1,94 @@
+---
+layout: null
+permalink: /what-do-i-say/voice-beta/
+---
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#FAF5F0">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; worker-src 'self' blob:; connect-src 'self' https://cdn.jsdelivr.net https://huggingface.co https://*.huggingface.co https://*.hf.co https://what-do-i-say-payments.rasheema-abdullah.workers.dev; media-src 'self' blob:; style-src 'self'; img-src 'self' data:; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<title>Sparkle Voice ✨ | Early beta</title>
+<link rel="stylesheet" href="/what-do-i-say/voice-beta/voice.css?v=6">
+<link rel="stylesheet" href="/assets/css/tool-editorial.css?v=1">
+</head>
+<body>
+<div class="voice-app" id="voice-app" data-phase="idle">
+  <header class="topbar">
+    <a class="back" href="/what-do-i-say/" aria-label="Leave voice beta">✕</a>
+    <div class="branding"><span class="brand">Sparkle <span aria-hidden="true">✦</span></span><small>VOICE BETA</small></div>
+    <button id="settings-button" class="circle settings-button" type="button" aria-label="Voice settings" title="Voice settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/><path d="M19.2 15a1.7 1.7 0 0 0 .34 1.9l-1.5 1.5a1.7 1.7 0 0 0-1.9-.34 1.7 1.7 0 0 0-1.1 1.6v.34h-2.1v-.34A1.7 1.7 0 0 0 11.8 18a1.7 1.7 0 0 0-1.9.34l-1.5-1.5A1.7 1.7 0 0 0 8.74 15 1.7 1.7 0 0 0 7 14h-.35v-2.1H7A1.7 1.7 0 0 0 8.6 10.8a1.7 1.7 0 0 0-.34-1.9l1.5-1.5a1.7 1.7 0 0 0 1.9.34A1.7 1.7 0 0 0 12.7 6.2v-.35h2.1v.35a1.7 1.7 0 0 0 1.1 1.6 1.7 1.7 0 0 0 1.9-.34l1.5 1.5a1.7 1.7 0 0 0-.34 1.9A1.7 1.7 0 0 0 20.6 12h.35v2.1h-.35a1.7 1.7 0 0 0-1.4.9Z" transform="translate(-1.75 0)"/></svg>
+    </button>
+  </header>
+
+  <main class="voice-main">
+    <div class="orb-field" aria-hidden="true">
+      <div class="orb-glow"></div>
+      <div class="orb"><span class="sparkle-shape">✦</span></div>
+      <div class="ring ring-one"></div><div class="ring ring-two"></div>
+    </div>
+    <h1 id="phase-title">Talk to Sparkle</h1>
+    <p class="subtitle" id="phase-subtitle">Just say what's on your mind.</p>
+    <div id="transcript" class="transcript" role="log" aria-live="polite" aria-label="Recent voice conversation" hidden>
+      <p id="heard" class="heard"></p>
+      <p id="reply" class="reply"></p>
+    </div>
+    <p id="status" class="status" role="status" aria-live="polite">Tap the microphone when you're ready.</p>
+    <progress id="progress" value="0" max="100" hidden aria-label="Voice model download progress"></progress>
+    <p id="error" class="error" role="alert" hidden></p>
+  </main>
+
+  <footer class="controls">
+    <div class="controls-row">
+      <button id="type-toggle" class="circle" type="button" aria-label="Type instead" title="Type instead">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M10 13h.01M14 13h.01M18 13h.01M8 16h8"/></svg>
+      </button>
+      <button id="talk" class="talk-button" type="button" aria-label="Start talking to Sparkle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5m-4 0h8"/></svg>
+      </button>
+      <button id="stop" class="talk-button stop-button" type="button" aria-label="Stop Sparkle" hidden>
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2"/></svg>
+      </button>
+      <button id="replay" class="circle" type="button" aria-label="Replay Sparkle's last response" title="Replay last response" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 9V4L2 7l3 2Z" fill="currentColor"/><path d="M5 7a8 8 0 1 1-1 8"/><path d="m11 9 5 3-5 3V9Z" fill="currentColor" stroke="none"/></svg>
+      </button>
+    </div>
+    <p class="controls-hint" id="hint">Tap to start · Talk naturally · Tap again to send sooner</p>
+    <button id="end-conversation" class="end-conversation" type="button" hidden>End voice conversation</button>
+    <form id="type-form" class="type-form" hidden>
+      <label for="typed-message">Type what you'd like to say</label>
+      <div class="type-row"><textarea id="typed-message" rows="2" placeholder="Say something to Sparkle…" autocomplete="off"></textarea><button type="submit">Send</button></div>
+    </form>
+  </footer>
+  <!-- Private reference: the same file picker also opens directly from the microphone button. -->
+  <input id="voice-file" class="visually-hidden" type="file" accept=".mp3,.wav,.m4a,audio/*" aria-label="Choose approved Sparkle voice recording" tabindex="-1" disabled>
+  <dialog id="settings" aria-labelledby="settings-title">
+    <form method="dialog" class="dialog-close-form"><button class="circle" aria-label="Close settings" type="submit">✕</button></form>
+    <div class="dialog-content">
+      <span class="eyebrow">✦ SPARKLE VOICE</span>
+      <h2 id="settings-title">Her voice is ready.</h2>
+      <p class="setup-description">Sparkle uses her approved custom voice automatically. Just tap the microphone and talk. She waits through short pauses and responds after you finish. Voice chat continues until you end it.</p>
+      
+      <p id="voice-state" role="status" aria-live="polite">Sparkle's custom voice is the default for everyone.</p>
+      <p>Listen to Sparkle’s approved recording.</p>
+      <audio controls preload="none" src="/what-do-i-say/voice-beta/Sparkle_reference.wav" aria-label="Approved Sparkle voice recording"></audio>
+      <button id="forget" class="forget" type="button" hidden aria-hidden="true">Forget saved recording</button>
+      <a id="download" class="save-reply" download="sparkle-voice-test.wav" hidden>Save last voice reply ↓</a>
+      <details class="voice-details">
+        <summary>Privacy & compatibility</summary>
+        <p>Sparkle’s owner chose to make the approved voice reference available to every visitor. Your browser downloads Sparkle_reference.wav directly from The Sheema Edit website. The reference recording is publicly accessible, so everyone can hear Sparkle without a OneDrive link or uploading a file. No personal conversations are included in the sample. The free local voice model can be slow or fail on some phones.</p>
+        <p>Speech recognition may use a service provided by your browser. Recognized text and recent conversation turns go to Sparkle's Cloudflare AI. This is a turn-by-turn beta, not continuous real-time voice. Server AI usage may cost the site operator.</p>
+        <p><a href="https://github.com/vlapky/pocket-tts-js" target="_blank" rel="noopener noreferrer">Pocket TTS browser adapter (MIT)</a> · <a href="https://github.com/kyutai-labs/pocket-tts" target="_blank" rel="noopener noreferrer">Kyutai Pocket TTS (CC BY 4.0)</a>. Only clone voices you have permission to use.</p>
+      </details>
+    </div>
+  </dialog>
+  <audio id="audio" preload="none" hidden></audio>
+</div>
+<script src="/what-do-i-say/config.js?v=9"></script>
+<script type="module" src="/what-do-i-say/voice-beta/lab.js?v=22"></script>
+</body>
+</html>

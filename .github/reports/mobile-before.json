@@ -1,0 +1,107 @@
+{
+  "results": [
+    {
+      "name": "home",
+      "width": 1280,
+      "overflow": false,
+      "readingButtonBottom": 598.109375
+    },
+    {
+      "name": "edit",
+      "width": 1280,
+      "overflow": false
+    },
+    {
+      "name": "about",
+      "width": 1280,
+      "overflow": false
+    },
+    {
+      "name": "shop",
+      "width": 1280,
+      "overflow": false
+    },
+    {
+      "name": "journal",
+      "width": 1280,
+      "overflow": false
+    },
+    {
+      "name": "planner",
+      "width": 1280,
+      "overflow": false
+    },
+    {
+      "name": "bundle",
+      "width": 1280,
+      "overflow": false
+    },
+    {
+      "name": "thanks",
+      "width": 1280,
+      "overflow": false
+    },
+    {
+      "name": "offline",
+      "width": 1280,
+      "overflow": false
+    },
+    {
+      "name": "404",
+      "width": 1280,
+      "overflow": false
+    },
+    {
+      "name": "home",
+      "width": 1440,
+      "overflow": false,
+      "readingButtonBottom": 698.796875
+    },
+    {
+      "name": "edit",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "about",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "shop",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "journal",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "planner",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "bundle",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "thanks",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "offline",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "404",
+      "width": 1440,
+      "overflow": false
+    }
+  ],
+  "failures": []
+}

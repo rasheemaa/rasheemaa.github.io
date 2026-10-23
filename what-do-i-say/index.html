@@ -1,0 +1,108 @@
+---
+layout: null
+permalink: /what-do-i-say/
+---
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://*.thesheemaedit.com https://what-do-i-say-payments.rasheema-abdullah.workers.dev https://huggingface.co https://*.huggingface.co https://*.hf.co https://cdn.jsdelivr.net; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#FAF5F0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="What Do I Say?">
+<title>What Do I Say? AI Message Writer for Texts &amp; Replies</title>
+<meta name="description" content="Free AI message help for texts, replies, rewrites, boundaries, awkward conversations, and hard-to-word messages. Chat with Sparkle until it sounds like you.">
+<link rel="canonical" href="https://thesheemaedit.com/what-do-i-say/">
+<link rel="manifest" href="/what-do-i-say/manifest.webmanifest">
+<link rel="icon" href="/assets/images/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="What Do I Say? AI Message Writer for Texts &amp; Replies">
+<meta property="og:description" content="Free AI message help for texts, replies, rewrites, boundaries, awkward conversations, and hard-to-word messages. Chat with Sparkle until it sounds like you.">
+<meta property="og:site_name" content="The Sheema Edit">
+<meta property="og:url" content="https://thesheemaedit.com/what-do-i-say/">
+<meta property="og:image" content="https://thesheemaedit.com/assets/images/social-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="What Do I Say? AI Message Writer for Texts &amp; Replies">
+<meta name="twitter:description" content="Free AI message help for texts, replies, rewrites, boundaries, awkward conversations, and hard-to-word messages.">
+<meta name="twitter:image" content="https://thesheemaedit.com/assets/images/social-card.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"What Do I Say?","alternateName":"Sparkle","url":"https://thesheemaedit.com/what-do-i-say/","description":"AI communication tool that helps people write texts, replies, rewrites, boundaries, and hard-to-word messages.","applicationCategory":"CommunicationApplication","operatingSystem":"Web","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD","url":"https://thesheemaedit.com/what-do-i-say/"},"creator":{"@type":"Person","@id":"https://thesheemaedit.com/#rasheema-abdullah","name":"Rasheema Abdullah","alternateName":"Sheema"}}</script>
+<script src="/what-do-i-say/bootstrap.js?v=2"></script>
+<link rel="stylesheet" href="/what-do-i-say/styles.css?v=10">
+<link rel="stylesheet" href="/what-do-i-say/sparkle.css?v=2">
+<link rel="stylesheet" href="/what-do-i-say/trust.css?v=1">
+<link rel="stylesheet" href="/assets/css/tool-editorial.css?v=1">
+</head>
+<body>
+<a class="skip" href="#app">Skip to the tool</a>
+<header class="topbar">
+  <a class="wordmark" href="/what-do-i-say/">WHAT DO I SAY?</a>
+  <div class="top-actions">
+    <span class="trial-pill"><strong id="trial-status">Free for everyone</strong><span id="trial-detail"> · no payment required</span></span>
+    <button class="install-button" type="button" hidden>Add to phone</button>
+  </div>
+</header>
+
+<main id="app" class="chat-shell">
+  <section class="chat-app" aria-label="Chat with Sparkle">
+    <header class="chat-heading">
+      <div>
+        <p class="eyebrow">Sparkle ✦</p>
+        <h1>Say what you mean.</h1>
+        <p>I’ll help with the words.</p>
+      </div>
+      <button id="new-message-top" class="new-message-button" type="button" hidden>New message</button>
+    </header>
+
+    <div id="chat-thread" class="chat-thread" aria-live="polite" aria-relevant="additions text">
+      <section id="welcome-card" class="welcome-card">
+        <p class="welcome-question">What’s on your mind?</p>
+        <p class="welcome-hint">Start typing. Sparkle will figure out how to help.</p>
+      </section>
+      <div id="conversation" class="conversation"></div>
+    </div>
+
+    <div id="ai-error" class="ai-error" hidden role="alert" aria-live="assertive">
+      <span id="ai-error-message">Sparkle could not answer right now.</span>
+      <button id="ai-retry" type="button">Try again</button>
+    </div>
+
+    <div class="sparkle-status compact" id="sparkle-status" data-state="idle" role="status" aria-live="polite">
+      <span class="sparkle-mark" aria-hidden="true">✦</span>
+      <span id="sparkle-status-text">Private Sparkle processing</span>
+    </div>
+
+    <form id="message-form" class="chat-composer">
+      <label class="sr-only" for="prompt" id="prompt-label">What are you trying to say?</label>
+      <div class="composer-box">
+        <textarea id="prompt" rows="1" maxlength="3500" required placeholder="Tell Sparkle what you need, or paste a message…"></textarea>
+        <button class="send-button" id="generate" type="submit" aria-label="Send to Sparkle">Send</button>
+      </div>
+      <button class="stop-button" id="sparkle-cancel" type="button" hidden>Stop Sparkle</button>
+      <p class="privacy-note">On iPhone and iPad, your message is sent securely to Sparkle’s Cloudflare AI service for generation. Don’t enter passwords or card numbers.</p>
+    </form>
+
+    <p class="founder-status">Sparkle is free for everyone. No trial, subscription, or payment required.</p>
+  </section>
+</main>
+
+
+<footer class="legal-footer">
+  <a href="/">The Sheema Edit</a><span aria-hidden="true">·</span>
+  <a href="/what-do-i-say/privacy/">Privacy</a><span aria-hidden="true">·</span>
+  <a href="/what-do-i-say/terms/">Terms</a><span aria-hidden="true">·</span>
+  <a href="/what-do-i-say/refunds/">Refunds</a>
+</footer>
+<script src="/what-do-i-say/config.js?v=9"></script>
+<script src="/what-do-i-say/sparkle.js?v=23"></script>
+<script src="/what-do-i-say/sparkle-cloud-mobile.js?v=3"></script>
+<script src="/what-do-i-say/sparkle-quality-hotfix.js?v=5"></script>
+<script src="/what-do-i-say/sparkle-first-draft-polish.js?v=1"></script>
+<script src="/what-do-i-say/chat-handoff.js?v=2" defer></script>
+<script src="/what-do-i-say/chat-app.js?v=30" defer></script>
+</body>
+</html>

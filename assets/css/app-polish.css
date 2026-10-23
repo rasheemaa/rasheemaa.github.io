@@ -1,0 +1,2 @@
+/* Compatibility entrypoint. All presentation lives in editorial.css. */
+@import url("/assets/css/editorial.css?v=1");

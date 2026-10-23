@@ -1,0 +1,45 @@
+name: Sparkle live smoke test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sparkle-smoke.yml'
+      - '.github/scripts/sparkle-smoke.mjs'
+      - '.github/scripts/free-access-smoke.mjs'
+      - 'what-do-i-say/index.html'
+      - 'what-do-i-say/chat-app.js'
+      - 'what-do-i-say/chat-handoff.js'
+      - 'what-do-i-say/service-worker.js'
+      - 'what-do-i-say/sparkle-cloud-mobile.js'
+      - 'what-do-i-say/styles.css'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sparkle-live-production-main
+  cancel-in-progress: true
+
+jobs:
+  sparkle-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact repository revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '20'
+      - name: Verify local free access and automatic intent
+        run: node .github/scripts/free-access-smoke.mjs
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Check live single-composer experience
+        run: node .github/scripts/sparkle-smoke.mjs chromium
