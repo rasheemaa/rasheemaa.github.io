@@ -26,6 +26,7 @@
     if (busy) return;
     const editor = $('draft-editor');
     if (editor && !editor.hidden && editor.value !== output.textContent && !window.confirm('Generate a new AI draft and discard unapplied edits?')) return;
+    if (window.SparkleCreatorDrafts && !window.SparkleCreatorDrafts.confirmReplace()) return;
     const data = payload();
     if (!allowedTasks.has(data.task) || !data.idea) {
       status.textContent = 'Choose a creator task and describe your idea first.';
