@@ -24,7 +24,10 @@ assert.ok(html.indexOf('creator-preview/profile.js?v=1') < html.indexOf('const u
 assert.match(html, /document.getElementById\('sparkle'\)\.disabled=!length\|\|length>3500/);
 assert.match(html, /v\.length>3500/);
 assert.match(html, /text\.length>3500/);
-assert.match(html, /Clipboard unavailable\. Instructions are displayed above/);
+assert.match(html, /Clipboard unavailable\. Instructions are displayed below/);
+for (const id of ['manual-copy','manual-copy-label']) assert.match(html,new RegExp('id="'+id+'"'));
+assert.doesNotMatch(html, /if\(v\.length>3500\)\{output\.textContent=v/);
+assert.doesNotMatch(html, /output\.textContent=text;status\.textContent='Clipboard unavailable/);
 assert.match(html, /sessionStorage\.setItem\('sparkle_creator_handoff_v1'/);
 assert.match(html, /sessionStorage\.removeItem\('sparkle_creator_handoff_v1'\)/);
 assert.match(html, /Could not open Sparkle automatically/);
@@ -100,6 +103,12 @@ if (process.env.CREATOR_BROWSER_TEST === '1') {
       await page.locator('#make').click();
       assert.equal(await page.locator('#output').innerText(),'Keep this draft','Blank brief must preserve existing work');
       assert.match(await page.locator('#output-status').innerText(),/Describe your idea/);
+      await page.locator('#idea').fill('A relatable video about boundaries');
+      await page.evaluate(() => Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw new Error('Clipboard blocked');}}}));
+      await page.locator('#copy-prompt').click();
+      assert.equal(await page.locator('#output').innerText(),'Keep this draft','Clipboard failure must preserve the original draft');
+      assert.equal(await page.locator('#manual-copy').isVisible(),true,'Manual copy field must become accessible');
+      assert.match(await page.locator('#manual-copy').inputValue(),/A relatable video about boundaries/);
       assert.deepEqual(errors,[],'Browser must not raise script errors');
       console.log('Creator Studio mobile browser interactions passed.');
     } finally {await browser.close();}
