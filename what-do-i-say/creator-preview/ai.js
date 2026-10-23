@@ -56,7 +56,9 @@
       });
       let result;
       try { result = await response.json(); } catch (_) { result = null; }
-      if (!response.ok) throw new Error(typeof result?.error === 'string' ? result.error : 'Creator AI is not available yet.');
+      if (!response.ok && response.status === 429) throw new Error('Creator AI is busy. Please wait a moment before trying again.');
+      if (!response.ok && response.status >= 500) throw new Error('Creator AI is temporarily unavailable. Your draft is safe.');
+      if (!response.ok) throw new Error('Creator AI could not complete this request. Check your input and try again.');
       if (typeof result?.output !== 'string' || !result.output.trim() || result.task !== data.task) throw new Error('The AI response could not be verified.');
       output.textContent = result.output.slice(0,12000);
       if (editor) { editor.hidden = true; $('draft-editor-label').hidden = true; $('apply-draft').hidden = true; }
