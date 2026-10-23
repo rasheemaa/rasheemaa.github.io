@@ -73,7 +73,7 @@ if (process.env.CREATOR_BROWSER_TEST === '1') {
   const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8'};
   const server = http.createServer((req,res)=>{
     const pathname = decodeURIComponent(new URL(req.url,'http://localhost').pathname);
-    const file = path.resolve(siteRoot,'.'+pathname);
+    const file = path.resolve(siteRoot,'.'+(pathname.endsWith('/') ? pathname+'index.html' : pathname));
     if (!file.startsWith(siteRoot+path.sep)) {res.writeHead(403).end();return;}
     fs.readFile(file,(err,body)=>{
       if(err){res.writeHead(404).end();return;}
