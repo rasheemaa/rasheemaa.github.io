@@ -7,6 +7,7 @@ const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const profile = fs.readFileSync(path.join(root, 'profile.js'), 'utf8');
 const projects = fs.readFileSync(path.join(root, 'projects.js'), 'utf8');
 const ai = fs.readFileSync(path.join(root, 'ai.js'), 'utf8');
+const drafts = fs.readFileSync(path.join(root, 'drafts.js'), 'utf8');
 const chat = fs.readFileSync(path.join(root, '..', 'chat-app.js'), 'utf8');
 for (const id of ['task', 'idea', 'tone', 'audience', 'project', 'project-search', 'saved', 'save', 'new-project', 'load', 'delete', 'clear', 'creator-name', 'creator-niche', 'creator-style', 'creator-avoid', 'profile-save', 'profile-clear', 'sparkle', 'copy-prompt', 'copy-status']) {
   assert.match(html, new RegExp('id="' + id + '"'), 'Missing control: ' + id);
@@ -45,4 +46,10 @@ assert.match(ai, /method:'POST'/);
 assert.match(ai, /AbortController/);
 assert.match(ai, /output\.textContent = previous/);
 assert.match(ai, /allowedTasks/);
+for (const id of ['save-output','clear-output','output-status']) assert.match(html,new RegExp('id="'+id+'"'));
+assert.match(html, /creator-preview\/drafts\.js\?v=1/);
+assert.match(drafts, /localStorage\.setItem\(KEY/);
+assert.match(drafts, /localStorage\.removeItem\(KEY/);
+assert.match(drafts, /MAX_AGE/);
+assert.match(drafts, /window\.confirm/);
 console.log('Creator Studio static checks passed.');
