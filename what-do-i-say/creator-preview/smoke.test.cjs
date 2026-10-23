@@ -219,10 +219,12 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
      }
      assert.deepEqual(errors,[],'Unexpected Creator browser errors at '+engine+' '+width);
      await context.route(/https:\/\/(?:cdn\.jsdelivr\.net|huggingface\.co|[^/]+\.hf\.co)\//,route=>route.abort());
-     let writingCalls=0;
+     let writingCalls=0,writingPayload,writingFailure=false;
      await context.route('https://what-do-i-say-payments.rasheema-abdullah.workers.dev/api/generate',async route=>{
       if(route.request().method()==='OPTIONS'){await route.fulfill({status:204,headers:{'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Methods':'POST, OPTIONS','Access-Control-Allow-Headers':'Content-Type'}});return;}
       writingCalls++;
+      writingPayload=route.request().postDataJSON();
+      if(writingFailure){await route.abort('failed');return;}
       await route.fulfill({status:200,headers:{'Access-Control-Allow-Origin':origin,'Content-Type':'application/json'},body:JSON.stringify({message:'Would Friday at 6 PM work for you?'})});
      });
      if(width===390){
@@ -242,14 +244,25 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
       await page.locator('#prompt').fill('Ask if Friday at 6 PM works.');await page.locator('#generate').click();
       await page.waitForFunction(()=>document.querySelector('#conversation .message-row.assistant .bubble')?.textContent.includes('Would Friday'));
       assert.equal(writingCalls,1);
-      for(const label of ['Shorter','Softer','Firmer','Professional','Another']){
+      for(const [key,label] of [['shorter','Make it shorter'],['softer','Make it softer'],['firmer','Make it firmer'],['professional','Make it professional'],['another','Try another version']]){
        const before=writingCalls;
        await page.locator('.more-options').last().click();
        await page.locator('.refine-options').last().getByRole('button',{name:label,exact:true}).click();
        await page.waitForFunction(()=>!document.getElementById('generate').disabled);
        assert.equal(writingCalls,before+1,'Refinement must use the existing writing API');
+       assert.equal(writingPayload.refine,key,'The selected refinement must reach the writing API');
       }
-      count+=6;
+      writingFailure=true;
+      await page.locator('#prompt').fill('Change Friday to Saturday.');await page.locator('#generate').click();
+      await page.locator('#ai-error').waitFor({state:'visible'});
+      assert.equal(await page.locator('#prompt').inputValue(),'Change Friday to Saturday.','Network failures must retain the requested edit');
+      writingFailure=false;await page.locator('#ai-retry').click();
+      await page.waitForFunction(()=>!document.getElementById('generate').disabled);
+      assert.equal(await page.locator('#ai-error').isVisible(),false);
+      await page.locator('.just-right').last().click();
+      await page.locator('.start-new').last().click();
+      assert.equal(await page.locator('#conversation .message-row').count(),0);
+      count+=9;
      }
      count+=2;
 
