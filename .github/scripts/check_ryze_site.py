@@ -16,6 +16,7 @@ class Page(HTMLParser):
     def __init__(self):
         super().__init__()
         self.meta, self.links, self.scripts = {}, {}, []
+        self.anchors = []
         self.current_script = None
         self.asides = 0
 
@@ -29,6 +30,8 @@ class Page(HTMLParser):
             self.current_script = ""
         elif tag == "aside":
             self.asides += 1
+        elif tag == "a":
+            self.anchors.append(attrs)
 
     def handle_data(self, text):
         if self.current_script is not None:
@@ -74,6 +77,12 @@ def verify():
     assert "Reflection at your own pace | The Sheema Edit" in html
     assert 'class="site-shell article-layout article-layout-solo"' in html
     assert 'alt="A quiet moment"' in html
+    assert any(a.get("class") == "back-link" and a.get("href") == "/#guides" for a in page.anchors)
+    assert any(a.get("class") == "button" and a.get("href") == "/#guides" for a in page.anchors)
+    assert "A little life guide" in html
+    personal = Page()
+    personal.feed((built / "posts/im-allowed-to-be-happy-before-im-okay.html").read_text())
+    assert any(a.get("class") == "back-link" and a.get("href") == "/#latest" for a in personal.anchors)
     assert not (built / "blog/data/ryze-integration-check.json").exists()
     for name in ("index.html", "feed.xml", "sitemap.xml"):
         content = (built / name).read_text()
