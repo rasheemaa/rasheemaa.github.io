@@ -18,6 +18,8 @@ jobs:
           node-version: '22'
       - name: Validate creator preview
         run: |
+          node --check what-do-i-say/creator-preview/ai.js
+          node --check what-do-i-say/creator-preview/drafts.js
           node --check what-do-i-say/creator-preview/projects.js
           node --check what-do-i-say/creator-preview/profile.js
           node --check what-do-i-say/chat-app.js
