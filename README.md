@@ -49,6 +49,12 @@ Ryze publishes JSON files to `blog/data` on `main`. Its Blog URL and the publish
 
 The workflow explicitly requests a Pages rebuild after committing generated pages because commits made with GITHUB_TOKEN do not trigger a Pages build automatically. Republish an article in Ryze to update its existing JSON file and page. Removing a JSON file or changing its status away from published removes only the managed page; personal Edits are preserved. Scheduled entries are omitted from the homepage, RSS feed, and sitemap until their dates.
 
+The homepage feature and The latest edits section lead with personal essays. Imported articles use their existing `ryze_source` field to appear in The little life guides section, linked near the top of the homepage. New guide publications do not displace Sheema's personal writing. Both kinds of article remain in the RSS feed and sitemap.
+
 Edit imported articles in Ryze, not in their generated Markdown. Source JSON is excluded from the public site. Imports retain article titles, descriptions, dates, and images, and remove executable HTML and Liquid from article bodies.
 
 Check the importer locally with `python3 -m unittest discover -s .github/scripts -p test_ryze_import.py`. A manual run is also available in GitHub Actions. The separate Ryze hosted copy is hidden from search engines through Blog Studio's SEO settings.
+
+## Visual identity
+
+Keep the established editorial page structure and readable Playfair Display and DM Sans typography. The Sheema Edit's personal identity comes through in cream, pink and lilac surfaces, plum text, small sparkle details and the handwritten With Love, Sheema signature. Shared styles live in `assets/css/editorial.css`; homepage refinements live in `assets/css/home-editorial.css`. Update stylesheet versions and the service worker cache together when changing the presentation.
