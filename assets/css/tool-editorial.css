@@ -5,3 +5,4 @@ body{background:#FAF5F0!important;color:#39203A!important;font-family:'DM Sans',
 .wrap article{line-height:1.8}.wrap h2{line-height:1.2}.wrap h1{line-height:1.1}
 
 .creator-entry{display:inline-flex;align-items:center;justify-content:center;min-height:46px;margin-top:16px;padding:8px 16px;border:1px solid #9C3A6E;background:#FAF5F0;color:#9C3A6E;text-decoration:none;font-size:14px}.eyebrow{color:#9C3A6E!important}.new-message-button,.send-button,.just-right,.more-options,.refine-options button,.start-new,.stop-button,.ai-error button,.install-button{min-height:44px}.legal-footer a{display:inline-flex;align-items:center;min-height:32px}
+.wordmark{min-height:44px}.skip{transform:none;clip-path:inset(50%);width:1px;height:1px;overflow:hidden;white-space:nowrap;padding:0;border:0}.skip:focus{clip-path:none;width:auto;height:auto;min-height:44px;overflow:visible;padding:10px 14px;border:1px solid var(--ink)}

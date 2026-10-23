@@ -49,6 +49,18 @@ Ryze publishes JSON files to `blog/data` on `main`. Its Blog URL and the publish
 
 The workflow explicitly requests a Pages rebuild after committing generated pages because commits made with GITHUB_TOKEN do not trigger a Pages build automatically. Republish an article in Ryze to update its existing JSON file and page. Removing a JSON file or changing its status away from published removes only the managed page; personal Edits are preserved. Scheduled entries are omitted from the homepage, RSS feed, and sitemap until their dates.
 
+The homepage feature and The latest edits section lead with personal essays. Imported articles use their existing `ryze_source` field to appear in The little life guides section, linked near the top of the homepage. New guide publications do not displace Sheema's personal writing. Both kinds of article remain in the RSS feed and sitemap.
+
 Edit imported articles in Ryze, not in their generated Markdown. Source JSON is excluded from the public site. Imports retain article titles, descriptions, dates, and images, and remove executable HTML and Liquid from article bodies.
 
 Check the importer locally with `python3 -m unittest discover -s .github/scripts -p test_ryze_import.py`. A manual run is also available in GitHub Actions. The separate Ryze hosted copy is hidden from search engines through Blog Studio's SEO settings.
+
+## Visual identity
+
+Keep the established editorial page structure and readable Playfair Display and DM Sans typography. The Sheema Edit's personal identity comes through in cream, pink and lilac surfaces, plum text, small sparkle details and the handwritten With Love, Sheema signature. Shared styles live in `assets/css/editorial.css`; homepage refinements live in `assets/css/home-editorial.css`. Update stylesheet versions and the service worker cache together when changing the presentation.
+
+## Free website operation
+
+The public site uses GitHub Pages and static files. Writing and publishing personal Edits does not require Ryze, a paid CMS, or a paid API: add Markdown with front matter to `_edits` using GitHub, or use the existing editor. Ryze is an optional external authoring service; the site and already published articles continue working without it. Its subscription is separate from hosting.
+
+Keep `thesheemaedit.com`, as requested by Sheema. Custom domain registration and renewal remain separate from the free hosting. This repository's layout checks use standard `ubuntu-latest` runners for a public repository, open source browser tests and one-day diagnostic artifacts. Do not add paid testing services, larger runners, paid AI APIs or new subscriptions.

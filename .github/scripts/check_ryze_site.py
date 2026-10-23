@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from html.parser import HTMLParser
 import json
 from pathlib import Path
+import re
 import sys
 import xml.etree.ElementTree as ET
 
@@ -15,6 +16,7 @@ class Page(HTMLParser):
     def __init__(self):
         super().__init__()
         self.meta, self.links, self.scripts = {}, {}, []
+        self.anchors = []
         self.current_script = None
         self.asides = 0
 
@@ -28,6 +30,8 @@ class Page(HTMLParser):
             self.current_script = ""
         elif tag == "aside":
             self.asides += 1
+        elif tag == "a":
+            self.anchors.append(attrs)
 
     def handle_data(self, text):
         if self.current_script is not None:
@@ -54,6 +58,9 @@ def prepare():
     (folder / (data["slug"] + ".json")).write_text(json.dumps(data))
     future = dict(data, slug="ryze-future-check", published_at="2999-01-01T12:00:00Z", updated_at="2999-01-01T12:00:00Z")
     (folder / (future["slug"] + ".json")).write_text(json.dumps(future))
+    now = datetime.now(timezone.utc).isoformat()
+    current = dict(data, slug="ryze-current-guide-check", title="A newly published practical guide", published_at=now, updated_at=now)
+    (folder / (current["slug"] + ".json")).write_text(json.dumps(current))
     sync_articles(ROOT)
 
 
@@ -70,6 +77,12 @@ def verify():
     assert "Reflection at your own pace | The Sheema Edit" in html
     assert 'class="site-shell article-layout article-layout-solo"' in html
     assert 'alt="A quiet moment"' in html
+    assert any(a.get("class") == "back-link" and a.get("href") == "/#guides" for a in page.anchors)
+    assert any(a.get("class") == "button" and a.get("href") == "/#guides" for a in page.anchors)
+    assert "A little life guide" in html
+    personal = Page()
+    personal.feed((built / "posts/im-allowed-to-be-happy-before-im-okay.html").read_text())
+    assert any(a.get("class") == "back-link" and a.get("href") == "/#latest" for a in personal.anchors)
     assert not (built / "blog/data/ryze-integration-check.json").exists()
     for name in ("index.html", "feed.xml", "sitemap.xml"):
         content = (built / name).read_text()
@@ -79,7 +92,23 @@ def verify():
     sitemap = ET.fromstring((built / "sitemap.xml").read_text().strip())
     articles = [node for node in sitemap if any("ryze-integration-check" in (child.text or "") for child in node)]
     assert any(child.text == "2000-01-02" for child in articles[0])
+    # A new automated guide must stay discoverable without displacing Sheema's essays.
+    home = (built / "index.html").read_text()
+    hero = home.split('class="editorial-feature-copy"', 1)[1].split('class="editorial-feature-art"', 1)[0]
+    assert "A newly published practical guide" not in hero
+    featured = re.search(r'class="button" href="([^"]+)"', hero).group(1)
+    assert featured.startswith("/posts/"), featured
+    stories = home.split('id="latest"', 1)[1].split('<section ', 1)[0]
+    first_story = re.search(r'<h3><a href="([^"]+)"', stories).group(1)
+    assert featured == first_story
+    assert "/ryze-current-guide-check/" not in stories
+    guides = home.split('id="guides"', 1)[1].split('<section ', 1)[0]
+    assert "/ryze-current-guide-check/" in guides
+    assert "/ryze-integration-check/" in guides
+    assert "/ryze-future-check/" not in home
+    assert home.count('<h1 ') == 1
     print("Complete Ryze publication, images, metadata, feed, sitemap and future-date checks passed.")
+    print("Personal essays lead the homepage; published guides remain linked in their own section.")
 
 
 if __name__ == "__main__":
