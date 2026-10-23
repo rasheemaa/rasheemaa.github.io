@@ -46,6 +46,8 @@ assert.match(ai, /method:'POST'/);
 assert.match(ai, /AbortController/);
 assert.match(ai, /output\.textContent = previous/);
 assert.match(ai, /allowedTasks/);
+assert.match(ai, /previousEditor/);
+assert.match(ai, /editor\.value = previousEditor/);
 assert.match(ai, /response\.status === 429/);
 assert.match(ai, /response\.status >= 500/);
 assert.doesNotMatch(ai, /throw new Error\(typeof result\?\.error/);
