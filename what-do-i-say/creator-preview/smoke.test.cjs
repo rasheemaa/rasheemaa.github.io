@@ -88,8 +88,21 @@ if (process.env.CREATOR_BROWSER_TEST === '1') {
     await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
     const browser = await chromium.launch({headless:true});
     try {
-      const page = await browser.newPage({viewport:{width:390,height:844}});
+      for (const width of [360,390,430,1280]) {
+      const page = await browser.newPage({viewport:{width,height:844}});
+      page.on('dialog',dialog=>dialog.accept());
       const errors=[];
+      await page.route('**/what-do-i-say/config.js',route=>route.fulfill({status:200,contentType:'text/javascript',body:"window.WDIS_API_BASE='https://creator-test.invalid';"}));
+      let aiFailure=false,aiRequests=0;
+      await page.route('https://creator-test.invalid/api/creator/generate',route=>{
+        const headers={'access-control-allow-origin':'*','access-control-allow-methods':'POST, OPTIONS','access-control-allow-headers':'Content-Type'};
+        if(route.request().method()==='OPTIONS')return route.fulfill({status:204,headers});
+        const data=route.request().postDataJSON();
+        assert.equal(data.task,'content');
+        assert.match(data.idea,/boundaries/);
+        aiRequests++;
+        return route.fulfill({status:aiFailure?503:200,headers:{...headers,'content-type':'application/json'},body:JSON.stringify(aiFailure?{error:'Private provider details'}:{task:data.task,output:'Browser AI draft'})});
+      });
       page.on('pageerror',e=>errors.push(e.message));
       await page.goto('http://127.0.0.1:'+server.address().port+'/what-do-i-say/creator-preview/');
       await page.locator('#idea').fill('A relatable video about boundaries');
@@ -109,8 +122,20 @@ if (process.env.CREATOR_BROWSER_TEST === '1') {
       assert.equal(await page.locator('#output').innerText(),'Keep this draft','Clipboard failure must preserve the original draft');
       assert.equal(await page.locator('#manual-copy').isVisible(),true,'Manual copy field must become accessible');
       assert.match(await page.locator('#manual-copy').inputValue(),/A relatable video about boundaries/);
+      await page.locator('#generate-ai').click();
+      await page.locator('#ai-status').getByText(/AI draft ready/).waitFor();
+      assert.equal(await page.locator('#output').innerText(),'Browser AI draft');
+      assert.equal(aiRequests,1);
+      aiFailure=true;
+      await page.locator('#generate-ai').click();
+      await page.locator('#ai-status').getByText(/temporarily unavailable/).waitFor();
+      assert.equal(await page.locator('#output').innerText(),'Browser AI draft','Provider failure must preserve the last good draft');
+      assert.equal(aiRequests,2);
+      assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true,'No horizontal scrolling at '+width+'px');
       assert.deepEqual(errors,[],'Browser must not raise script errors');
-      console.log('Creator Studio mobile browser interactions passed.');
+      await page.close();
+      }
+      console.log('Creator Studio mobile and desktop browser interactions passed.');
     } finally {await browser.close();}
   })().catch(e=>{console.error(e);process.exitCode=1;}).finally(()=>server.close());
 }
