@@ -22,6 +22,15 @@
     $(id).addEventListener('change', saveDraft);
   });
   const confirmDiscard = () => snapshot() === cleanSnapshot || window.confirm('Discard unsaved changes to the current project?');
+  const confirmOutputReplace = () => !window.SparkleCreatorDrafts || window.SparkleCreatorDrafts.confirmReplace();
+  const resetOutput = () => {
+    const output = $('output');
+    if (output) output.textContent = 'Choose a goal and describe your idea to see a structured starter brief.';
+    for (const id of ['draft-editor','draft-editor-label','apply-draft']) {
+      const element = $(id);
+      if (element) element.hidden = true;
+    }
+  };
   window.addEventListener('beforeunload', event => {
     if (snapshot() === cleanSnapshot) return;
     event.preventDefault();
@@ -44,7 +53,8 @@
   };
   $('project-search').addEventListener('input', refresh);
   $('new-project').addEventListener('click', () => {
-    if (!confirmDiscard()) return;
+    if (!confirmDiscard() || !confirmOutputReplace()) return;
+    resetOutput();
     editingId = null;
     $('project').value = '';
     $('idea').value = '';
@@ -91,7 +101,8 @@
   $('load').addEventListener('click', () => {
     const p = read().find(item => item.id === $('saved').value);
     if (!p) { status('Choose a saved project first.'); return; }
-    if (!confirmDiscard()) return;
+    if (!confirmDiscard() || !confirmOutputReplace()) return;
+    resetOutput();
     editingId = p.id;
     $('project').value = p.name || '';
     $('idea').value = p.idea || '';
