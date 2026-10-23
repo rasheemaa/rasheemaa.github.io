@@ -52,6 +52,8 @@ assert.match(drafts, /localStorage\.setItem\(KEY/);
 assert.match(drafts, /localStorage\.removeItem\(KEY/);
 assert.match(drafts, /MAX_AGE/);
 assert.match(drafts, /confirmReplace/);
+assert.match(drafts, /beforeunload/);
+assert.match(drafts, /hasUnsavedOutput/);
 assert.match(ai, /SparkleCreatorDrafts\.confirmReplace/);
 assert.match(html, /SparkleCreatorDrafts\.confirmReplace/);
 assert.match(drafts, /window\.confirm/);
