@@ -19,7 +19,7 @@ function environment() {
     replaceChildren(...items) { this.options = items; },
     add(item) { this.options.push(item); }
   });
-  for (const id of ['save','new-project','load','delete','clear','saved','project-search','project','task','idea','audience','tone','save-status','profile-save','profile-clear','profile-status','creator-name','creator-niche','creator-style','creator-avoid']) elements.set(id, make(id));
+  for (const id of ['save','new-project','load','delete','clear','export-projects','saved','project-search','project','task','idea','audience','tone','save-status','profile-save','profile-clear','profile-status','creator-name','creator-niche','creator-style','creator-avoid']) elements.set(id, make(id));
   elements.get('task').options = [{value:'content'},{value:'reply'}];
   elements.get('tone').options = [{value:'Warm and conversational'},{value:'Playful and bold'}];
   elements.get('task').value = 'content';
@@ -154,4 +154,33 @@ function environment() {
   assert.equal(e.localStorage.getItem('sparkle_creator_profile_v1'),null);
   assert.equal(e.context.window.SparkleCreatorProfile.profileText(),'');
 }
-console.log('Creator Studio storage behavior checks passed.');
+{
+  const e=environment();
+  const raw='{unreadable saved project data';
+  e.localStorage.setItem('sparkle_creator_projects_v1',raw);
+  e.run('projects.js');
+  e.el('project').value='A new project';e.el('idea').value='Keep existing data';
+  e.el('save').click();
+  assert.equal(e.localStorage.getItem('sparkle_creator_projects_v1'),raw);
+  assert.match(e.el('save-status').textContent,/left untouched/);
+}
+{
+  const e=environment();let draft='First project draft',marked=0;
+  e.context.window.SparkleCreatorDrafts={confirmReplace:()=>true,projectText:()=>draft,markProjectSaved:()=>{marked++;},restoreProject:value=>{draft=value;}};
+  e.run('projects.js');
+  e.el('project').value='First';e.el('idea').value='First idea';e.el('save').click();
+  const first=JSON.parse(e.localStorage.getItem('sparkle_creator_projects_v1'))[0];
+  assert.equal(first.draft,'First project draft');assert.equal(marked,1);
+  e.el('new-project').click();draft='Second draft';e.el('project').value='Second';e.el('idea').value='Second idea';e.el('save').click();
+  e.el('saved').value=first.id;e.el('load').click();assert.equal(draft,'First project draft');
+  const external=JSON.parse(e.localStorage.getItem('sparkle_creator_projects_v1'));
+  external.find(p=>p.id===first.id).draft='Newer version from another tab';
+  e.localStorage.setItem('sparkle_creator_projects_v1',JSON.stringify(external));
+  draft='This tab version';e.setAllowDiscard(false);e.el('save').click();
+  assert.equal(JSON.parse(e.localStorage.getItem('sparkle_creator_projects_v1')).length,2);
+  e.setAllowDiscard(true);e.el('save').click();
+  const after=JSON.parse(e.localStorage.getItem('sparkle_creator_projects_v1'));
+  assert.equal(after.length,3);assert.equal(after.find(p=>p.id===first.id).draft,'Newer version from another tab');
+  assert(after.some(p=>p.draft==='This tab version'));
+}
+console.log('Creator Studio storage behavior checks passed, including project drafts, cross-tab conflicts and unreadable-data preservation.');
