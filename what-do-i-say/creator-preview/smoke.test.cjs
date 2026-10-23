@@ -65,3 +65,50 @@ assert.match(html, /Describe your idea before replacing the current draft/);
 assert.match(html, /editor\.hidden=true;document\.getElementById\('draft-editor-label'\)\.hidden=true/);
 assert.match(drafts, /window\.confirm/);
 console.log('Creator Studio static checks passed.');
+
+if (process.env.CREATOR_BROWSER_TEST === '1') {
+  (async () => {
+    const { chromium } = require('playwright');
+    const browser = await chromium.launch({ headless:true });
+    try {
+      for (const viewport of [{width:1280,height:800},{width:390,height:844}]) {
+        const context = await browser.newContext({ viewport });
+        const page = await context.newPage();
+        page.on('dialog',dialog => dialog.accept());
+        await page.route('**/what-do-i-say/config.js', route => route.fulfill({
+          status:200,contentType:'application/javascript',
+          body:"window.WDIS_API_BASE='https://creator-test.invalid';"
+        }));
+        let sent;
+        await page.route('https://creator-test.invalid/api/creator/generate',async route => {
+          sent=route.request().postDataJSON();
+          await route.fulfill({status:200,contentType:'application/json',
+            headers:{'access-control-allow-origin':'*'},
+            body:JSON.stringify({task:sent.task,output:'Browser verified draft'})});
+        });
+        await page.goto('http://127.0.0.1:8765/what-do-i-say/creator-preview/',{waitUntil:'load'});
+        await page.locator('#idea').fill('A creator browser test');
+        await page.locator('#make').click();
+        assert.match(await page.locator('#output').innerText(),/A creator browser test/);
+        await page.locator('#edit-draft').click();
+        await page.locator('#draft-editor').fill('Edited browser draft');
+        await page.locator('#apply-draft').click();
+        assert.equal(await page.locator('#output').innerText(),'Edited browser draft');
+        await page.locator('#idea').fill('');
+        await page.locator('#make').click();
+        assert.equal(await page.locator('#output').innerText(),'Edited browser draft');
+        await page.locator('#idea').fill('A creator browser test');
+        await page.locator('#project').fill('Browser project');
+        await page.locator('#save').click();
+        assert.match(await page.locator('#save-status').innerText(),/saved on this device/);
+        await page.locator('#generate-ai').click();
+        await page.locator('#ai-status').getByText(/AI draft ready/).waitFor();
+        assert.equal(sent.idea,'A creator browser test');
+        assert.equal(await page.locator('#output').innerText(),'Browser verified draft');
+        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),true,'Mobile horizontal overflow');
+        await context.close();
+      }
+    } finally { await browser.close(); }
+    console.log('Creator desktop and mobile browser checks passed.');
+  })().catch(error => {console.error(error);process.exitCode=1;});
+}
