@@ -112,3 +112,43 @@ if (process.env.CREATOR_BROWSER_TEST === '1') {
     console.log('Creator desktop and mobile browser checks passed.');
   })().catch(error => {console.error(error);process.exitCode=1;});
 }
+
+if (process.env.CREATOR_BROWSER_TEST === '1') {
+  const http = require('node:http');
+  const { chromium } = require('playwright');
+  const siteRoot = path.resolve(root, '../..');
+  const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8'};
+  const server = http.createServer((req,res)=>{
+    const pathname = decodeURIComponent(new URL(req.url,'http://localhost').pathname);
+    const file = path.resolve(siteRoot,'.'+pathname);
+    if (!file.startsWith(siteRoot+path.sep)) {res.writeHead(403).end();return;}
+    fs.readFile(file,(err,body)=>{
+      if(err){res.writeHead(404).end();return;}
+      res.writeHead(200,{'Content-Type':types[path.extname(file)]||'text/plain'});
+      res.end(body);
+    });
+  });
+  (async()=>{
+    await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+    const browser = await chromium.launch({headless:true});
+    try {
+      const page = await browser.newPage({viewport:{width:390,height:844}});
+      const errors=[];
+      page.on('pageerror',e=>errors.push(e.message));
+      await page.goto('http://127.0.0.1:'+server.address().port+'/what-do-i-say/creator-preview/');
+      await page.locator('#idea').fill('A relatable video about boundaries');
+      await page.locator('#make').click();
+      assert.match(await page.locator('#output').innerText(),/STARTER FRAMEWORK/);
+      await page.locator('#edit-draft').click();
+      await page.locator('#draft-editor').fill('Keep this draft');
+      await page.locator('#apply-draft').click();
+      assert.equal(await page.locator('#output').innerText(),'Keep this draft');
+      await page.locator('#idea').fill('');
+      await page.locator('#make').click();
+      assert.equal(await page.locator('#output').innerText(),'Keep this draft','Blank brief must preserve existing work');
+      assert.match(await page.locator('#output-status').innerText(),/Describe your idea/);
+      assert.deepEqual(errors,[],'Browser must not raise script errors');
+      console.log('Creator Studio mobile browser interactions passed.');
+    } finally {await browser.close();}
+  })().catch(e=>{console.error(e);process.exitCode=1;}).finally(()=>server.close());
+}
