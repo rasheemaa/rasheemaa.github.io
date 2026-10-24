@@ -83,7 +83,13 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
  execFileSync('openssl',['req','-x509','-newkey','rsa:2048','-nodes','-keyout',path.join(tlsDir,'key.pem'),'-out',path.join(tlsDir,'cert.pem'),'-days','1','-subj','/CN=localhost','-addext','subjectAltName=IP:127.0.0.1,DNS:localhost'],{stdio:'ignore'});
  const {chromium,webkit,devices}=require('playwright');
  const AxeBuilder=require('@axe-core/playwright').default;
- const siteRoot=path.resolve(root,'../..');
+ const siteRoot=process.env.CREATOR_SITE_ROOT?path.resolve(process.env.CREATOR_SITE_ROOT):path.resolve(root,'../..');
+ const studioPath=process.env.CREATOR_PREVIEW_PATH||'/what-do-i-say/creator-preview/';
+ const writingPath=process.env.CREATOR_WRITING_PATH||'/what-do-i-say/';
+ for(const route of [studioPath,writingPath]){
+  assert(route.startsWith('/')&&route.endsWith('/')&&!route.includes('..'),'Use explicit local directory routes');
+  assert(fs.existsSync(path.join(siteRoot,route,'index.html')),'Browser test route is missing: '+route);
+ }
  const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.mjs':'text/javascript; charset=utf-8'};
  const server=https.createServer({key:fs.readFileSync(path.join(tlsDir,'key.pem')),cert:fs.readFileSync(path.join(tlsDir,'cert.pem'))},(req,res)=>{
   let pathname;
@@ -100,7 +106,8 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   const origin='https://127.0.0.1:'+server.address().port;
   const api='https://sparkle.rasheema-abdullah.workers.dev/api/creator/generate';
-  const outputDir=path.join(siteRoot,'.github/reports/creator-studio');
+   const outputDir=process.env.CREATOR_REPORT_DIR?path.resolve(process.env.CREATOR_REPORT_DIR):path.join(siteRoot,'.github/reports/creator-studio');
+   if(process.env.CREATOR_SITE_ROOT)assert(process.env.CREATOR_REPORT_DIR&&!outputDir.startsWith(siteRoot+path.sep),'Keep packaged-site test artifacts outside deployed assets');
   fs.mkdirSync(outputDir,{recursive:true});
   const report={revision:process.env.GITHUB_SHA||null,kind:'Simulated browsers and deterministic API responses; not physical iPhone or live inference',results:[],screenshots:[]};
   let count=0;
@@ -125,7 +132,7 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
       const output=mode==='html'?'<img src=x onerror=alert(1)> Plain draft':'Draft for '+lastPayload.task+'\nA useful outline to edit.';
       await route.fulfill({status,headers:{'Access-Control-Allow-Origin':origin,'Content-Type':'application/json','Cache-Control':'no-store'},body:JSON.stringify(status===200?{task:lastPayload.task,output}:{error:'PRIVATE PROVIDER TRACE'})});
      });
-     const response=await page.goto(origin+'/what-do-i-say/creator-preview/');
+     const response=await page.goto(origin+studioPath);
      assert.equal(response.status(),200);
      await page.evaluate(()=>document.fonts.ready);
      assert.equal(await page.evaluate(()=>getComputedStyle(document.body).backgroundColor),'rgb(250, 245, 240)','The production styles must load over HTTPS');
@@ -249,7 +256,7 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
      assert.deepEqual(errors,[],'Unexpected Creator browser errors at '+engine+' '+width);
      await context.route(/https:\/\/(?:cdn\.jsdelivr\.net|huggingface\.co|[^/]+\.hf\.co)\//,route=>route.abort());
      let writingCalls=0,writingPayload,writingFailure=false;
-     await context.route('https://what-do-i-say-payments.rasheema-abdullah.workers.dev/api/generate',async route=>{
+      await context.route('**/api/generate',async route=>{
       if(route.request().method()==='OPTIONS'){await route.fulfill({status:204,headers:{'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Methods':'POST, OPTIONS','Access-Control-Allow-Headers':'Content-Type'}});return;}
       writingCalls++;
       writingPayload=route.request().postDataJSON();
@@ -259,13 +266,13 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
      if(width===390){
       await page.locator('#idea').fill('A short original content idea');
       await page.locator('#sparkle').click();
-      await page.waitForURL(origin+'/what-do-i-say/');
+       await page.waitForURL(origin+writingPath);
       assert.match(await page.locator('#prompt').inputValue(),/You are Sparkle Creator/);
       assert.equal(writingCalls,0,'Handoff must prefill without sending');
-     }else await page.goto(origin+'/what-do-i-say/');
+      }else await page.goto(origin+writingPath);
      await page.evaluate(()=>document.fonts.ready);
      assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Sparkle writing page overflows at '+engine+' '+width);
-     assert.equal(await page.locator('.creator-entry').getAttribute('href'),'/what-do-i-say/creator-preview/');
+      assert.equal(await page.locator('.creator-entry').getAttribute('href'),studioPath);
      const mainAxe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze();
      assert.deepEqual(mainAxe.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>n.target)})),[],'Sparkle writing accessibility violations');
      if(width===390||width===1440){const name='writing-'+engine+'-'+width+'.png';await page.screenshot({path:path.join(outputDir,name)});report.screenshots.push(name);}
