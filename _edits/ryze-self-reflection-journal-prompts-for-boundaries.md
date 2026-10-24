@@ -4,8 +4,8 @@ layout: "post"
 title: "Self-reflection journal prompts for noticing your boundaries"
 seo_title: "Self reflection journal prompts for boundaries: Pause 2026"
 description: "Self reflection journal prompts for boundaries help you notice an unwanted yes, name your limits, and find words that fit without another daily routine."
-date: "2026-10-23T22:01:14.458000+00:00"
-last_modified: "2026-10-23T22:01:14.458000+00:00"
+date: "2026-10-24T00:27:16.404000+00:00"
+last_modified: "2026-10-24T00:27:16.404000+00:00"
 permalink: "/self-reflection-journal-prompts-for-boundaries/"
 ryze_source: "blog/data/self-reflection-journal-prompts-for-boundaries.json"
 category: "Real life"
@@ -139,7 +139,8 @@ image_alt: "Self-reflection journal prompts for noticing your boundaries"
 <ul>
 <li><a href="https://thesheemaedit.com/best-journal-prompts-for-mental-health" rel="noopener noreferrer">Journal prompts for mental health</a></li>
 <li><a href="https://thesheemaedit.com/choose-undated-weekly-planner" rel="noopener noreferrer">Choosing an undated weekly planner</a></li>
-<li><a href="https://thesheemaedit.com/best-printable-weekly-planners-for-busy-moms" rel="noopener noreferrer">Printable weekly planners for busy moms</a></li>
+<li><a href="https://thesheemaedit.com/posts/the-forgiveness-i-never-saw-coming.html" rel="noopener noreferrer">The Forgiveness I Never Saw Coming</a></li>
+<li><a href="https://thesheemaedit.com/shop/reflection-journal-product.html" rel="noopener noreferrer">Reflection Journal</a></li>
 </ul>
 
 
