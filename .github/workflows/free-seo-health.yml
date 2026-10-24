@@ -1,0 +1,49 @@
+name: Free SEO health checks
+
+on:
+  pull_request:
+    paths:
+      - blog/data/**
+      - _edits/ryze-*.md
+      - assets/images/ryze/**
+      - .github/scripts/check_free_seo.py
+      - .github/scripts/archive_ryze_images.py
+      - .github/workflows/free-seo-health.yml
+      - robots.txt
+      - sitemap.xml
+  push:
+    branches: [main]
+    paths:
+      - blog/data/**
+      - _edits/ryze-*.md
+      - assets/images/ryze/**
+      - .github/scripts/check_free_seo.py
+      - .github/scripts/archive_ryze_images.py
+      - .github/workflows/free-seo-health.yml
+      - robots.txt
+      - sitemap.xml
+  schedule:
+    - cron: "33 11 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Check metadata, sitemap rules, and archived image integrity
+        run: python3 .github/scripts/check_free_seo.py source
+
+  live:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    needs: source
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Check live articles, sitemap, and images
+        run: python3 .github/scripts/check_free_seo.py live

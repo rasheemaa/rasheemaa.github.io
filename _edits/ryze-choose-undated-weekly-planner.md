@@ -13,7 +13,7 @@ category_key: "lifestyle"
 edit_type: "The edit"
 cover_note: "How to choose an undated weekly planner that leaves room for you"
 read_time: "9 min read"
-image: "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/ec095ccc-2761-4cb2-8b80-d378c49d63ab/featured.jpg"
+image: "/assets/images/ryze/choose-undated-weekly-planner/featured.jpg"
 image_alt: "How to choose an undated weekly planner that leaves room for you"
 ---
 <p>Choose an undated weekly planner with enough writing space for your actual week, dates you can add when you need them, and room for something besides obligations. The right fit lets you leave a week blank and come back without turning your planner into another thing you’re behind on.</p>
@@ -31,7 +31,7 @@ image_alt: "How to choose an undated weekly planner that leaves room for you"
 <li><strong>Check the extras.</strong> Look at every tracker and prompt. Keep only the ones you genuinely want to use.</li>
 <li><strong>Check the restart.</strong> Imagine leaving it alone for a while. Choose a layout you’d feel comfortable opening again.</li>
 </ol>
-<figure><img src="https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/ec095ccc-2761-4cb2-8b80-d378c49d63ab/body-7d5b6128e9c6bb2839c519140856235c.jpg" alt="Five steps for choosing a planner, from naming your needs to checking how easily you can return to it." loading="lazy" decoding="async"><figcaption>Test the page against your life before deciding whether it belongs in it.</figcaption></figure><p>Give yourself 5 minutes for that first trial if a small boundary helps. You’re checking whether the page works, not auditioning for a stationery commercial.</p>
+<figure><img src="/assets/images/ryze/choose-undated-weekly-planner/body-7d5b6128e9c6bb2839c519140856235c.jpg" alt="Five steps for choosing a planner, from naming your needs to checking how easily you can return to it." loading="lazy" decoding="async"><figcaption>Test the page against your life before deciding whether it belongs in it.</figcaption></figure><p>Give yourself 5 minutes for that first trial if a small boundary helps. You’re checking whether the page works, not auditioning for a stationery commercial.</p>
 <p>The most useful question is simple: <strong>Can you see what matters without making yourself smaller to fit?</strong></p>
 <h2>Which planner format fits the way you’ll actually use it?</h2>
 <p>An undated weekly planner can take different forms. Compare the practical differences before deciding which one belongs in your day.</p>

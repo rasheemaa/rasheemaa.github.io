@@ -51,7 +51,7 @@ The workflow explicitly requests a Pages rebuild after committing generated page
 
 The homepage feature and The latest edits section lead with personal essays. Imported articles use their existing `ryze_source` field to appear in The little life guides section, linked near the top of the homepage. New guide publications do not displace Sheema's personal writing. Both kinds of article remain in the RSS feed and sitemap.
 
-Edit imported articles in Ryze, not in their generated Markdown. Source JSON is excluded from the public site. Imports retain article titles, descriptions, dates, and images, and remove executable HTML and Liquid from article bodies.
+Until the canceled Ryze access ends, Ryze may still update JSON files. After that, edit imported articles in `blog/data/*.json` using GitHub; never edit their generated Markdown directly. Run `python3 .github/scripts/import_ryze.py` to regenerate pages. Source JSON is excluded from the public site. Imports retain article titles, descriptions, dates, and locally hosted images, and remove executable HTML and Liquid from article bodies.
 
 Check the importer locally with `python3 -m unittest discover -s .github/scripts -p test_ryze_import.py`. A manual run is also available in GitHub Actions. The separate Ryze hosted copy is hidden from search engines through Blog Studio's SEO settings.
 
@@ -64,3 +64,11 @@ Keep the established editorial page structure and readable Playfair Display and 
 The public site uses GitHub Pages and static files. Writing and publishing personal Edits does not require Ryze, a paid CMS, or a paid API: add Markdown with front matter to `_edits` using GitHub, or use the existing editor. Ryze is an optional external authoring service; the site and already published articles continue working without it. Its subscription is separate from hosting.
 
 Keep `thesheemaedit.com`, as requested by Sheema. Custom domain registration and renewal remain separate from the free hosting. This repository's layout checks use standard `ubuntu-latest` runners for a public repository, open source browser tests and one-day diagnostic artifacts. Do not add paid testing services, larger runners, paid AI APIs or new subscriptions.
+
+## Free SEO maintenance after canceling Ryze
+
+The eight already published Ryze articles and their 16 images are retained in this GitHub repository. Their image URLs point to `assets/images/ryze`, not the former Ryze Supabase storage. The image manifest at `.github/reports/ryze-image-archive.json` contains SHA-256 hashes and the original public image URLs. `archive_ryze_images.py` can archive any further published Ryze images before access ends; the free scheduled workflow also checks for updates.
+
+The original seven keyword estimates and one known referring backlink are documented in `.github/reports/ryze-seo-baseline-20261023.json`. Weekly `Free SEO health checks` inspect the publicly available sitemap, articles, metadata, images and the reported referring backlink. A missing third-party backlink generates a warning, not an artificial replacement or a paid outreach purchase. Check Google Search Console directly for actual Google searches, indexing, and performance; this independent Google account is not part of the Ryze subscription.
+
+The planned Ryze publishing calendar is not equivalent to published site content. Nothing in these checks automatically generates the remaining unpublished articles. Existing GitHub Pages hosting continues to be free within GitHub's applicable public-repository limits; custom domain registration/renewal remains a separate cost.
