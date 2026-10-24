@@ -4,8 +4,8 @@ layout: "post"
 title: "Self-reflection journal prompts for noticing your boundaries"
 seo_title: "Self reflection journal prompts for boundaries: Pause 2026"
 description: "Self reflection journal prompts for boundaries help you notice an unwanted yes, name your limits, and find words that fit without another daily routine."
-date: "2026-10-23T22:01:14.458000+00:00"
-last_modified: "2026-10-23T22:01:14.458000+00:00"
+date: "2026-10-24T00:27:16.404000+00:00"
+last_modified: "2026-10-24T00:27:16.404000+00:00"
 permalink: "/self-reflection-journal-prompts-for-boundaries/"
 ryze_source: "blog/data/self-reflection-journal-prompts-for-boundaries.json"
 category: "Real life"
@@ -13,7 +13,7 @@ category_key: "lifestyle"
 edit_type: "The edit"
 cover_note: "Self-reflection journal prompts for noticing your boundaries"
 read_time: "10 min read"
-image: "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/afbfeef1-7a91-4dc8-ba5b-7a2e49ce7395/featured.jpg"
+image: "/assets/images/ryze/self-reflection-journal-prompts-for-boundaries/featured.jpg"
 image_alt: "Self-reflection journal prompts for noticing your boundaries"
 ---
 <p>Start with a moment when you said yes but wished you’d paused, then ask what you needed, what you feared, and what you’d choose differently. Self reflection journal prompts for boundaries work best as invitations to notice your limits, not assignments to become someone who never feels guilty about having them.</p>
@@ -31,7 +31,7 @@ image_alt: "Self-reflection journal prompts for noticing your boundaries"
 <li><strong>Choose.</strong> Consider a response that fits that need. It might be a pause, a smaller offer, or a no.</li>
 </ol>
 <p>These are places to begin, not boxes to complete. If all you write is that you wanted an evening without another favor, that is already more specific than calling yourself bad at boundaries.</p>
-<figure><img src="https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/afbfeef1-7a91-4dc8-ba5b-7a2e49ce7395/body-9dd0d5a30c985991039d1545b7b8ea3a.jpg" alt="Three steps for reflecting on a boundary: notice the moment, name the need, and choose a response." loading="lazy" decoding="async"><figcaption>You can notice a limit before deciding whether to say it out loud.</figcaption></figure><p>You don’t need to reconstruct the whole conversation. A few honest details will do. The point is to understand your choice, not prepare evidence for a trial nobody scheduled.</p>
+<figure><img src="/assets/images/ryze/self-reflection-journal-prompts-for-boundaries/body-9dd0d5a30c985991039d1545b7b8ea3a.jpg" alt="Three steps for reflecting on a boundary: notice the moment, name the need, and choose a response." loading="lazy" decoding="async"><figcaption>You can notice a limit before deciding whether to say it out loud.</figcaption></figure><p>You don’t need to reconstruct the whole conversation. A few honest details will do. The point is to understand your choice, not prepare evidence for a trial nobody scheduled.</p>
 <h2>When your yes arrived before your answer did</h2>
 <p>Sometimes you agree because you want to. Sometimes you agree because the silence feels awkward, the request sounds small, or you haven’t checked what the rest of your day already holds.</p>
 <p>The difference deserves a little curiosity. You can care about someone and still wish you’d answered differently.</p>
@@ -139,7 +139,8 @@ image_alt: "Self-reflection journal prompts for noticing your boundaries"
 <ul>
 <li><a href="https://thesheemaedit.com/best-journal-prompts-for-mental-health" rel="noopener noreferrer">Journal prompts for mental health</a></li>
 <li><a href="https://thesheemaedit.com/choose-undated-weekly-planner" rel="noopener noreferrer">Choosing an undated weekly planner</a></li>
-<li><a href="https://thesheemaedit.com/best-printable-weekly-planners-for-busy-moms" rel="noopener noreferrer">Printable weekly planners for busy moms</a></li>
+<li><a href="https://thesheemaedit.com/posts/the-forgiveness-i-never-saw-coming.html" rel="noopener noreferrer">The Forgiveness I Never Saw Coming</a></li>
+<li><a href="https://thesheemaedit.com/shop/reflection-journal-product.html" rel="noopener noreferrer">Reflection Journal</a></li>
 </ul>
 
 

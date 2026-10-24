@@ -1,0 +1,32 @@
+{
+  "checkedAt": "2026-10-24T00:28:52.346Z",
+  "passed": true,
+  "testAnalyticsBlocked": true,
+  "shopEntries": 1,
+  "results": [
+    {
+      "path": "/shop/",
+      "checkoutButtons": 3,
+      "checkoutEvents": 3,
+      "shopView": true
+    },
+    {
+      "path": "/shop/reflection-journal-product.html",
+      "checkoutButtons": 1,
+      "checkoutEvents": 1,
+      "shopView": false
+    },
+    {
+      "path": "/shop/gentle-weekly-planner.html",
+      "checkoutButtons": 1,
+      "checkoutEvents": 1,
+      "shopView": false
+    },
+    {
+      "path": "/shop/reset-bundle.html",
+      "checkoutButtons": 1,
+      "checkoutEvents": 1,
+      "shopView": false
+    }
+  ]
+}

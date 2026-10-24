@@ -105,6 +105,24 @@ document.querySelectorAll('a[href="/shop/"], a[href="/shop"]').forEach((link) =>
   });
 });
 
+// Record shop views separately from actual purchases.
+if (/^\/shop\/?$/.test(window.location.pathname)) {
+  trackEvent("shop_view");
+}
+
+// A click toward Payhip is intent, never a completed sale.
+document.addEventListener("click", (event) => {
+  const link = event.target.closest("a[href]");
+  if (!link) return;
+  const destination = new URL(link.href, window.location.href);
+  if (destination.hostname !== "payhip.com" || !destination.pathname.startsWith("/b/")) return;
+  trackEvent("checkout_click", {
+    product: link.dataset.product || destination.pathname.split("/").filter(Boolean).pop(),
+    checkout_destination: destination.origin + destination.pathname,
+    transport_type: "beacon",
+  });
+});
+
 // Track clicks on the floating Support The Edit Stripe link on blog posts.
 document.querySelectorAll("[data-support-edit-link]").forEach((link) => {
   link.addEventListener("click", () => {

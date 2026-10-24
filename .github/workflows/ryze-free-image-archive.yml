@@ -1,0 +1,58 @@
+name: Keep Ryze article images independent
+
+on:
+  push:
+    branches:
+      - main
+      - fix/free-ryze-image-independence-20261024
+    paths:
+      - blog/data/**
+      - .github/scripts/archive_ryze_images.py
+      - .github/scripts/test_archive_ryze_images.py
+      - .github/workflows/ryze-free-image-archive.yml
+  schedule:
+    - cron: "17 10 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: ryze-image-archive
+  cancel-in-progress: false
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: true
+      - name: Test the archive without internet access
+        run: |
+          python3 -m unittest discover -s .github/scripts -p test_archive_ryze_images.py
+          python3 -m unittest discover -s .github/scripts -p test_ryze_import.py
+      - name: Save Ryze images to our own website
+        run: python3 .github/scripts/archive_ryze_images.py archive
+      - name: Verify every archived image
+        run: python3 .github/scripts/archive_ryze_images.py verify
+      - name: Commit backed up images and updated articles
+        run: |
+          git add -- assets/images/ryze blog/data _edits .github/reports/ryze-image-archive.json
+          if git diff --cached --quiet; then
+            echo "No unprotected images found."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Host Ryze article images in our own GitHub Pages site"
+            git pull --rebase origin "$GITHUB_REF_NAME"
+            git push origin "HEAD:$GITHUB_REF_NAME"
+            echo "ARCHIVE_CHANGED=true" >> "$GITHUB_ENV"
+          fi
+      - name: Rebuild public pages after an automated main-branch update
+        if: env.ARCHIVE_CHANGED == 'true' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh api --method POST "repos/$GITHUB_REPOSITORY/pages/builds"
