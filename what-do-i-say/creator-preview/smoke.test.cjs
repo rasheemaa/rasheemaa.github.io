@@ -11,7 +11,7 @@ const profile=fs.readFileSync(path.join(root,'profile.js'),'utf8');
 const projects=fs.readFileSync(path.join(root,'projects.js'),'utf8');
 const drafts=fs.readFileSync(path.join(root,'drafts.js'),'utf8');
 const chat=fs.readFileSync(path.join(root,'../chat-app.js'),'utf8');
-for(const id of ['task','idea','tone','audience','project','project-search','saved','save','new-project','load','delete','clear','export-projects','creator-name','creator-niche','creator-style','creator-avoid','profile-save','profile-clear','sparkle','copy-prompt','copy-status','edit-draft','draft-editor','apply-draft','generate-ai','cancel-ai','ai-status','save-output','clear-output','output-status','manual-copy']){
+for(const id of ['task','idea','tone','audience','project','project-search','saved','save','new-project','load','delete','clear','export-projects','import-projects','project-backup','backup-status','creator-name','creator-niche','creator-style','creator-avoid','profile-save','profile-clear','sparkle','copy-prompt','copy-status','edit-draft','draft-editor','apply-draft','generate-ai','cancel-ai','ai-status','save-output','clear-output','output-status','manual-copy']){
  assert.match(html,new RegExp('id="'+id+'"'),'Missing control: '+id);
 }
 assert.match(html,/noindex,nofollow/);
@@ -31,6 +31,7 @@ for(const tag of html.match(/<script\b[^>]*>/gi)||[])assert.match(tag,/\bsrc=/,'
 assert.match(html,/creator-preview\/config.js\?v=2/);
 assert.match(html,/creator-preview\/profile.js\?v=2/);
 assert.match(html,/creator-preview\/drafts.js\?v=2/);
+assert.match(html,/creator-preview\/backups.js\?v=1/);
 assert.match(app,/const updateBriefLength=/);
 assert.match(app,/document.getElementById\('sparkle'\)\.disabled=!length\|\|length>3500/);
 assert.match(app,/v\.length>3500/);
@@ -194,7 +195,15 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
       assert.match(lastPayload.profile,/Do not invent my experiences/);
       const downloadPromise=page.waitForEvent('download');await page.locator('#export-projects').click();
       const download=await downloadPromise;assert.equal(download.suggestedFilename(),'sparkle-projects-backup.json');
-      assert.equal(JSON.parse(fs.readFileSync(await download.path(),'utf8')).length,2);
+      const backupPath=await download.path();
+      const backupRecords=JSON.parse(fs.readFileSync(backupPath,'utf8'));
+      assert.equal(backupRecords.length,2);
+      await page.locator('#project-backup').setInputFiles(backupPath);
+      await page.waitForFunction(()=>document.getElementById('backup-status').textContent.includes('already saved'));
+      assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('sparkle_creator_projects_v1')).length),2);
+      await page.locator('#project-backup').setInputFiles({name:'damaged.json',mimeType:'application/json',buffer:Buffer.from('{damaged')});
+      await page.waitForFunction(()=>document.getElementById('backup-status').textContent.includes('not a readable JSON'));
+      assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('sparkle_creator_projects_v1')).length),2);
       await page.locator('#idea').fill('A fresh creator idea');
       await page.locator('#copy-prompt').click();
       await page.waitForFunction(()=>/copied|Clipboard unavailable/.test(document.getElementById('copy-status').textContent));
@@ -211,11 +220,31 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
       assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('sparkle_creator_projects_v1')).length),1);
       await page.locator('#clear').click();
       assert.equal(await page.evaluate(()=>localStorage.getItem('sparkle_creator_projects_v1')),null);
+      const keptForm=await page.locator('#idea').inputValue(),keptDraft=await page.locator('#output').innerText();
+      acceptDialogs=false;await page.locator('#project-backup').setInputFiles(backupPath);
+      await page.waitForFunction(()=>document.getElementById('backup-status').textContent.includes('cancelled'));acceptDialogs=true;
+      assert.equal(await page.evaluate(()=>localStorage.getItem('sparkle_creator_projects_v1')),null);
+      await page.locator('#project-backup').setInputFiles(backupPath);
+      await page.waitForFunction(()=>document.getElementById('backup-status').textContent.includes('2 projects restored'));
+      assert.equal(await page.locator('#saved option').count(),3);
+      assert.equal(await page.locator('#idea').inputValue(),keptForm);
+      assert.equal(await page.locator('#output').innerText(),keptDraft);
+      assert.equal(await page.locator('#creator-name').inputValue(),'Test Creator');
+      const conflicting=[{...backupRecords[0],draft:'An imported copy with the same ID'}];
+      await page.locator('#project-backup').setInputFiles({name:'conflict.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(conflicting))});
+      await page.waitForFunction(()=>document.getElementById('backup-status').textContent.includes('separate copies'));
+      const restored=await page.evaluate(()=>JSON.parse(localStorage.getItem('sparkle_creator_projects_v1')));
+      assert.equal(restored.length,3);
+      assert.equal(restored.find(p=>p.id===backupRecords[0].id).draft,backupRecords[0].draft);
+      assert.equal(restored[0].draft,'An imported copy with the same ID');
+      await page.locator('#project-backup').setInputFiles(backupPath);
+      await page.waitForFunction(()=>document.getElementById('backup-status').textContent.includes('already saved'));
+      assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('sparkle_creator_projects_v1')).length),3);
       const name='creator-'+engine+'-'+width+'.png';await page.screenshot({path:path.join(outputDir,name),fullPage:true});report.screenshots.push(name);
       await page.locator('#clear-output').click();
       await page.locator('.profile-panel summary').click();await page.locator('#profile-clear').click();
       assert.equal(await page.locator('#creator-name').inputValue(),'');
-      count+=18;
+      count+=24;
      }
      assert.deepEqual(errors,[],'Unexpected Creator browser errors at '+engine+' '+width);
      await context.route(/https:\/\/(?:cdn\.jsdelivr\.net|huggingface\.co|[^/]+\.hf\.co)\//,route=>route.abort());

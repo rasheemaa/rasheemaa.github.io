@@ -154,6 +154,7 @@
     catch (_) { status('Could not clear browser storage.'); }
   });
   refresh();
+  window.addEventListener('sparkle:projects-restored', refresh);
   $('export-projects').addEventListener('click', () => {
     try {
       const raw = localStorage.getItem(KEY) || '[]';

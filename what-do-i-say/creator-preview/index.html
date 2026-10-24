@@ -18,7 +18,8 @@ permalink: /what-do-i-say/creator-preview/
   <link rel="stylesheet" href="/what-do-i-say/creator-preview/creator.css?v=2">
   <script defer src="/what-do-i-say/creator-preview/config.js?v=2"></script>
   <script defer src="/what-do-i-say/creator-preview/profile.js?v=2"></script>
-  <script defer src="/what-do-i-say/creator-preview/projects.js?v=2"></script>
+  <script defer src="/what-do-i-say/creator-preview/projects.js?v=3"></script>
+  <script defer src="/what-do-i-say/creator-preview/backups.js?v=1"></script>
   <script defer src="/what-do-i-say/creator-preview/ai.js?v=2"></script>
   <script defer src="/what-do-i-say/creator-preview/drafts.js?v=2"></script>
   <script defer src="/what-do-i-say/creator-preview/app.js?v=2"></script>
@@ -92,7 +93,10 @@ permalink: /what-do-i-say/creator-preview/
             <p id="save-status" class="status" role="status"></p>
             <p class="hint">Saved in this browser on this device. Project saves include the current draft. Nothing is synced to other devices.</p>
             <details class="danger-zone"><summary>Manage saved data</summary><button id="clear" type="button" class="quiet">Delete all saved projects</button></details>
-            <div class="button-row"><button id="export-projects" type="button" class="secondary">Export project backup</button></div>
+            <div class="button-row"><button id="export-projects" type="button" class="secondary">Export project backup</button><button id="import-projects" type="button" class="secondary" aria-describedby="backup-help">Restore project backup</button></div>
+            <input id="project-backup" type="file" accept=".json,application/json" aria-label="Choose a Sparkle project backup" hidden>
+            <p class="hint" id="backup-help">Bring projects and their saved drafts to another browser or Sparkle address. Creator Brain settings stay in this browser.</p>
+            <p id="backup-status" class="status" role="status" aria-live="polite"></p>
           </details>
         </section>
     </div>

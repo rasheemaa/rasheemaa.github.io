@@ -33,12 +33,14 @@ jobs:
           node --check what-do-i-say/creator-preview/config.js
           node --check what-do-i-say/creator-preview/drafts.js
           node --check what-do-i-say/creator-preview/projects.js
+          node --check what-do-i-say/creator-preview/backups.js
           node --check what-do-i-say/creator-preview/profile.js
           node --check what-do-i-say/chat-app.js
           node what-do-i-say/creator-preview/smoke.test.cjs
           node what-do-i-say/creator-preview/storage.test.cjs
           node what-do-i-say/creator-preview/drafts.test.cjs
           node what-do-i-say/creator-preview/ai.test.cjs
+          node what-do-i-say/creator-preview/backups.test.cjs
       - name: Install pinned browsers and accessibility checks
         timeout-minutes: 8
         run: |
