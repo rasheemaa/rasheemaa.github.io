@@ -13,7 +13,7 @@ category_key: "lifestyle"
 edit_type: "The edit"
 cover_note: "Self-reflection journal prompts for moms beyond the to-do list"
 read_time: "10 min read"
-image: "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/f73116a9-e9d4-4edd-b016-dfec78010d2b/featured.jpg"
+image: "/assets/images/ryze/self-reflection-journal-prompts-for-moms/featured.jpg"
 image_alt: "Self-reflection journal prompts for moms beyond the to-do list"
 ---
 <p>For moms, self reflection journaling is a way to notice your feelings, needs, and identity beyond what needs doing. These self reflection journal prompts for moms offer somewhere to put what you&#x27;re carrying, without turning your inner life into another assignment.</p>
@@ -61,7 +61,7 @@ image_alt: "Self-reflection journal prompts for moms beyond the to-do list"
 <p>A need doesn&#x27;t always arrive with a tidy solution attached. You can write that you want company without knowing whom to call, or that you want privacy without having figured out when it&#x27;s possible.</p>
 <p>Try dividing a page into four small spaces: What happened, What I felt, What I need, and One possibility. The last space is optional. Its purpose is to hold an idea, not issue an instruction.</p>
 <p>You might write that repeated interruptions left you frustrated, that you need time to finish a thought, and that one possibility is asking someone for a specific window alone. That is an example to adapt, not an assumption about what support you have.</p>
-<figure><img src="https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/f73116a9-e9d4-4edd-b016-dfec78010d2b/body-4c284f84d22ab060d741098b70432f74.jpg" alt="Four reflection spaces for an experience, a feeling, a need, and an optional possibility" loading="lazy" decoding="async"><figcaption>Naming a need doesn&#x27;t require solving it in the same sitting.</figcaption></figure><p>If the final space stays empty, the reflection still counts. <strong>Understanding what you need and arranging to meet that need are separate tasks.</strong> You don&#x27;t owe the page an immediate solution.</p>
+<figure><img src="/assets/images/ryze/self-reflection-journal-prompts-for-moms/body-4c284f84d22ab060d741098b70432f74.jpg" alt="Four reflection spaces for an experience, a feeling, a need, and an optional possibility" loading="lazy" decoding="async"><figcaption>Naming a need doesn&#x27;t require solving it in the same sitting.</figcaption></figure><p>If the final space stays empty, the reflection still counts. <strong>Understanding what you need and arranging to meet that need are separate tasks.</strong> You don&#x27;t owe the page an immediate solution.</p>
 <ul>
 <li>What happened, without judging how I handled it?</li>
 <li>What did I feel that I haven&#x27;t named yet?</li>

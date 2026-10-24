@@ -13,7 +13,7 @@ category_key: "lifestyle"
 edit_type: "The edit"
 cover_note: "How to use an undated weekly planner without filling every box"
 read_time: "9 min read"
-image: "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/8fe18812-e1ac-4224-b287-d204a75f86be/featured.jpg"
+image: "/assets/images/ryze/how-to-use-an-undated-weekly-planner/featured.jpg"
 image_alt: "How to use an undated weekly planner without filling every box"
 ---
 <p>Use an undated weekly planner by adding the dates for your current week, noting what genuinely needs your attention, and leaving the other boxes alone. You don&#x27;t have to fill every section, write every day, or catch up on missed weeks for the page to be useful.</p>
@@ -41,7 +41,7 @@ image_alt: "How to use an undated weekly planner without filling every box"
 <p>Stop before you start inventing things to fill the remaining spaces. <strong>An empty box is not an unfinished task.</strong></p>
 <p>You might use a spare section for 1 sentence about how you&#x27;re doing, a reminder for later, or nothing. If a section doesn&#x27;t help you, cross out its label or ignore it.</p>
 <p>You&#x27;re allowed to use only part of something you own. Nobody requires you to use every pocket in a bag, either.</p>
-<figure><img src="https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/8fe18812-e1ac-4224-b287-d204a75f86be/body-b5d346e3d5782abc8d183c39d84bc54c.jpg" alt="Four optional steps for using a weekly planner without filling every section" loading="lazy" decoding="async"><figcaption>Stop when the page holds what you need. The remaining space can stay empty.</figcaption></figure><h2>What should you actually put in the boxes?</h2>
+<figure><img src="/assets/images/ryze/how-to-use-an-undated-weekly-planner/body-b5d346e3d5782abc8d183c39d84bc54c.jpg" alt="Four optional steps for using a weekly planner without filling every section" loading="lazy" decoding="async"><figcaption>Stop when the page holds what you need. The remaining space can stay empty.</figcaption></figure><h2>What should you actually put in the boxes?</h2>
 <p>Put information where you&#x27;ll be able to find it again. You don&#x27;t need to respect a printed label more than your own way of thinking.</p>
 <p>If your planner has daily boxes, those can hold appointments. If it has a notes area, that can hold decisions you&#x27;re not ready to make. If it has neither, use whichever space is available.</p>
 <p>Here are different ways to use the same weekly page. These are approaches, not levels you&#x27;re supposed to work through.</p>

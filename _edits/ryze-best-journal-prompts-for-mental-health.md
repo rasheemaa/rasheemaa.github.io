@@ -13,7 +13,7 @@ category_key: "lifestyle"
 edit_type: "The edit"
 cover_note: "Best journal prompts for mental health in 2026"
 read_time: "11 min read"
-image: "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/65668562-92e1-4696-9d34-d4891a174b8b/featured.jpg"
+image: "/assets/images/ryze/best-journal-prompts-for-mental-health/featured.jpg"
 image_alt: "Best journal prompts for mental health in 2026"
 ---
 <p><strong>Best overall: a feelings-and-needs check-in. Best for racing thoughts: a facts-versus-predictions prompt. Best low-effort option: a next-step prompt.</strong> These journal prompts for mental health give you specific starting points for naming feelings, examining worries, and deciding what you need in 2026—without turning your notebook into another obligation.</p>
@@ -231,7 +231,7 @@ image_alt: "Best journal prompts for mental health in 2026"
 <li><strong>Check in.</strong> Notice whether you want to continue, stop, or seek support outside the journal.</li>
 </ol>
 <p>You do not need to reread the entry immediately. Closing the notebook is an acceptable ending, including when you have not found an answer.</p>
-<figure><img src="https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/65668562-92e1-4696-9d34-d4891a174b8b/body-a61b47ece6164fc28b0366d2a81fb571.jpg" alt="Four writing steps: pick a prompt, set a limit, write, and check in." loading="lazy" decoding="async"><figcaption>Choose a stopping point before you begin writing.</figcaption></figure><h2>Which journal prompt should you choose?</h2>
+<figure><img src="/assets/images/ryze/best-journal-prompts-for-mental-health/body-a61b47ece6164fc28b0366d2a81fb571.jpg" alt="Four writing steps: pick a prompt, set a limit, write, and check in." loading="lazy" decoding="async"><figcaption>Choose a stopping point before you begin writing.</figcaption></figure><h2>Which journal prompt should you choose?</h2>
 <p><strong>Start with the feelings-and-needs check-in if you are undecided.</strong> Choose facts versus predictions for a particular worry, or energy and capacity when your limits need attention.</p>
 <p>Keep the next-step question for occasions when you want an action, not as the required ending to every emotional experience. Your 2026 journal does not need a daily streak, a polished narrative, or evidence that you have improved.</p>
 <p>Stop writing if an entry leaves you increasingly distressed, overwhelmed, or stuck revisiting painful material. You do not need to push through to finish the exercise. Journaling does not replace professional care; persistent or worsening distress deserves support beyond a notebook.</p>
