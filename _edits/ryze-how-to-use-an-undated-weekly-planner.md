@@ -4,8 +4,8 @@ layout: "post"
 title: "How to use an undated weekly planner without filling every box"
 seo_title: "How to Use an Undated Weekly Planner: Less Is Enough 2026"
 description: "Learn how to use an undated weekly planner without filling every box. Keep what matters, skip missed weeks, and leave room for yourself without more pressure."
-date: "2026-10-23T22:01:03.136000+00:00"
-last_modified: "2026-10-23T22:01:03.136000+00:00"
+date: "2026-10-24T00:27:27.258000+00:00"
+last_modified: "2026-10-24T00:27:27.258000+00:00"
 permalink: "/how-to-use-an-undated-weekly-planner/"
 ryze_source: "blog/data/how-to-use-an-undated-weekly-planner.json"
 category: "Real life"
@@ -129,8 +129,8 @@ image_alt: "How to use an undated weekly planner without filling every box"
 <ul>
 <li><a href="https://thesheemaedit.com/best-printable-weekly-planners-for-busy-moms" rel="noopener noreferrer">Printable weekly planners for busy moms</a></li>
 <li><a href="https://thesheemaedit.com/self-reflection-journal-prompts-for-moms" rel="noopener noreferrer">Self reflection journal prompts for moms</a></li>
-<li><a href="https://thesheemaedit.com/best-journal-prompts-for-mental-health" rel="noopener noreferrer">Journal prompts for mental health</a></li>
-<li><a href="https://thesheemaedit.com/best-mom-planners-for-daily-organization" rel="noopener noreferrer">Mom planners for daily organization</a></li>
+<li><a href="https://thesheemaedit.com/posts/my-body-changed-the-schedule.html" rel="noopener noreferrer">My Body Changed the Schedule, Not the Dream</a></li>
+<li><a href="https://thesheemaedit.com/shop/gentle-weekly-planner.html" rel="noopener noreferrer">Gentle Weekly Planner</a></li>
 </ul>
 
 
