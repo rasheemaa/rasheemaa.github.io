@@ -1,0 +1,70 @@
+{
+  "recorded_date": "2026-10-23",
+  "source": "Ryze workspace thesheemaedit SEO Keywords & Prompts and Backlinks & PR dashboards",
+  "purpose": "Preserve the last paid Ryze SEO baseline before subscription access ends 2026-11-23",
+  "search_console_integration_reported": "Connected",
+  "google_analytics_integration_reported": "Connected",
+  "tracked_keywords": [
+    {
+      "keyword": "journal prompts for mental health",
+      "monthly_search_volume": 5400,
+      "ryze_difficulty": 1,
+      "ryze_position": null
+    },
+    {
+      "keyword": "healing journal",
+      "monthly_search_volume": 880,
+      "ryze_difficulty": 0,
+      "ryze_position": null
+    },
+    {
+      "keyword": "undated weekly planner",
+      "monthly_search_volume": 1600,
+      "ryze_difficulty": 0,
+      "ryze_position": null
+    },
+    {
+      "keyword": "self reflection journal prompts",
+      "monthly_search_volume": 1300,
+      "ryze_difficulty": 6,
+      "ryze_position": null
+    },
+    {
+      "keyword": "printable planner weekly",
+      "monthly_search_volume": 5400,
+      "ryze_difficulty": 13,
+      "ryze_position": null
+    },
+    {
+      "keyword": "mom planner",
+      "monthly_search_volume": 1300,
+      "ryze_difficulty": 0,
+      "ryze_position": null
+    },
+    {
+      "keyword": "self care planner",
+      "monthly_search_volume": 480,
+      "ryze_difficulty": 5,
+      "ryze_position": null
+    }
+  ],
+  "ai_prompts_tracked": 25,
+  "ai_prompts_plan_limit": 50,
+  "ryze_ai_visibility_percent": 17,
+  "ryze_average_keyword_search_volume_display": 2337,
+  "backlinks": [
+    {
+      "referrer_url": "https://trunutra.com/blogs/blog/can-stress-supplements-help-with-panic-attacks",
+      "ryze_status": "Published",
+      "ryze_target_column": null,
+      "manually_verified_target": "https://thesheemaedit.com/best-journal-prompts-for-mental-health/",
+      "manually_verified_on": "2026-10-23"
+    }
+  ],
+  "notes": [
+    "Blank Ryze keyword positions are unknown; never interpret them as zero or as proof of ranking.",
+    "Ryze's backlink status does not guarantee the third-party publisher will maintain the link.",
+    "Google Search Console and Analytics remain separate products; their own account access should be checked independent of Ryze.",
+    "Search volume and difficulty are historic vendor estimates, not live Google Search Console performance."
+  ]
+}
