@@ -1,0 +1,23 @@
+name: Verify Shop tracking
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save playwright && npx playwright install --with-deps chromium
+      - run: node .github/scripts/check-shop-tracking.mjs
+      - name: Save verification
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/reports/shop-tracking.json
+          git commit -m 'Record verified live Shop tracking test'
+          git pull --rebase
+          git push
