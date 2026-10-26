@@ -1,54 +1,38 @@
-name: Sparkle anonymous free video test
+name: Sparkle Video Studio generation safety gate
 
 on:
   push:
     branches:
       - 'feature/sparkle-video-studio-free-prototype'
     paths:
+      - 'what-do-i-say/video-studio/**'
       - '.github/workflows/video-studio-live-test.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  generate-one-free-video:
+  prohibit-unmoderated-video-generation:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 5
     steps:
-      - name: Install public Gradio client without credentials
-        run: |
-          python -m pip install --disable-pip-version-check 'gradio_client>=1.4,<3'
-      - name: Generate one tiny video with anonymous shared free GPU quota
-        timeout-minutes: 9
-        env:
-          HF_HUB_DISABLE_TELEMETRY: '1'
+      - name: Check out exact revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Check generation remains locked
         run: |
           python - <<'PY'
-          import os
-          import pathlib
-          from gradio_client import Client
-          # No Hugging Face token, card, API key, paid endpoint, or compute account.
-          assert not os.environ.get('HF_TOKEN'), 'HF_TOKEN may not be used'
-          print('Connecting anonymously to public Lightricks LTX-2-3 Space.', flush=True)
-          client = Client('Lightricks/LTX-2-3')
-          print('Gradio client connected. Submitting one 1-second low-resolution sample.',flush=True)
-          job = client.submit(
-            None,
-            'A red fox walks through a peaceful sunlit forest, natural motion, documentary realism, soft wind in leaves.',
-            1.0, False, 10, True, 512, 768,
-            api_name='/generate_video'
-          )
-          result = job.result(timeout=360)
-          print('Generation returned:', repr(result)[:2000],flush=True)
-          video = result[0] if isinstance(result,(tuple,list)) else result
-          if not video: raise RuntimeError('No video returned from public generator')
-          path = video.get('video') if isinstance(video,dict) else video
-          if isinstance(path,dict): path=path.get('path') or path.get('url')
-          if not path: raise RuntimeError('No video file in generation result')
-          if isinstance(path,str) and path.startswith(('http://','https://')):
-             print('Video output URL:',path.split('?')[0],flush=True)
-          else:
-             p=pathlib.Path(str(path))
-             if not p.exists() or p.stat().st_size<1000: raise RuntimeError('No usable MP4 saved')
-             print('SUCCESS: generated video file',p.name,'bytes',p.stat().st_size,flush=True)
+          from pathlib import Path
+          import re
+          html = Path('what-do-i-say/video-studio/index.html').read_text()
+          js = Path('what-do-i-say/video-studio/studio.js').read_text()
+          assert 'frame-src \'none\'' in html
+          assert 'const safetyLocked = true' in js
+          assert re.search(r'<button id="prepare"[^>]*disabled', html)
+          assert '<iframe' not in html
+          assert 'https://huggingface.co/spaces/' not in html
+          assert 'https://lightricks-ltx-2-3.hf.space/' not in html
+          print('PASS: no unmoderated video provider is accessible from Sparkle Video Studio')
           PY
