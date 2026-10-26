@@ -1,0 +1,1 @@
+// Intentionally inert: video creation and prompt handoff are disabled until a\n// server-controlled, independently tested moderation pipeline is approved.\n// Do not add client-only filters or a direct third-party generation route.\n

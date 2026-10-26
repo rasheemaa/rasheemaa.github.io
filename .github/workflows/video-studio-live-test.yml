@@ -1,0 +1,26 @@
+name: Sparkle Video Studio generation disabled
+
+# No inference jobs or third-party calls are allowed while moderation is absent.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-locked:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Confirm provider workflow cannot generate
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {readFileSync} from 'node:fs';
+          const html=readFileSync('what-do-i-say/video-studio/index.html','utf8');
+          assert.match(html,/Video creation is paused/);
+          assert.doesNotMatch(html,/<iframe\b|https?:\/\//i);
+          console.log('Video generation remains off pending end-to-end safety validation.');
+          NODE
