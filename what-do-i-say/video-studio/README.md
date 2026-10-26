@@ -23,8 +23,8 @@ visual appearance of a child or unresolved age uncertainty.
 
 - Removed the public third-party LTX iframe and provider escape link.
 - Set frame-src to 'none', disabling third-party frames in this page.
-- Disabled prompt preparation and generation in the HTML.
-- Removed prompt construction and added fail-closed client behavior.
+- Removed all prompt entry, upload, and video generation controls from the HTML.
+- Removed prompt construction and left the former JavaScript helper intentionally inert.
 - Replaced the former unaudited live generation workflow with a lock check.
 - Added responsive Chromium and WebKit safety-lock assertions and a CI
   check that fails if an iframe or provider is reintroduced.
