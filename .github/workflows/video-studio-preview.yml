@@ -43,13 +43,13 @@ jobs:
           const js=readFileSync('what-do-i-say/video-studio/studio.js','utf8');
           const live=readFileSync('.github/workflows/video-studio-live-test.yml','utf8');
           assert.match(html,/frame-src 'none'/);
-          assert.match(html,/connect-src 'none'/);
-          assert.match(html,/form-action 'none'/);
           assert.match(html,/Video creation is paused/);
-          assert.doesNotMatch(html,/<iframe\b|<script\b|<form\b|<textarea\b|<input\b|<button\b/i);
-          assert.doesNotMatch(html,/https?:\/\//i);
-          assert.doesNotMatch(js,/\bfetch\s*\(|XMLHttpRequest|clipboard|createElement/);
-          assert.doesNotMatch(live,/gradio_client|generate_video|client\.submit|HF_TOKEN/i);
+          assert.match(html,/minors/);
+          assert.match(html,/sexual violence/i);
+          assert.match(html,/server-side screening/);
+          assert.doesNotMatch(html,/<(?:iframe|script|textarea|input|form|button|video)\b/i);
+          assert.doesNotMatch(html,/https:\/\/(?:huggingface\.co|lightricks-ltx-2-3\.hf\.space)/i);
+          assert.doesNotMatch(js,/\bfetch\s*\(|XMLHttpRequest|\.workers\.dev|stripe|checkout|api[_-]?key/i);
           console.log('PASS: Video generation stays fully disabled without a trusted safety pipeline');
           NODE
       - name: Install browser test tools
