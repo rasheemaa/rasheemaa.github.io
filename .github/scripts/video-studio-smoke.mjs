@@ -16,63 +16,56 @@ const server=createServer(async(req,res)=>{
   }
   try {
     const text=await readFile(join(root,path), 'utf8');
-    // HTTPS-only upgrade rules are tested in production. HTTP localhost cannot satisfy them in WebKit.
     const body=path.endsWith('.html')?text.replace(/^---\s*\n[\s\S]*?\n---\s*\n/,'').replace('upgrade-insecure-requests',''):text;
-    res.writeHead(200, {'Content-Type':mime[extname(path)]||'text/plain'});
+    res.writeHead(200,{'Content-Type':mime[extname(path)]||'text/plain'});
     res.end(body);
-  } catch(e) { res.writeHead(404).end('not found'); }
+  } catch (_) {res.writeHead(404).end('not found');}
 });
 await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(0,'127.0.0.1',resolve)});
 const origin='http://127.0.0.1:'+server.address().port;
-const expected='https://lightricks-ltx-2-3.hf.space/';
 async function smoke(browserType,name,options={}){
   const browser=await browserType.launch({headless:true});
   const context=await browser.newContext(options);
-  // The parent app is tested without consuming GPU quota. A separate live check verifies provider status.
-  await context.route('https://lightricks-ltx-2-3.hf.space/**',route=>route.fulfill({
-    status:200,contentType:'text/html',body:'<!doctype html><title>LTX embed placeholder for UI test</title>'
-  }));
   const page=await context.newPage();
-  const errors=[];
+  const errors=[],requests=[];
   page.on('pageerror',e=>errors.push(e.message));
-  try{
+  page.on('request',r=>{if(!r.url().startsWith(origin))requests.push(r.url());});
+  try {
     const resp=await page.goto(origin+'/what-do-i-say/video-studio/',{waitUntil:'domcontentloaded',timeout:30000});
-    assert.equal(resp.status(),200, name+' page not served');
+    assert.equal(resp.status(),200,name+' page not served');
     assert.match(await page.title(),/Sparkle Video Studio/);
-    assert.equal(await page.locator('iframe').getAttribute('src'),expected);
-    assert.equal(await page.locator('iframe').count(),1);
+    assert.equal(await page.locator('iframe').count(),0,name+' unmoderated iframe exposed');
+    assert.equal(await page.locator('a[href*="huggingface.co/spaces/"]').count(),0,name+' generator escape link exposed');
+    assert.equal(await page.locator('#prepare').isDisabled(),true,name+' prompt preparation unexpectedly enabled');
     assert.equal(await page.locator('#prepared-panel').isVisible(),false);
-    await page.locator('#prepare').click();
-    assert.match(await page.locator('#composer-status').innerText(),/First describe/);
+    assert.match(await page.locator('#video-safety-status').innerText(),/unavailable|disabled|until|not available/i);
+    assert.match(await page.locator('.generator-note').innerText(),/No depictions of minors/);
+    assert.match(await page.locator('.generator-note').innerText(),/sexual violence/i);
     await page.locator('[data-sample="street"]').click();
+    assert.match(await page.locator('#scene').inputValue(),/adult woman/);
     await page.locator('#format').selectOption('16:9');
     await page.locator('#lighting').selectOption('golden');
-    await page.locator('#prepare').click();
-    assert.equal(await page.locator('#prepared-panel').isVisible(),true);
-    const value=await page.locator('#prepared').inputValue();
-    assert.match(value,/Philadelphia/);
-    assert.match(value,/16:9/);
-    assert.match(value,/golden-hour/);
-    await page.locator('#camera').selectOption('tracking');
-    assert.equal(await page.locator('#prepared-panel').isVisible(),false,'stale prompt still shown');
-    await page.locator('#prepare').click();
-    assert.match(await page.locator('#prepared').inputValue(),/Smooth tracking/);
-    await page.locator('#copy').click();
-    await page.waitForFunction(() => /copied|selected/i.test(document.getElementById('composer-status').textContent), null, {timeout:5000});
-    assert.match(await page.locator('#composer-status').innerText(),/copied|selected/i);
-    assert.equal(await page.locator('a[href="/what-do-i-say/"]').count()>0,true);
-    assert.equal(await page.locator('a[href="https://huggingface.co/spaces/Lightricks/LTX-2-3"]').count()>0,true);
-    assert.equal(errors.length,0,name+' page error(s): '+errors.join('; '));
+    await page.locator('#scene').fill('A 12-year-old child in a park');
+    // Programmatic click dispatch cannot override the lock, even if the UI is tampered with.
+    await page.evaluate(()=>{
+      const button=document.getElementById('prepare');
+      button.disabled=false;
+      button.dispatchEvent(new MouseEvent('click',{bubbles:true}));
+      document.getElementById('copy').dispatchEvent(new MouseEvent('click',{bubbles:true}));
+    });
+    assert.equal(await page.locator('#prepared-panel').isVisible(),false);
+    assert.equal(await page.locator('#prepared').inputValue(),'');
+    assert.match(await page.locator('#composer-status').innerText(),/unavailable/);
+    assert.deepEqual(requests,[],name+' external request issued: '+requests.join(', '));
+    assert.deepEqual(errors,[],name+' JavaScript errors');
     const dim=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:innerWidth}));
-    assert.ok(dim.scroll<=dim.width+3, name+' horizontal overflow '+JSON.stringify(dim));
-    console.log('PASS',name,JSON.stringify({embed:expected,layout:dim,preparedCharacters:value.length}));
-  }finally{
-    await context.close(); await browser.close();
-  }
+    assert.ok(dim.scroll<=dim.width+3,name+' horizontal overflow '+JSON.stringify(dim));
+    console.log('PASS',name,JSON.stringify({safetyLocked:true,externalRequests:0,layout:dim}));
+  } finally {await context.close();await browser.close();}
 }
 try {
   await smoke(chromium,'desktop chromium',{viewport:{width:1280,height:850}});
   await smoke(chromium,'mobile chromium',{...devices['Pixel 7']});
   await smoke(webkit,'iphone webkit',{...devices['iPhone 13']});
-  console.log('PASS: All browser-side static functional checks');
+  console.log('PASS: all safety-lock browser checks');
 } finally {server.close();}
