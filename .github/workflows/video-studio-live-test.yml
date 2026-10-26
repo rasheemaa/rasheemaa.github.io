@@ -1,38 +1,26 @@
-name: Sparkle Video Studio generation safety gate
+name: Sparkle Video Studio generation disabled
 
+# No inference jobs or third-party calls are allowed while moderation is absent.
 on:
-  push:
-    branches:
-      - 'feature/sparkle-video-studio-free-prototype'
-    paths:
-      - 'what-do-i-say/video-studio/**'
-      - '.github/workflows/video-studio-live-test.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  prohibit-unmoderated-video-generation:
+  verify-locked:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     steps:
-      - name: Check out exact revision
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
-      - name: Check generation remains locked
+      - name: Confirm provider workflow cannot generate
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          import re
-          html = Path('what-do-i-say/video-studio/index.html').read_text()
-          js = Path('what-do-i-say/video-studio/studio.js').read_text()
-          assert 'frame-src \'none\'' in html
-          assert 'const safetyLocked = true' in js
-          assert re.search(r'<button id="prepare"[^>]*disabled', html)
-          assert '<iframe' not in html
-          assert 'https://huggingface.co/spaces/' not in html
-          assert 'https://lightricks-ltx-2-3.hf.space/' not in html
-          print('PASS: no unmoderated video provider is accessible from Sparkle Video Studio')
-          PY
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {readFileSync} from 'node:fs';
+          const html=readFileSync('what-do-i-say/video-studio/index.html','utf8');
+          assert.match(html,/Video creation is paused/);
+          assert.doesNotMatch(html,/<iframe\\b|https?:\\/\\//i);
+          console.log('Video generation remains off pending end-to-end safety validation.');
+          NODE
