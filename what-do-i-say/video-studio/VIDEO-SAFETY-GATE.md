@@ -31,3 +31,7 @@ All tests must cover unauthorized clients and API requests, not just browser beh
 ## Current status
 
 The video studio has **no generation backend or working end-to-end content moderation pipeline**. Therefore the only defensible setting is off. Current UI/CI tests can verify that the video preview stays off, but cannot certify future enabled generation. Reactivation requires implementing this entire gate, test evidence and Sheema's explicit release approval. Keep main, production Sparkle, billing, DNS, and the original approved voice unmodified.
+
+## Backend implementation status (October 26, 2026)
+
+An isolated draft backend safety gateway is now available in [Sparkle backend PR #9](https://github.com/rasheemaa/what-do-i-say-ai-sheema/pull/9). It blocks video API namespaces in all backend entry points and includes fail-closed lifecycle unit tests. **Its classifiers, media inspection services, GPU inference and private artifact storage are mocked or absent**, so this does not satisfy the above release criteria. Keep the video preview disabled and this PR unmerged until real end-to-end moderation, legal/incident review and independent adversarial evaluation are complete.
