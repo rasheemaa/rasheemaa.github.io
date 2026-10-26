@@ -1,4 +1,4 @@
-name: Sparkle Video Studio safety lock
+name: Sparkle Video Studio safety hold
 
 on:
   pull_request:
@@ -7,25 +7,22 @@ on:
       - 'what-do-i-say/index.html'
       - '.github/scripts/video-studio-smoke.mjs'
       - '.github/workflows/video-studio-preview.yml'
+      - '.github/workflows/video-studio-live-test.yml'
   push:
     branches:
       - 'feature/sparkle-video-studio-free-prototype'
     paths:
       - 'what-do-i-say/video-studio/**'
-      - 'what-do-i-say/index.html'
       - '.github/scripts/video-studio-smoke.mjs'
       - '.github/workflows/video-studio-preview.yml'
+      - '.github/workflows/video-studio-live-test.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: video-studio-preview-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  preview:
+  enforce-video-safety-hold:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -33,35 +30,31 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
-
       - name: Set up Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '20'
-
-      - name: Verify strict video safety lock and zero external providers
+      - name: Verify no unmoderated generation or provider handoff
         run: |
           node --input-type=module <<'NODE'
-          import { readFileSync } from 'node:fs';
           import assert from 'node:assert/strict';
+          import {readFileSync} from 'node:fs';
           const html=readFileSync('what-do-i-say/video-studio/index.html','utf8');
           const js=readFileSync('what-do-i-say/video-studio/studio.js','utf8');
+          const live=readFileSync('.github/workflows/video-studio-live-test.yml','utf8');
           assert.match(html,/frame-src 'none'/);
-          assert.match(html,/id="prepare"[^>]*disabled/);
-          assert.match(html,/No depictions of minors/);
-          assert.match(html,/No sexual violence/);
-          assert.match(js,/const safetyLocked = true/);
-          assert.doesNotMatch(html,/<iframe|lightricks-ltx-2-3\.hf\.space|huggingface\.co\/spaces\//i);
-          assert.doesNotMatch(js,/\bfetch\s*\(|XMLHttpRequest|\.workers\.dev|stripe|checkout|api[_-]?key/i);
-          assert.match(html,/No paid APIs/);
-          console.log('PASS: Video Studio remains locked until server-side safety is verified');
+          assert.match(html,/connect-src 'none'/);
+          assert.match(html,/form-action 'none'/);
+          assert.match(html,/Video creation is paused/);
+          assert.doesNotMatch(html,/<iframe\\b|<script\\b|<form\\b|<textarea\\b|<input\\b|<button\\b/i);
+          assert.doesNotMatch(html,/https?:\\/\\//i);
+          assert.doesNotMatch(js,/\\bfetch\\s*\\(|XMLHttpRequest|clipboard|createElement/);
+          assert.doesNotMatch(live,/gradio_client|generate_video|client\\.submit|HF_TOKEN/i);
+          console.log('PASS: Video generation stays fully disabled without a trusted safety pipeline');
           NODE
-
       - name: Install browser test tools
         run: |
           npm install --no-save --ignore-scripts playwright@1.55.0
           npx playwright install --with-deps chromium webkit
-
-      - name: Test safety lock across responsive browsers without generating video
+      - name: Test safe disabled Video Studio on desktop and mobile
         run: node .github/scripts/video-studio-smoke.mjs
-
