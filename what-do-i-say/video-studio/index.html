@@ -7,72 +7,40 @@ permalink: /what-do-i-say/video-studio/
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
-  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#fff5fc">
-  <meta name="description" content="Sparkle Video Studio safety preview. Video generation stays locked until server enforced moderation is verified for minors, sexual violence, uploads, and outputs.">
-  <link rel="canonical" href="https://thesheemaedit.com/what-do-i-say/video-studio/">
+  <meta name="description" content="Sparkle Video Studio is paused while safeguards for minors and sexual violence are independently verified.">
   <link rel="icon" href="/assets/images/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/what-do-i-say/video-studio/studio.css?v=1">
-  <title>Sparkle Video Studio ✦ Safety Locked Preview</title>
-  <script src="/what-do-i-say/video-studio/studio.js?v=1" defer></script>
+  <link rel="stylesheet" href="/what-do-i-say/video-studio/studio.css?v=2">
+  <title>Sparkle Video Studio | Safety Review</title>
 </head>
 <body>
-<a class="skip-link" href="#main">Skip to Video Studio</a>
-<header class="site-header">
-  <a class="brand" href="/what-do-i-say/">SPARKLE <span aria-hidden="true">✦</span></a>
-  <nav aria-label="Sparkle navigation">
-    <a href="/what-do-i-say/">Back to Sparkle chat</a>
-    <span class="free-chip">No paid APIs</span>
-  </nav>
-</header>
-<main id="main">
-  <section class="hero" aria-labelledby="page-title">
-    <div class="eyebrow">Sparkle Creative Lab / Preview 01</div>
-    <h1 id="page-title">Imagine it.<br><em>Make it move.</em></h1>
-    <p>Sparkle Video Studio is preparing a controlled video generation experience. The generator is not available until strict safety protections pass independent testing. No content involving minors or sexual violence will be permitted.</p>
-    <div class="pills"><span>Text to video</span><span>Cinematic prompts</span><span>Safety first</span><span>Generation paused</span></div>
-  </section>
-
-  <div class="studio-grid">
-    <section class="panel" aria-labelledby="composer-heading">
-      <div class="panel-heading"><div><p class="section-kicker">01 / Creative direction</p><h2 id="composer-heading">Build your scene</h2></div><span class="soft-chip">Prompt composer</span></div>
-      <label for="scene">Describe what you want to see</label>
-      <textarea id="scene" maxlength="2500" rows="7" placeholder="A woman walks down a rain-soaked Philadelphia street at dusk. Passing headlights reflect in the puddles. Her hair moves naturally in a gentle breeze..."></textarea>
-      <div class="sample-row" aria-label="Example scenes">
-        <button type="button" class="sample" data-sample="street">City at dusk</button>
-        <button type="button" class="sample" data-sample="portrait">Cinematic portrait</button>
-        <button type="button" class="sample" data-sample="nature">Nature film</button>
-      </div>
-      <div class="field-grid">
-        <div><label for="camera">Camera style</label><select id="camera"><option value="natural">Natural handheld</option><option value="dolly">Slow cinematic dolly</option><option value="locked">Locked-off tripod</option><option value="tracking">Smooth tracking shot</option><option value="close">Intimate close-up</option></select></div>
-        <div><label for="lighting">Lighting</label><select id="lighting"><option value="natural">Natural and realistic</option><option value="golden">Golden hour</option><option value="studio">Soft studio light</option><option value="night">Moody nighttime</option><option value="overcast">Soft overcast daylight</option></select></div>
-        <div><label for="format">Frame shape</label><select id="format"><option value="9:16">Vertical (9:16)</option><option value="16:9">Landscape (16:9)</option><option value="1:1">Square (1:1)</option></select></div>
-        <div><label for="sound">Sound direction</label><select id="sound"><option value="ambient">Realistic ambient sound</option><option value="quiet">Quiet atmospheric sound</option><option value="cinematic">Cinematic environmental sound</option></select></div>
-      </div>
-      <button id="prepare" class="primary" type="button" disabled aria-describedby="video-safety-status">Generation unavailable pending safety verification <span aria-hidden="true">✦</span></button>
-      <div id="prepared-panel" class="prepared-panel" hidden>
-        <label for="prepared">Your complete prompt</label>
-        <textarea id="prepared" rows="7" readonly aria-describedby="prompt-instructions"></textarea>
-        <button type="button" id="copy" class="secondary">Copy prompt</button>
-        <p id="prompt-instructions" class="hint">Paste the prompt into the generator on the right. Set the matching frame shape and video length there, then press Generate Video inside the generator.</p>
-      </div>
-      <p id="composer-status" class="status-text" role="status" aria-live="polite"></p>
+  <a class="skip-link" href="#main">Skip to Video Studio status</a>
+  <header class="site-header">
+    <a class="brand" href="/what-do-i-say/">SPARKLE <span aria-hidden="true">✦</span></a>
+    <nav aria-label="Sparkle navigation"><a href="/what-do-i-say/">Back to Sparkle chat</a><span class="soft-chip">Safety first</span></nav>
+  </header>
+  <main id="main">
+    <section class="hero" aria-labelledby="page-title">
+      <div class="eyebrow">Sparkle Creator Studio / Safety hold</div>
+      <h1 id="page-title">Imagination deserves<br><em>safe foundations.</em></h1>
+      <p>AI video creation is temporarily unavailable. We will not activate a video generator until enforceable safety checks are in place and independently tested.</p>
     </section>
-
-    <section class="panel generator-panel" aria-labelledby="generator-heading">
-      <div class="panel-heading"><div><p class="section-kicker">02 / Video generation</p><h2 id="generator-heading">Generation is safety locked</h2></div><span class="soft-chip">Not launched</span></div>
-      <p id="video-safety-status" class="generator-intro" role="status">Video generation and prompt preparation are disabled until Sparkle controls the full process and can enforce moderation before generating and before delivering a result.</p>
-      <div class="generator-note"><strong>Nonnegotiable rules:</strong> No depictions of minors in any context, including realistic, animated, and fictional characters. No sexual violence, coercion, exploitation, or content sexualizing a person who is or appears underage. Ambiguous ages are not approved. There are no exceptions.</div>
-      <p class="generator-intro">A third party generator was removed from this preview because its content moderation cannot be enforced by Sparkle. No video generation provider is accessible from this page.</p>
+    <section class="panel" aria-labelledby="hold-title" role="status">
+      <div class="panel-heading"><div><p class="section-kicker">Generation disabled</p><h2 id="hold-title">Video creation is paused</h2></div></div>
+      <p>To protect children and prevent abusive content, this preview has no video generation, upload, prompt export, embedded third-party generator, or external generation link.</p>
+      <p>Our planned safeguards prohibit depictions of minors in generated videos, child sexual abuse material, and sexual violence, including fictional, animated, transformed, or age-manipulated representations. Suspicious or uncertain requests must be denied, not sent to a generator.</p>
+      <p><strong>No videos can be generated from this page.</strong> Existing Sparkle writing and voice features are separate.</p>
+      <a href="/what-do-i-say/">Return to Sparkle chat</a>
     </section>
-  </div>
-  <section class="disclosure" aria-labelledby="important-heading">
-    <h2 id="important-heading">A safe launch matters more than a fast launch. 💗</h2>
-    <p>Sparkle will not open video generation until server enforced input checks, upload analysis, output review, and abuse controls can block prohibited videos. Text warnings and client side filters do not count as enforcement. While the safety gate is incomplete, this page cannot generate videos or prepare prompts.</p>
-    <p>See the Creator Studio safety release requirements in the project repository. The preview remains unlaunched; the existing Sparkle voice and chat features are separate.</p>
-  </section>
-</main>
-<footer><span>© Sparkle Video Studio preview • The Sheema Edit</span><a href="/what-do-i-say/">Back to Sparkle</a><span>Safety locked pending review</span></footer>
+    <section class="disclosure" aria-labelledby="gate-title">
+      <h2 id="gate-title">What must happen before video creation returns</h2>
+      <p>We must enforce server-side screening of every prompt and reference upload, repeat checks after edits or regeneration, review generated frames and audio before any download, block uncertain results, and test bypass attempts. Third-party generation must never be reachable through an uncontrolled embed or direct handoff.</p>
+      <p>Until those protections work end to end, the safest configuration is to keep video generation off.</p>
+    </section>
+  </main>
+  <footer><span>© Sparkle Creator Studio · Safety review</span><a href="/what-do-i-say/">Back to Sparkle</a></footer>
 </body>
 </html>
