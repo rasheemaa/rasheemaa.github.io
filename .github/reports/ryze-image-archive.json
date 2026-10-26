@@ -1,7 +1,27 @@
 {
   "source": "Ryze public Supabase article images",
-  "recorded_utc": "2026-10-24T02:15:30+00:00",
+  "recorded_utc": "2026-10-26T20:19:40+00:00",
   "images": {
+    "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/3739427e-149c-450c-9915-4d14cfe5e6b6/body-9b2d0120a8968610e1ecf519368d77b7.jpg": {
+      "path": "/assets/images/ryze/best-symptom-tracker-journals-for-chronic-illness/body-9b2d0120a8968610e1ecf519368d77b7.jpg",
+      "bytes": 93836,
+      "sha256": "9b2d0120a8968610e1ecf519368d77b7522e3a4bc38d936b2a537014eb1b9f85"
+    },
+    "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/3739427e-149c-450c-9915-4d14cfe5e6b6/featured.jpg": {
+      "path": "/assets/images/ryze/best-symptom-tracker-journals-for-chronic-illness/featured.jpg",
+      "bytes": 185139,
+      "sha256": "650410bfe23d9b99b744e2c34420fc93629aae195124a901c9cbc4092aa24569"
+    },
+    "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/6507c85e-47a8-4a9a-acd5-ae5457d04f6a/body-6c82a2cc0fd0aa83cb83aeef7fddc694.jpg": {
+      "path": "/assets/images/ryze/best-printable-planners-for-new-moms/body-6c82a2cc0fd0aa83cb83aeef7fddc694.jpg",
+      "bytes": 54181,
+      "sha256": "6c82a2cc0fd0aa83cb83aeef7fddc694133600a2d8ec06877b036bcb53e9b18d"
+    },
+    "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/6507c85e-47a8-4a9a-acd5-ae5457d04f6a/featured.jpg": {
+      "path": "/assets/images/ryze/best-printable-planners-for-new-moms/featured.jpg",
+      "bytes": 160659,
+      "sha256": "3cc23fee3b258c0e9c6dc90cf142d9df078a62d47433cbdc5b02ef75ca1c980e"
+    },
     "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/65668562-92e1-4696-9d34-d4891a174b8b/body-a61b47ece6164fc28b0366d2a81fb571.jpg": {
       "path": "/assets/images/ryze/best-journal-prompts-for-mental-health/body-a61b47ece6164fc28b0366d2a81fb571.jpg",
       "bytes": 43451,
