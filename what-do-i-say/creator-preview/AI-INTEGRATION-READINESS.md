@@ -28,3 +28,11 @@ The standard public-repository CI runner and open source tests introduce no new 
 6. Review the final immutable diffs and rollback procedure, then obtain Sheema's explicit final release approval.
 
 No production merge, domain switch, paid service, voice-reference replacement or automatic publishing is authorized by this document.
+
+## Mandatory video safety gate (October 26, 2026)
+
+Sparkle Creator Studio must **not** enable or link to video generation until end-to-end protection is implemented. In particular, no uncontrolled iframe, external generation shortcut, or client-only keyword filter may be used to evade the controls. All depictions of minors in generated videos, as well as child sexual exploitation and sexual violence (including fictional, animated and age-manipulated variants), are prohibited.
+
+Any future video capability requires enforceable server-side screening of every prompt and reference upload, safety checks on generated frames/audio before any preview or download, failed or uncertain classifications denied, secure isolation of artifacts and adversarial bypass tests. Existing text drafting features and the original approved voice are distinct; this requirement does not authorize changes to their engines. The experimental video branch has been changed to a disabled safety hold in frontend PR #7. Its safety gate is `what-do-i-say/video-studio/VIDEO-SAFETY-GATE.md` on that branch, and it must be incorporated and independently validated before any enabled video release.
+
+This is a release blocker, **not** a claim that moderation infrastructure is operational or that safety can be guaranteed. Do not deploy or activate video generation without explicit owner release approval.
