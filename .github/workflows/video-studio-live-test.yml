@@ -21,6 +21,6 @@ jobs:
           import {readFileSync} from 'node:fs';
           const html=readFileSync('what-do-i-say/video-studio/index.html','utf8');
           assert.match(html,/Video creation is paused/);
-          assert.doesNotMatch(html,/<iframe\\b|https?:\\/\\//i);
+          assert.doesNotMatch(html,/<iframe\b|https?:\/\//i);
           console.log('Video generation remains off pending end-to-end safety validation.');
           NODE
