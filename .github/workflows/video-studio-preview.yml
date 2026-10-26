@@ -46,10 +46,10 @@ jobs:
           assert.match(html,/connect-src 'none'/);
           assert.match(html,/form-action 'none'/);
           assert.match(html,/Video creation is paused/);
-          assert.doesNotMatch(html,/<iframe\\b|<script\\b|<form\\b|<textarea\\b|<input\\b|<button\\b/i);
-          assert.doesNotMatch(html,/https?:\\/\\//i);
-          assert.doesNotMatch(js,/\\bfetch\\s*\\(|XMLHttpRequest|clipboard|createElement/);
-          assert.doesNotMatch(live,/gradio_client|generate_video|client\\.submit|HF_TOKEN/i);
+          assert.doesNotMatch(html,/<iframe\b|<script\b|<form\b|<textarea\b|<input\b|<button\b/i);
+          assert.doesNotMatch(html,/https?:\/\//i);
+          assert.doesNotMatch(js,/\bfetch\s*\(|XMLHttpRequest|clipboard|createElement/);
+          assert.doesNotMatch(live,/gradio_client|generate_video|client\.submit|HF_TOKEN/i);
           console.log('PASS: Video generation stays fully disabled without a trusted safety pipeline');
           NODE
       - name: Install browser test tools
