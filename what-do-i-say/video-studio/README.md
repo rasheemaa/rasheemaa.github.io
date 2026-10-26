@@ -1,32 +1,81 @@
-# Sparkle Video Studio: free GPU preview
+# Sparkle Video Studio: mandatory safety lock
 
-**Status:** Experimental integration for review. No paid API calls, subscriptions, usage billing, or changes to Sparkle's existing AI backend.
+**Status: LOCKED, experimental, not launch ready.** The draft Video Studio cannot
+generate video, open an embedded provider, or prepare generator prompts. No changes
+to Sparkle's live site, existing voice, chat, payments, or Cloudflare workers.
 
-## Architecture
+## Strict prohibited content: no exceptions
 
-- New route: `/what-do-i-say/video-studio/`
-- Static HTML, CSS, and JavaScript hosted alongside The Sheema Edit.
-- Local-only prompt composer that prepares cinematic directions and copies them to the clipboard.
-- Real text-to-video (and optional image-to-video) generation supplied by the public Lightricks LTX 2.3 Distilled Gradio Space embedded via an iframe: `https://lightricks-ltx-2-3.hf.space/`.
-- Explicit fallback link to `https://huggingface.co/spaces/Lightricks/LTX-2-3` for browsers that restrict third-party iframe login/cookies.
-- **No direct API calls** or account credentials. Prompts are not sent from Sparkle's composer; users paste the prompt into the public generator and start generation there.
+1. All video depictions of minors, even in ordinary, nonsexual scenes.
+   This includes real people, fictional people, animation, age-regressed figures,
+   images that appear to depict minors, and depictions with uncertain ages.
+2. Any child sexual abuse material, exploitation or sexualization of a minor,
+   including fictional, synthetic, stylized, morphed, or edited content.
+3. Sexual violence, rape, sexual assault, coerced sexual activity,
+   exploitation, or implied or simulated sexual abuse, regardless of victim age.
+4. Attempts to circumvent these prohibitions via coded language, visual
+   euphemisms, prompt chaining, reference media, editing, sound or animation.
 
-## Hard zero-charge boundary
+A user claiming a subject is an adult is not sufficient to override a
+visual appearance of a child or unresolved age uncertainty.
 
-Sparkle itself has no GPU, provider subscription, paid AI endpoint, or billing for this preview. Video processing takes place in the independently operated Hugging Face Space. Visitors must avoid paid upgrades or credit purchases. The third-party provider imposes queues, rate limits, daily quotas and can change or disable its service; therefore video availability and Google Flow/Veo quality are **not guaranteed**.
+## Immediate control implemented in this draft
 
-## Privacy and reliability
+- Removed the public third-party LTX iframe and provider escape link.
+- Set frame-src to 'none', disabling third-party frames in this page.
+- Disabled prompt preparation and generation in the HTML.
+- Removed prompt construction and added fail-closed client behavior.
+- Replaced the former unaudited live generation workflow with a lock check.
+- Added responsive Chromium and WebKit safety-lock assertions and a CI
+  check that fails if an iframe or provider is reintroduced.
 
-The embedded provider processes any information supplied to it under its own policies. No Sparkle access tokens are passed to the iframe. The only cross-origin frame allowed by this new page's CSP is the verified Lightricks Space domain. No `allow-same-origin` sandbox exception or additional tracking scripts are introduced.
+This is a **temporary all-generation block** rather than an assertion that
+a keyword filter can reliably recognize every forbidden image. The provider
+cannot be trusted with this policy until Sparkle controls enforcement end to end.
+Client-side checks alone are never sufficient.
 
-## Manual verification before merging
+## Required controls before ANY video generation is reenabled
 
-1. Confirm the main Sparkle communication page still opens and sends/revises messages unaffected.
-2. Confirm the 'Video Studio ✦' entry link opens the new route on desktop and mobile.
-3. Fill the prompt and settings, prepare the prompt, edit a setting, and confirm stale prepared output is hidden.
-4. Copy prepared prompt; confirm it is ready to paste, including iOS clipboard fallback.
-5. Confirm the Lightricks embed is visible and can produce a test video **subject to the visitor's free quota**; if iframe sign-in fails, use the 'Open official' fallback.
-6. Confirm no paid checkout, third-party API key, or payment credentials are used.
-7. Review Lightricks/Hugging Face terms and privacy, and verify mobile responsiveness and accessibility.
+- **Server authorization and policy:** only accept jobs through an owned
+  authenticated or rate-limited server endpoint. Apply mandatory policy checks
+  on every submission and every edit/extend/remix/retry, independent of UI code.
+  Default deny if moderation is missing, times out, fails, or is uncertain.
+- **Input scanning:** classify the entire prompt, negative prompts, storyboards,
+  reference images, uploaded videos, audio transcripts, text visible in images
+  and metadata. Use robust text and multimodal moderation; do not rely on a
+  keyword list, ages supplied by the requester, or prompt-based refusals.
+- **Model & provider contract:** do not embed a provider or send jobs directly
+  from the browser. Use only model hosts with enforceable content controls,
+  verifiable capability and clear abuse/reporting policies.
+- **Generation quarantine:** generated files are not public or downloadable
+  until output review passes. Check multiple representative video frames,
+  thumbnails and generated speech/audio/transcripts, including scene boundaries
+  and significant temporal changes. Refuse ambiguous or unclassifiable outputs
+  rather than releasing them.
+- **Access & storage controls:** prevent sharing and exporting blocked output,
+  avoid publishing generation previews before checks, expire sensitive artifacts,
+  keep minimal secure audit metadata, and have a documented process for handling
+  suspected child exploitation and applicable reporting obligations without
+  redistributing the content.
+- **Abuse resilience:** enforce safe per-user and per-IP rate limits, retry
+  controls, incident monitoring, repeat offender restrictions, no fallback
+  providers without equivalent safeguards, and clear error codes on refusals.
+- **Regression coverage:** test straightforward, indirect and adversarial
+  requests, uploads and generated output. Include minor-looking subjects even
+  when prompted as "18+", ambiguous ages, age regression, implied sexual
+  assault, prompt injection, multilingual/euphemistic prompts, animation and
+  avatar edits. Also test normal adult videos for false positives.
+- **Go/no-go:** independent review and test evidence covering input moderation,
+  provider responses, output moderation, failure cases and user-facing controls.
+  The generation route must remain off unless ALL are verified.
 
-This is a working external generator embed, **not** a custom-hosted video engine or an automatic prompt-to-generation API integration. Later versions can replace the engine only if a technically sound and free provider becomes available.
+## CI checks
+
+- `.github/workflows/video-studio-preview.yml`
+- `.github/workflows/video-studio-live-test.yml` (formerly live generation; now only enforces lock)
+- `.github/scripts/video-studio-smoke.mjs`
+
+The Studio still cannot provide real generated video. No claim of complete safety
+is possible until server moderation and independent real-generation tests pass.
+This branch must remain draft and unmerged until Sheema explicitly approves a
+reviewed launch.
