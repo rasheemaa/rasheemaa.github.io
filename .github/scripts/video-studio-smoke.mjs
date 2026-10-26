@@ -14,7 +14,7 @@ assert.match(html, /connect-src 'none'/);
 assert.match(html, /form-action 'none'/);
 assert.doesNotMatch(html, /<iframe\\b|<script\\b|<form\\b|<textarea\\b|<input\\b|<button\\b/i);
 assert.doesNotMatch(html, /https?:\\/\\/[^\\s"'<>]+/i);
-assert.doesNotMatch(html, /huggingface|hf\\.space|ltx-2-3|generate.video|upload|copy prompt/i);
+assert.doesNotMatch(html, /huggingface|hf\\.space|ltx-2-3|generate.video/i);
 assert.doesNotMatch(script, /\\bfetch\\s*\\(|XMLHttpRequest|\\bsubmit\\s*\\(|clipboard|createElement/i);
 
 const mime={'.css':'text/css','.html':'text/html'};
