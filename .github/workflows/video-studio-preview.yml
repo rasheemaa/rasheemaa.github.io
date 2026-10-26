@@ -1,4 +1,4 @@
-name: Sparkle Video Studio free preview
+name: Sparkle Video Studio safety lock
 
 on:
   pull_request:
@@ -39,18 +39,22 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Enforce zero billed API design
+      - name: Verify strict video safety lock and zero external providers
         run: |
           node --input-type=module <<'NODE'
           import { readFileSync } from 'node:fs';
           import assert from 'node:assert/strict';
           const html=readFileSync('what-do-i-say/video-studio/index.html','utf8');
           const js=readFileSync('what-do-i-say/video-studio/studio.js','utf8');
-          assert.match(html,/https:\/\/lightricks-ltx-2-3\.hf\.space\//);
-          assert.match(html,/daily usage limits/);
+          assert.match(html,/frame-src 'none'/);
+          assert.match(html,/id="prepare"[^>]*disabled/);
+          assert.match(html,/No depictions of minors/);
+          assert.match(html,/No sexual violence/);
+          assert.match(js,/const safetyLocked = true/);
+          assert.doesNotMatch(html,/<iframe|lightricks-ltx-2-3\.hf\.space|huggingface\.co\/spaces\//i);
           assert.doesNotMatch(js,/\bfetch\s*\(|XMLHttpRequest|\.workers\.dev|stripe|checkout|api[_-]?key/i);
           assert.match(html,/No paid APIs/);
-          console.log('PASS: No paid video API, server billing, or hidden generation endpoint');
+          console.log('PASS: Video Studio remains locked until server-side safety is verified');
           NODE
 
       - name: Install browser test tools
@@ -58,11 +62,6 @@ jobs:
           npm install --no-save --ignore-scripts playwright@1.55.0
           npx playwright install --with-deps chromium webkit
 
-      - name: Test responsive Video Studio without consuming GPU quota
+      - name: Test safety lock across responsive browsers without generating video
         run: node .github/scripts/video-studio-smoke.mjs
 
-      - name: Check official Hugging Face Space metadata (no generation)
-        continue-on-error: true
-        run: |
-          curl --retry 2 --max-time 20 --fail --silent --show-error https://huggingface.co/api/spaces/Lightricks/LTX-2-3 > /tmp/ltx-space.json
-          node -e "const d=require('/tmp/ltx-space.json'); if(!d.id?.includes('Lightricks/LTX-2-3')) process.exit(1); console.log('Space stage:',d.runtime?.stage||'not provided')"
