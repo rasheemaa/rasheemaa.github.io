@@ -13,7 +13,7 @@ category_key: "lifestyle"
 edit_type: "The edit"
 cover_note: "Best mood tracker journals for mental wellness in 2026"
 read_time: "10 min read"
-image: "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/a3474dd8-95c5-405b-9501-7844023b66f2/featured.jpg"
+image: "/assets/images/ryze/best-mood-tracker-journals-for-mental-wellness/featured.jpg"
 image_alt: "Best mood tracker journals for mental wellness in 2026"
 ---
 <p><strong>Best overall: an undated mood and context journal. Best for overwhelmed moms: a one sentence journal. Best for visual reflection: a color grid with room for notes.</strong> The best mood tracker journal for mental wellness in 2026 gives you space to notice how you feel without turning your feelings into another assignment.</p>
@@ -193,7 +193,7 @@ image_alt: "Best mood tracker journals for mental wellness in 2026"
 <li><strong>Choose what helps.</strong> Write a small preference or request, if one comes to mind. Leaving this blank is allowed.</li>
 </ol>
 <p>You might set aside <strong>2 minutes</strong> to try this once. There’s no requirement to repeat it tomorrow, and no missed entry creates a debt.</p>
-<figure><img src="https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/a3474dd8-95c5-405b-9501-7844023b66f2/body-9e4ad6d23a3ebda2a2e5388cc51c671f.jpg" alt="Three optional journal steps: name the feeling, add context, and choose what helps." loading="lazy" decoding="async"><figcaption>An entry can end after naming a feeling; the rest is optional.</figcaption></figure><p>If reviewing entries becomes uncomfortable or keeps pulling you into the same upsetting thoughts, you can stop. A journal isn’t a substitute for professional support when you need it.</p>
+<figure><img src="/assets/images/ryze/best-mood-tracker-journals-for-mental-wellness/body-9e4ad6d23a3ebda2a2e5388cc51c671f.jpg" alt="Three optional journal steps: name the feeling, add context, and choose what helps." loading="lazy" decoding="async"><figcaption>An entry can end after naming a feeling; the rest is optional.</figcaption></figure><p>If reviewing entries becomes uncomfortable or keeps pulling you into the same upsetting thoughts, you can stop. A journal isn’t a substitute for professional support when you need it.</p>
 <h2>Which mood tracker journal should you choose?</h2>
 <p><strong>Start with an undated mood and context journal if you want one clear recommendation.</strong> Use a notebook you already have and see whether a feeling plus a little context gives you enough room.</p>
 <p>Choose the one sentence format if that sounds like too much. Choose prompts if beginning is the hard part. Keep planning separate if putting feelings beside tasks makes both feel heavier.</p>

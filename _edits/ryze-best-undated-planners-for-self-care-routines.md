@@ -13,7 +13,7 @@ category_key: "lifestyle"
 edit_type: "The edit"
 cover_note: "Best undated planners for self care routines in 2026"
 read_time: "10 min read"
-image: "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/76a38821-091e-4d3e-aba5-0eca45bf2838/featured.jpg"
+image: "/assets/images/ryze/best-undated-planners-for-self-care-routines/featured.jpg"
 image_alt: "Best undated planners for self care routines in 2026"
 ---
 <p><strong>Best overall: an undated weekly planner. Best for understanding what you need: a reflection focused planner. Best for starting with what you have: a blank notebook.</strong> The best undated planner for self care routines in 2026 leaves room for your actual life, including the weeks when writing anything feels like another job.</p>
@@ -171,7 +171,7 @@ image_alt: "Best undated planners for self care routines in 2026"
 <p><strong>Notice:</strong> Write what feels crowded, tiring, or absent. A few words are enough.</p>
 <p><strong>Choose:</strong> Pick one thing you want the page to help you remember. That might be a commitment, a request for support, or a need you&#x27;ve kept pushing aside.</p>
 <p><strong>Leave room:</strong> Keep some space unassigned. You don&#x27;t have to decide in advance what every available moment is for.</p>
-<figure><img src="https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/76a38821-091e-4d3e-aba5-0eca45bf2838/body-0e0cb85ae857ddb6d12732fe62b4fd26.jpg" alt="Three planning steps: Notice, Choose, and Leave room" loading="lazy" decoding="async"><figcaption>Start with what you need before filling the available space.</figcaption></figure><p>You could give this 5 minutes, or stop after a sentence. If you want a fuller walkthrough, <a href="https://thesheemaedit.com/how-to-use-an-undated-weekly-planner" rel="noopener noreferrer">how to use an undated weekly planner</a> is the next place to look.</p>
+<figure><img src="/assets/images/ryze/best-undated-planners-for-self-care-routines/body-0e0cb85ae857ddb6d12732fe62b4fd26.jpg" alt="Three planning steps: Notice, Choose, and Leave room" loading="lazy" decoding="async"><figcaption>Start with what you need before filling the available space.</figcaption></figure><p>You could give this 5 minutes, or stop after a sentence. If you want a fuller walkthrough, <a href="https://thesheemaedit.com/how-to-use-an-undated-weekly-planner" rel="noopener noreferrer">how to use an undated weekly planner</a> is the next place to look.</p>
 <h2>How the formats are ranked</h2>
 <p>This 2026 guide ranks planner formats by easy reentry, usable space, flexibility, reflection, and upkeep. It isn&#x27;t a product testing review, and the ranking doesn&#x27;t depend on unverified product claims.</p>
 <p>The weekly format comes first because it puts everyday commitments and personal needs on the same page. The other formats earn their place by serving a distinct need, not by offering more boxes to complete.</p>

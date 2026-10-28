@@ -13,7 +13,7 @@ category_key: "lifestyle"
 edit_type: "The edit"
 cover_note: "Best self care planners for working moms in 2026"
 read_time: "10 min read"
-image: "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/5ce217d6-ca1a-4e25-b712-c4a2ef26b04b/featured.jpg"
+image: "/assets/images/ryze/best-self-care-planners-for-working-moms/featured.jpg"
 image_alt: "Best self care planners for working moms in 2026"
 ---
 <p><strong>Best overall: an undated weekly planner. Best for reflection: a printable journal. Best for keeping things simple: a blank notebook.</strong> The best self care planner for working moms in 2026 gives you somewhere to put your needs without turning them into another assignment.</p>
@@ -172,7 +172,7 @@ image_alt: "Best self care planners for working moms in 2026"
 <li><strong>Leave space:</strong> Let the rest remain unfinished for now.</li>
 </ul>
 <p>These aren&#x27;t steps you have to repeat daily. They&#x27;re a small way to find out whether you want more structure, more writing room, or less of everything.</p>
-<figure><img src="https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/5ce217d6-ca1a-4e25-b712-c4a2ef26b04b/body-97d1f66b89fa4fbd7f86a4cd795f2717.jpg" alt="Four optional steps for trying a planning page: notice, choose, make room, and leave space." loading="lazy" decoding="async"><figcaption>Try a page before deciding whether you want a whole planning system.</figcaption></figure><p>Look at the result without grading it. If your notes became questions and feelings, try a journal. If you wanted to see commitments together, try a weekly planner. If the page felt unnecessary, you don&#x27;t have to add a new system.</p>
+<figure><img src="/assets/images/ryze/best-self-care-planners-for-working-moms/body-97d1f66b89fa4fbd7f86a4cd795f2717.jpg" alt="Four optional steps for trying a planning page: notice, choose, make room, and leave space." loading="lazy" decoding="async"><figcaption>Try a page before deciding whether you want a whole planning system.</figcaption></figure><p>Look at the result without grading it. If your notes became questions and feelings, try a journal. If you wanted to see commitments together, try a weekly planner. If the page felt unnecessary, you don&#x27;t have to add a new system.</p>
 <h2>Which self care planner should you choose?</h2>
 <p><strong>Choose an undated weekly planner if you&#x27;re undecided.</strong> It gives you a place to see the week without requiring a daily writing commitment. Add separate reflection space only if you actually want it.</p>
 <p>For the rest of 2026, keep a simpler standard than perfect consistency: <em>Does this still help me make room for myself?</em> A page can be useful for a season without becoming a permanent routine.</p>

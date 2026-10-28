@@ -13,7 +13,7 @@ category_key: "lifestyle"
 edit_type: "The edit"
 cover_note: "Best journal prompts for forgiveness and healing in 2026"
 read_time: "10 min read"
-image: "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/b4abe4dd-4afd-4696-a7bd-9b024b359f9c/featured.jpg"
+image: "/assets/images/ryze/best-journal-prompts-for-forgiveness-and-healing/featured.jpg"
 image_alt: "Best journal prompts for forgiveness and healing in 2026"
 ---
 <p><strong>Best overall: name what you needed. Best for regret: separate responsibility from punishment. Best when forgiveness feels too far away: write about what you’re not ready to release.</strong> These are The Sheema Edit’s picks for journal prompts for forgiveness and healing in 2026: gentle starting points for an honest page, not assignments to become the bigger person before you’ve finished being hurt.</p>
@@ -216,7 +216,7 @@ image_alt: "Best journal prompts for forgiveness and healing in 2026"
 <li><strong>Name a need.</strong> Ask what would make the rest of today feel more manageable.</li>
 <li><strong>Leave the page.</strong> Close the notebook without requiring a resolution.</li>
 </ul>
-<figure><img src="https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/b4abe4dd-4afd-4696-a7bd-9b024b359f9c/body-9dfe7ddb13bbaec383297701bfaa9f4e.jpg" alt="Four optional steps for a brief reflection, from choosing a question to leaving the page." loading="lazy" decoding="async"><figcaption>You can stop after a sentence without turning reflection into another obligation.</figcaption></figure><p>If a little container helps, set aside 2 minutes or cap the entry at 3 lines. Those are optional limits, not measures of whether you did enough. If a question feels too much, leave it unanswered.</p>
+<figure><img src="/assets/images/ryze/best-journal-prompts-for-forgiveness-and-healing/body-9dfe7ddb13bbaec383297701bfaa9f4e.jpg" alt="Four optional steps for a brief reflection, from choosing a question to leaving the page." loading="lazy" decoding="async"><figcaption>You can stop after a sentence without turning reflection into another obligation.</figcaption></figure><p>If a little container helps, set aside 2 minutes or cap the entry at 3 lines. Those are optional limits, not measures of whether you did enough. If a question feels too much, leave it unanswered.</p>
 <p>You can keep reflection separate from planning, too. Learning <a href="https://thesheemaedit.com/how-to-use-an-undated-weekly-planner" rel="noopener noreferrer">how to use an undated weekly planner</a> offers a way to consider the week without making private feelings into tasks with deadlines.</p>
 <h2>When forgiveness and staying together are different questions</h2>
 <p>Writing about a relationship doesn’t require you to decide its future on the same page. Wanting to understand what happened isn’t a promise to stay, and considering separation doesn’t make your earlier effort dishonest.</p>
