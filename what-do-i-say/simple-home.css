@@ -9,3 +9,33 @@
 #welcome-card .sparkle-choice>span:last-child{font-size:1.5rem;color:#6e5c7b}
 @media(max-width:390px){#welcome-card .sparkle-choice{grid-template-columns:40px minmax(0,1fr) 14px;padding:12px;gap:10px}#welcome-card .choice-icon{width:40px;height:40px}}
 @media(prefers-reduced-motion:no-preference){#welcome-card .sparkle-choice{transition:background .15s,border-color .15s}}
+
+
+/* Task-specific panes fit the existing Sparkle glass / rose-lavender visual system. */
+#welcome-card .sparkle-choices[hidden],
+#welcome-card .sparkle-task-workspace[hidden],
+#welcome-card [data-sparkle-panel][hidden],
+#welcome-card #sparkle-task-result[hidden],
+#sparkle-status[hidden],
+#message-form[hidden] { display:none!important; }
+#welcome-card .sparkle-task-workspace { position:relative;text-align:left;padding:8px 0 4px;isolation:isolate; }
+#welcome-card .sparkle-task-workspace::before {content:"";position:absolute;z-index:-1;inset:26px -10px 4px;border-radius:24px;background:radial-gradient(ellipse at 85% 0%,rgba(255,90,169,.13),transparent 60%),radial-gradient(ellipse at 0% 100%,rgba(174,132,255,.13),transparent 70%);pointer-events:none}
+#welcome-card .sparkle-task-back {appearance:none;display:inline-flex;align-items:center;min-height:42px;padding:6px 0;border:0!important;background:transparent!important;color:var(--muted)!important;font-size:.82rem;font-weight:750;cursor:pointer}
+#welcome-card .sparkle-task-workspace h3 {margin:8px 0 4px;font:600 clamp(1.6rem,5vw,2rem)/1.15 Georgia,serif;color:var(--ink)}
+#welcome-card .sparkle-task-help {margin:4px 0 18px;color:var(--muted);font-size:.9rem}
+#welcome-card .sparkle-task-workspace label {display:block;margin:14px 0 7px;font-size:.83rem;font-weight:750;text-align:left;color:var(--ink)}
+#welcome-card .sparkle-task-workspace input,
+#welcome-card .sparkle-task-workspace textarea,
+#welcome-card .sparkle-task-workspace select {appearance:auto;display:block;width:100%;min-width:0;min-height:46px;padding:12px 13px;border:1px solid rgba(113,78,129,.35)!important;border-radius:14px!important;background:rgba(255,255,255,.92)!important;color:var(--ink)!important;box-shadow:inset 0 1px 4px rgba(54,26,66,.03)}
+#welcome-card .sparkle-task-workspace textarea {min-height:102px;resize:vertical}
+#welcome-card .sparkle-task-workspace input:focus-visible,
+#welcome-card .sparkle-task-workspace textarea:focus-visible,
+#welcome-card .sparkle-task-workspace select:focus-visible {outline:3px solid rgba(164,85,187,.6)!important;outline-offset:2px}
+#welcome-card .sparkle-optional {font-weight:400;color:var(--muted)}
+#welcome-card .sparkle-task-continue {display:inline-flex;justify-content:center;align-items:center;min-height:46px;margin-top:17px;padding:11px 18px;border:1px solid #7f528d!important;border-radius:14px!important;background:linear-gradient(115deg,#422744,#82468d 70%,#a74987)!important;color:#fff!important;font-size:.9rem;font-weight:750!important;letter-spacing:.01em;cursor:pointer}
+#welcome-card .sparkle-task-continue:hover {filter:brightness(1.08)}
+#welcome-card .sparkle-task-status {min-height:1.4em;margin:10px 0;color:var(--muted);font-size:.78rem;line-height:1.5}
+#welcome-card #sparkle-task-result {border-top:1px solid rgba(113,78,129,.2);margin-top:16px;padding-top:14px}
+#welcome-card #sparkle-task-result textarea {min-height:125px;line-height:1.55}
+@media(max-width:390px){#welcome-card .sparkle-task-workspace {padding:2px 0 0}#welcome-card .sparkle-task-workspace textarea {min-height:90px}}
+@media(prefers-reduced-motion:reduce){#welcome-card .sparkle-task-workspace::before{background:rgba(174,132,255,.06)}}
