@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'what-do-i-say/video-planner/**'
+      - 'what-do-i-say/free-engine/**'
       - 'what-do-i-say/creator-preview/**'
       - '.github/scripts/video-planner.test.mjs'
       - '.github/workflows/sparkle-video-planner.yml'
@@ -26,6 +27,11 @@ jobs:
           node --check what-do-i-say/video-planner/app.mjs
           node --check what-do-i-say/video-planner/model.mjs
           node --test .github/scripts/video-planner.test.mjs
+      - name: Check local AI candidate and safety lock
+        run: |
+          node --check what-do-i-say/free-engine/local-ai/lab.mjs
+          node --check what-do-i-say/free-engine/local-ai/contract.mjs
+          node --test what-do-i-say/free-engine/local-ai/contract.test.mjs
       - name: Check existing Creator project behavior
         run: |
           node what-do-i-say/creator-preview/smoke.test.cjs
