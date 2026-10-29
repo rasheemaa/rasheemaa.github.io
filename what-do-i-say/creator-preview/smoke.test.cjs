@@ -40,7 +40,7 @@ assert.match(app,/SparkleCreatorProfile\?\.briefNotes\(\)/);
 assert.match(html,/Advanced: Back up or move projects/);
 assert.match(html,/role="region" aria-label="Generated creative brief"/);
 assert.match(html,/aria-atomic="true"/);
-assert.match(html,/creator-preview\/sparkle-studio\.css\?v=3/);
+assert.match(html,/creator-preview\/sparkle-studio\.css\?v=4/);
 assert.match(html,/← Back to Sparkle/);
 assert.doesNotMatch(html,/<a class="site-link" href="\/">The Sheema Edit<\/a>/);
 for(const color of ['#251b2d','#76677f','#fffaf7','#ff5aa9','#eadfff'])assert(sparkleStudioCss.includes(color),'Original Sparkle token missing: '+color);
@@ -59,6 +59,11 @@ assert.doesNotMatch(html,/unsafe-inline|unsafe-eval|\son(?:click|load|error|subm
 for(const tag of html.match(/<script\b[^>]*>/gi)||[])assert.match(tag,/\bsrc=/,'Executable code must be in a CSP-protected local file');
 assert.match(html,/creator-preview\/config.js\?v=2/);
 assert.match(html,/creator-preview\/profile.js\?v=3/);
+assert.match(html,/creator-preview\/entry.js\?v=1/);
+assert.match(html,/Realistic AI video generation is not available yet/);
+assert.match(html,/Edit a video/);
+assert.match(html,/Write or plan something/);
+assert.match(html,/href="\/what-do-i-say\/free-engine\/"/);
 assert.match(html,/creator-preview\/drafts.js\?v=2/);
 assert.match(html,/creator-preview\/backups.js\?v=1/);
 assert.match(app,/const updateBriefLength=/);
@@ -193,14 +198,22 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
      assert.match(layout.surfaceGradient,/linear-gradient/,'Futuristic Creator Studio surface missing');
      assert.match(layout.headingFont,/Georgia/,'Creator Studio must share Sparkle homepage typography');
      assert.equal(layout.surface,phone?'23px':'28px','Creator Studio needs rounded Sparkle cards');
-     assert.equal(layout.buttonRadius,'16px','Primary video action needs rounded corners');
+     assert.equal(layout.buttonRadius,'17px','Video planning option needs rounded corners');
      assert.match(layout.buttonGradient,/linear-gradient/,'Primary action needs Sparkle accent');
      assert.equal(layout.brandColor,'rgb(37, 27, 45)','Brand colors should match Sparkle home');
      assert.equal(layout.headerGlass,'blur(18px)','Studio header should carry frosted Sparkle surface');
 
      assert.equal(await page.locator('#studio-tools').getAttribute('open'),null,'Creator tools must begin collapsed');
      assert.equal(await page.locator('#composer').isVisible(),false,'Advanced composer must not crowd landing screen');
-     assert(await page.locator('.video-cta').isVisible(),'Video planner must be the primary action');
+     assert(await page.locator('.video-cta').isVisible(),'Video planner must remain accessible');
+     assert(await page.locator('.studio-start-edit').isVisible(),'Working footage editor must be immediately accessible');
+     assert(await page.locator('#start-creator-draft').isVisible(),'Drafting must be one click away');
+     if (width===390 || width===1440) {
+       await page.locator('#start-creator-draft').click();
+       assert.equal(await page.locator('#studio-tools').getAttribute('open'),'','Draft shortcut must expand tools');
+       assert.equal(await page.locator('#task').isVisible(),true);
+       await page.locator('#studio-tools > summary').click();
+     }
      await page.locator('#studio-tools > summary').click();
      assert(await page.locator('#composer').isVisible(),'Creator tools must expand on demand');
      assert.equal(await page.locator('#composer-title').innerText(),'Plan a post or video');
