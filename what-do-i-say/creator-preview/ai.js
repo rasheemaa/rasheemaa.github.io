@@ -46,9 +46,15 @@
   for (const id of ['task','idea','audience','tone','project','draft-editor','creator-name','creator-niche','creator-style','creator-avoid']) {
     for (const event of ['input','change']) $(id).addEventListener(event, () => cancel('Your input changed, so the previous request was cancelled. Your draft is preserved.'));
   }
-  status.textContent = endpoint()
-    ? 'Ready when you are. AI uses only your reviewed fields and saved Creator Brain.'
-    : 'AI connection is awaiting verification in this preview. You can build, edit and save local briefs.';
+  // Show the optional AI action only when a verified endpoint is available.
+  // Local draft creation remains primary; staging must not advertise a dead AI button.
+  const aiAvailable = Boolean(endpoint());
+  const controls = $('ai-controls'), hint = $('ai-hint');
+  if (controls) controls.hidden = !aiAvailable;
+  if (hint) hint.hidden = !aiAvailable;
+  status.textContent = aiAvailable
+    ? 'Optional AI drafting is available. Review your idea before generating.'
+    : '';
   button.addEventListener('click', async () => {
     if (active) return;
     const editor = $('draft-editor'), data = payload();
