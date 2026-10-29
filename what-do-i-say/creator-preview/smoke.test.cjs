@@ -17,6 +17,12 @@ for(const id of ['task','idea','tone','audience','project','project-search','sav
 assert.match(html,/noindex,nofollow/);
 assert.match(html,/class="skip-link" href="#creator-workspace"/);
 assert.match(html,/id="creator-workspace" tabindex="-1"/);
+assert.match(html,/<h2 id="composer-title">Create a draft<\/h2>/);
+assert.match(html,/id="make" type="button">Create free draft<\/button>/);
+assert.match(html,/id="ai-controls" class="button-row" hidden/);
+assert.match(html,/id="saved-heading">Saved projects<\/span>/);
+assert.match(html,/class="backup-disclosure"/);
+assert.match(html,/Advanced: Back up or move projects/);
 assert.match(html,/role="region" aria-label="Generated creative brief"/);
 assert.match(html,/aria-atomic="true"/);
 assert.match(css,/@media\(max-width:560px\)/);
@@ -152,6 +158,11 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
      assert(await page.locator('.video-cta').isVisible(),'Video planner must be the primary action');
      await page.locator('#studio-tools > summary').click();
      assert(await page.locator('#composer').isVisible(),'Creator tools must expand on demand');
+     assert.equal(await page.locator('#composer-title').innerText(),'Create a draft');
+     assert(await page.locator('#make').isVisible(),'Free draft must be the primary action');
+     assert(await page.locator('#generate-ai').isVisible(),'Mocked available AI remains accessible');
+     assert(await page.locator('.projects-disclosure > summary').innerText().then(s=>s.includes('Saved projects')));
+     assert(await page.locator('.backup-disclosure').getAttribute('open')===null,'Advanced backups stay collapsed');
      if(phone)assert(await page.evaluate(()=>document.getElementById('output').getBoundingClientRect().top<document.getElementById('project').getBoundingClientRect().top),'The draft must follow the composer before project management on phones');
      if(width===390||width===1440)await page.locator('.projects-disclosure > summary').click();
      const targets=await page.locator('button:visible,input:visible,select:visible,summary:visible').evaluateAll(nodes=>nodes.map(node=>({id:node.id,height:node.getBoundingClientRect().height})));
@@ -209,6 +220,7 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
       mode='ok';await page.locator('#generate-ai').click();
       await page.waitForFunction(()=>document.getElementById('output').textContent.startsWith('Draft for'));
       assert.match(lastPayload.profile,/Do not invent my experiences/);
+      await page.locator('.backup-disclosure > summary').click();
       const downloadPromise=page.waitForEvent('download');await page.locator('#export-projects').click();
       const download=await downloadPromise;assert.equal(download.suggestedFilename(),'sparkle-projects-backup.json');
       const backupPath=await download.path();
