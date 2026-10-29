@@ -176,7 +176,12 @@
     const draft = JSON.parse(sessionStorage.getItem(DRAFT_KEY) || 'null');
     if (draft && Array.isArray(draft.fields) && draft.fields.length === fields.length && draft.fields.every(value => typeof value === 'string') && Number.isFinite(draft.time) && draft.time <= Date.now()) {
       if (window.confirm('Restore your unsaved Creator Studio draft from this tab?')) {
-        fields.forEach((id, i) => { $(id).value = draft.fields[i]; });
+        fields.forEach((id, i) => {
+          if (id === 'tone' && draft.fields[i].length <= 120 && ![...$('tone').options].some(o => o.value === draft.fields[i])) {
+            $('tone').add(new Option(draft.fields[i],draft.fields[i]));
+          }
+          $(id).value = draft.fields[i];
+        });
         window.SparkleCreatorTaskFlow?.refresh({preserveTone:true});
         suspendDraft = true;
         $('idea').dispatchEvent(new Event('input', { bubbles: true }));
