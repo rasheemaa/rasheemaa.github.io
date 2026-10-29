@@ -34,7 +34,7 @@ assert.match(taskFlow,/window\.SparkleCreatorTaskFlow/);
 assert.match(html,/Advanced: Back up or move projects/);
 assert.match(html,/role="region" aria-label="Generated creative brief"/);
 assert.match(html,/aria-atomic="true"/);
-assert.match(html,/creator-preview\/sparkle-studio\.css\?v=1/);
+assert.match(html,/creator-preview\/sparkle-studio\.css\?v=2/);
 assert.match(html,/← Back to Sparkle/);
 assert.doesNotMatch(html,/<a class="site-link" href="\/">The Sheema Edit<\/a>/);
 for(const color of ['#251b2d','#76677f','#fffaf7','#ff5aa9','#eadfff'])assert(sparkleStudioCss.includes(color),'Original Sparkle token missing: '+color);
