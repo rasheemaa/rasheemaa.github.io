@@ -23,3 +23,24 @@
   .studio-tools>summary{display:block;min-height:64px;padding:12px 42px 12px 16px;font-size:15px}
   .studio-tools>summary span{display:block;font-size:12px;margin-top:2px}
 }
+
+
+/* Creator Studio guidance: two clear jobs, same approved colors and typography. */
+#composer .panel-title{margin-bottom:18px}
+#composer .optional,.saved-panel .optional{color:var(--muted);font-size:12px;font-weight:400}
+#composer #make{flex:1 1 100%;font-weight:700}
+#composer #ai-controls:not([hidden]){margin-top:8px}
+.projects-disclosure>summary{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;min-height:66px;line-height:1.25}
+.projects-disclosure>summary small{font:400 13px/1.45 "DM Sans",system-ui,sans-serif;color:var(--muted);letter-spacing:0}
+.saved-section-title{margin:12px 0 6px;color:var(--ink);font-size:16px;font-weight:700}
+.saved-library{margin-top:24px;padding-top:18px;border-top:1px solid var(--line)}
+.saved-library .saved-section-title{margin-top:0}
+.saved-panel .backup-disclosure{margin-top:20px;padding-top:12px;border-top:1px solid var(--line)}
+.saved-panel .backup-disclosure>summary{font:600 13px/1.4 "DM Sans",system-ui,sans-serif;color:var(--muted);min-height:48px;cursor:pointer}
+.saved-panel .backup-disclosure[open]>summary{margin-bottom:8px}
+.saved-panel .projects-disclosure[open]>summary{margin-bottom:22px}
+@media(max-width:760px){
+ #composer #make{flex-basis:100%}
+ .saved-panel .button-row{gap:10px}
+ .saved-panel .button-row button{flex:1 1 145px}
+}
