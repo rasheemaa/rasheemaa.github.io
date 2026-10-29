@@ -1,0 +1,111 @@
+---
+layout: null
+permalink: /what-do-i-say/creator-preview/
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self'; connect-src 'self' https://what-do-i-say-payments.rasheema-abdullah.workers.dev https://sparkle.rasheema-abdullah.workers.dev; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+  <title>Sparkle Creator Studio | Preview</title>
+  <link rel="icon" href="/assets/images/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/what-do-i-say/creator-preview/creator.css?v=2">
+  <script defer src="/what-do-i-say/creator-preview/config.js?v=2"></script>
+  <script defer src="/what-do-i-say/creator-preview/profile.js?v=2"></script>
+  <script defer src="/what-do-i-say/creator-preview/projects.js?v=3"></script>
+  <script defer src="/what-do-i-say/creator-preview/backups.js?v=1"></script>
+  <script defer src="/what-do-i-say/creator-preview/ai.js?v=2"></script>
+  <script defer src="/what-do-i-say/creator-preview/drafts.js?v=2"></script>
+  <script defer src="/what-do-i-say/creator-preview/app.js?v=2"></script>
+</head>
+<body>
+  <a class="skip-link" href="#creator-workspace" tabindex="0">Skip to Creator Studio</a>
+  <header class="studio-header">
+    <div class="header-inner">
+      <a class="brand" href="/what-do-i-say/" aria-label="Sparkle home"><span class="brand-mark" aria-hidden="true">S<sup>✦</sup></span>Sparkle</a>
+      <nav class="header-links" aria-label="Studio navigation"><a class="site-link" href="/">The Sheema Edit</a><a href="/what-do-i-say/">Back to Sparkle ↗</a></nav>
+    </div>
+    <div class="ribbon" aria-hidden="true"></div>
+  </header>
+  <main id="creator-workspace" tabindex="-1">
+    <div class="studio-intro">
+      <div class="eyebrow">A little Sparkle for your next idea</div>
+      <h1>Make it sound like you.<br><em>Make it work for you.</em></h1>
+      <p class="intro-copy">A place to turn the thought in your head into something you can make, share, or grow. Bring your idea. Keep your voice.</p>
+      <div class="intro-meta"><span class="pill">Creator Studio preview</span><a class="text-link" href="#composer">Start with an idea ↓</a></div>
+    </div>
+    <div class="studio-grid">
+      <section class="panel" id="composer" aria-labelledby="composer-title">
+          <div class="panel-title"><span class="section-label">The starting point</span><h2 id="composer-title">What are we making?</h2><p>Your ideas lead. Sparkle helps you shape them.</p></div>
+          <label for="task">What are we working on?</label>
+          <select id="task"><option value="content">Make content</option><option value="growth">Grow my page</option><option value="reply">Reply to people</option><option value="sell">Sell something</option><option value="deal">Handle a brand deal</option><option value="pdf">Create a digital product outline</option><option value="performance">Check my performance</option></select>
+          <label for="idea">Tell Sparkle what's happening</label>
+          <textarea id="idea" maxlength="3000" aria-describedby="input-privacy" placeholder="I want to make a relatable POV about setting boundaries without sounding preachy."></textarea>
+          <p class="hint" id="input-privacy">No passwords or confidential details. Nothing is posted or sent automatically.</p>
+          <div class="fields-row">
+            <div><label for="audience">Who are you speaking to?</label><input id="audience" maxlength="160" placeholder="Creators, moms, your community…"></div>
+            <div><label for="tone">Your vibe</label><select id="tone"><option>Relatable and confident</option><option>Warm and conversational</option><option>Playful and bold</option><option>Clear and professional</option></select></div>
+          </div>
+          <details class="profile-panel">
+            <summary>Your Creator Brain</summary>
+            <div class="profile-fields">
+              <p class="hint">Save the voice and preferences you want Sparkle to remember on this device. AI uses the saved version.</p>
+              <label for="creator-name">Creator or brand name</label><input id="creator-name" maxlength="80" placeholder="Your creator name">
+              <label for="creator-niche">Your niche</label><input id="creator-niche" maxlength="180" placeholder="Lifestyle, motherhood, mental wellness…">
+              <label for="creator-style">How should your content sound?</label><textarea id="creator-style" maxlength="500" placeholder="Confident, original, conversational. Avoid generic punchlines."></textarea>
+              <label for="creator-avoid">What should Sparkle avoid?</label><textarea id="creator-avoid" maxlength="500" placeholder="Words, topics or approaches you do not want."></textarea>
+              <div class="button-row"><button id="profile-save" type="button">Save Creator Brain</button><button id="profile-clear" type="button" class="secondary">Delete Creator Brain</button></div>
+              <p id="profile-status" class="status" role="status"></p>
+            </div>
+          </details>
+          <div class="button-row"><button id="generate-ai" type="button">Generate with AI ✦</button><button id="cancel-ai" type="button" class="secondary" hidden>Cancel generation</button><button id="make" type="button" class="secondary">Build my creative brief</button></div>
+          <p id="ai-status" class="status" role="status" aria-live="polite"></p>
+          <p class="hint">AI availability depends on the free daily allowance. Local briefs, editing and saved projects remain available.</p>
+        </section>
+      <section class="panel draft-panel" aria-labelledby="draft-title">
+        <div class="panel-title"><span class="section-label">Yours to make your own</span><h2 id="draft-title">Your creative draft</h2><p>Read it, reshape it, keep the parts that feel like you.</p></div>
+        <div id="output" role="region" aria-label="Generated creative brief" tabindex="0" aria-busy="false">Choose a goal and describe your idea to see a structured starter brief.</div>
+        <label for="draft-editor" id="draft-editor-label" hidden>Edit your draft</label>
+        <textarea id="draft-editor" hidden aria-label="Editable creator draft" maxlength="12000"></textarea>
+        <div class="button-row"><button id="edit-draft" type="button" class="secondary">Edit draft</button><button id="apply-draft" type="button" hidden>Apply edits</button><button id="copy" type="button">Copy brief or AI draft</button></div>
+        <div class="button-row"><button id="save-output" type="button" class="secondary">Save draft on this device</button><button id="clear-output" type="button" class="quiet">Delete saved draft</button></div>
+        <p id="output-status" class="status" role="status" aria-live="polite"></p>
+        <p id="brief-length" role="status" aria-live="polite" aria-atomic="true">Add an idea to check the Sparkle message limit.</p>
+        <div class="button-row"><button id="copy-prompt" type="button" class="secondary">Copy Sparkle instructions</button><button id="sparkle" type="button" class="secondary">Continue in Sparkle ↗</button></div>
+        <p id="copy-status" class="status" role="status" aria-live="polite"></p>
+        <p id="handoff-status" class="status" role="status" aria-live="polite"></p>
+        <label id="manual-copy-label" for="manual-copy" hidden>Instructions for manual copying</label><textarea id="manual-copy" readonly hidden></textarea>
+      </section>
+      <section class="panel saved-panel" aria-label="Your projects">
+          <details class="projects-disclosure" open>
+            <summary>Keep your ideas close</summary>
+            <label for="project">Project name</label><input id="project" maxlength="80" placeholder="Friday POV">
+            <div class="button-row"><button id="save" type="button">Save project and draft</button><button id="new-project" type="button" class="secondary">Start a new project</button></div>
+            <label for="project-search">Find a saved project</label><input id="project-search" type="search" maxlength="80" placeholder="Search by project name">
+            <label for="saved">Saved projects</label><select id="saved"><option value="">Select project</option></select>
+            <div class="button-row"><button id="load" type="button" class="secondary">Load</button><button id="delete" type="button" class="quiet">Delete selected project</button></div>
+            <p id="save-status" class="status" role="status"></p>
+            <p class="hint">Saved in this browser on this device. Project saves include the current draft. Nothing is synced to other devices.</p>
+            <details class="danger-zone"><summary>Manage saved data</summary><button id="clear" type="button" class="quiet">Delete all saved projects</button></details>
+            <div class="button-row"><button id="export-projects" type="button" class="secondary">Export project backup</button><button id="import-projects" type="button" class="secondary" aria-describedby="backup-help">Restore project backup</button></div>
+            <input id="project-backup" type="file" accept=".json,application/json" aria-label="Choose a Sparkle project backup" hidden>
+            <p class="hint" id="backup-help">Bring projects and their saved drafts to another browser or Sparkle address. Creator Brain settings stay in this browser.</p>
+            <p id="backup-status" class="status" role="status" aria-live="polite"></p>
+          </details>
+        </section>
+    </div>
+    <footer class="studio-footer">
+      <p class="signature">With Love, Sheema</p>
+      <p class="privacy-note">Your Creator Brain, projects and saved drafts stay in this browser. Generate with AI sends the reviewed task, idea, audience, tone and saved Creator Brain to Sparkle's Cloudflare backend for processing. Nothing is posted automatically. Digital product output is an editable outline, not a PDF file.</p>
+      <p><a href="/what-do-i-say/privacy.html">Privacy</a><a href="/what-do-i-say/terms.html">Terms</a></p>
+      <p>Inbox monitoring, automatic replies, publishing, payments and live analytics are not connected in this preview.</p>
+    </footer>
+  </main>
+</body>
+</html>
