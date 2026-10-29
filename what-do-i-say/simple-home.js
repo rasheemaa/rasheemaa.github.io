@@ -38,6 +38,7 @@
     mode = next;
     const cfg = initial[mode];
     if (welcome) welcome.dataset.activeTask = mode;
+    thread?.classList.add('sparkle-task-open');
     byId('sparkle-task-title').textContent = cfg.title;
     byId('sparkle-task-help').textContent = cfg.hint;
     byId('sparkle-task-continue').textContent = cfg.action;
@@ -55,6 +56,7 @@
   function home() {
     mode = '';
     if (welcome) delete welcome.dataset.activeTask;
+    thread?.classList.remove('sparkle-task-open');
     choices.hidden = false;
     workspace.hidden = true;
     result.hidden = true;
