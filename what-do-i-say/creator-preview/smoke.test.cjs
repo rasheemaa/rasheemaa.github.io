@@ -18,11 +18,19 @@ for(const id of ['task','idea','tone','audience','project','project-search','sav
 assert.match(html,/noindex,nofollow/);
 assert.match(html,/class="skip-link" href="#creator-workspace"/);
 assert.match(html,/id="creator-workspace" tabindex="-1"/);
-assert.match(html,/<h2 id="composer-title">Create a draft<\/h2>/);
-assert.match(html,/id="make" type="button">Create free draft<\/button>/);
+assert.match(html,/<h2 id="composer-title">Plan a post or video<\/h2>/);
+assert.match(html,/id="make" type="button">Create content brief<\/button>/);
 assert.match(html,/id="ai-controls" class="button-row" hidden/);
 assert.match(html,/id="saved-heading">Saved projects<\/span>/);
 assert.match(html,/class="backup-disclosure"/);
+assert.match(html,/task-flow\.js\?v=1/);
+for(const id of ['idea-label','task-help','audience-label','tone-label','composer-description','draft-description','task-mode-status']){
+  assert.match(html,new RegExp('id="'+id+'"'),'Missing contextual task field: '+id);
+}
+const taskFlow=fs.readFileSync(path.join(root,'task-flow.js'),'utf8');
+for(const mode of ['content','growth','reply','sell','deal','pdf','performance'])assert.match(taskFlow,new RegExp('\\b'+mode+':\\{'),'Task mode is missing: '+mode);
+assert.match(taskFlow,/window\.SparkleCreatorTaskFlow/);
+
 assert.match(html,/Advanced: Back up or move projects/);
 assert.match(html,/role="region" aria-label="Generated creative brief"/);
 assert.match(html,/aria-atomic="true"/);
@@ -189,7 +197,7 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
      assert(await page.locator('.video-cta').isVisible(),'Video planner must be the primary action');
      await page.locator('#studio-tools > summary').click();
      assert(await page.locator('#composer').isVisible(),'Creator tools must expand on demand');
-     assert.equal(await page.locator('#composer-title').innerText(),'Create a draft');
+     assert.equal(await page.locator('#composer-title').innerText(),'Plan a post or video');
      assert(await page.locator('#make').isVisible(),'Free draft must be the primary action');
      assert(await page.locator('#generate-ai').isVisible(),'Mocked available AI remains accessible');
      assert(await page.locator('.projects-disclosure > summary').innerText().then(s=>s.includes('Saved projects')));
@@ -198,13 +206,33 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
      if(width===390||width===1440)await page.locator('.projects-disclosure > summary').click();
      const targets=await page.locator('button:visible,input:visible,select:visible,summary:visible').evaluateAll(nodes=>nodes.map(node=>({id:node.id,height:node.getBoundingClientRect().height})));
      assert(targets.every(target=>target.height>=44),'Small touch target: '+JSON.stringify(targets.filter(t=>t.height<44)));
-     const tasks=['content','growth','reply','sell','deal','pdf','performance'];
-     for(const task of tasks){
+     const taskCases=[
+       ['content','Plan a post or video','What is your post or video idea?','Create content brief','Your content brief','Relatable and confident'],
+       ['growth','Plan your content schedule','What is your content goal?','Create posting plan','Your posting plan','Practical and encouraging'],
+       ['reply','Plan your response','What did they say, and what do you want to say back?','Create reply outline','Your reply outline','Warm and conversational'],
+       ['sell','Plan an offer','What are you offering and why does it help?','Create promotion brief','Your promotion brief','Friendly and helpful'],
+       ['deal','Review a brand deal','What is the brand offering or requesting?','Create deal review','Your brand deal review','Clear and professional'],
+       ['pdf','Outline a digital product','What digital product do you want to make?','Create product outline','Your product outline','Warm and conversational'],
+       ['performance','Review your content metrics','What were your actual results, and from when?','Create metrics review','Your metrics review','Clear and professional']
+     ];
+     for(const [task,title,question,button,draftTitle,defaultTone] of taskCases){
+      const previousDraft=await page.locator('#output').innerText();
       await page.locator('#task').selectOption(task);
+      assert.equal(await page.locator('#composer-title').innerText(),title);
+      assert.equal(await page.locator('#idea-label').innerText(),question);
+      assert.equal(await page.locator('#make').innerText(),button);
+      assert.equal(await page.locator('#draft-title').innerText(),draftTitle);
+      assert.equal(await page.locator('#tone').inputValue(),defaultTone);
+      assert(await page.locator('#idea').getAttribute('placeholder'));
+      assert(await page.locator('#audience').getAttribute('placeholder'));
+      assert(await page.locator('#task-help').innerText());
+      assert.equal(await page.locator('#output').innerText(),previousDraft,'Task switching must preserve current work');
       await page.locator('#idea').fill(task==='performance'?'Last week: 1000 views, 90 likes, 15 saves, 4 shares. Suggest an experiment.':'An original creator idea for '+task);
       await page.locator('#generate-ai').click();
       await page.waitForFunction(task=>document.getElementById('output').textContent.startsWith('Draft for '+task),task);
-      assert.equal(lastPayload.task,task);count++;
+      assert.equal(lastPayload.task,task);
+      assert.equal(lastPayload.tone,defaultTone);
+      count++;
      }
      const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze();
      assert.deepEqual(axe.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>n.target)})),[],'Accessibility violations at '+engine+' '+width);
