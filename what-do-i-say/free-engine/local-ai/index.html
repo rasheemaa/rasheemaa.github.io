@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; media-src 'none'; frame-src 'none'; object-src 'none'; form-action 'none'; base-uri 'none'">
+<title>Desktop AI Readiness | Sparkle Creator Studio</title>
+<link rel="stylesheet" href="./lab.css?v=1"><script type="module" src="./lab.mjs?v=1"></script>
+</head>
+<body>
+<a class="skip" href="#lab">Skip to readiness check</a>
+<header><a class="brand" href="/what-do-i-say/creator-preview/">S✦ Sparkle</a><a href="/what-do-i-say/free-engine/">Back to Free Video Engine</a></header>
+<main id="lab">
+<p class="eyebrow">Creator Studio · Experimental local AI</p>
+<h1>Your computer.<br><em>Your creative power.</em></h1>
+<p class="lead">Explore whether your desktop could support a local AI video model without buying cloud credits. This is a compatibility and safety preview, not an active video generator.</p>
+<div class="lab-layout">
+<section class="panel" aria-labelledby="check-heading">
+<h2 id="check-heading">Check desktop readiness</h2>
+<p class="helper">Select your hardware. Sparkle does not automatically inspect your device or connect to a GPU.</p>
+<form id="readiness-form">
+<label for="gpu">Desktop graphics card</label>
+<select id="gpu" required><option value="unknown">I don't know</option><option value="nvidia">NVIDIA</option><option value="other">AMD, Apple or another type</option></select>
+<label for="memory">Dedicated GPU memory (VRAM)</label>
+<select id="memory"><option value="">I'm not sure</option><option value="8">8 GB</option><option value="12">12 GB</option><option value="16">16 GB</option><option value="20">20 GB</option><option value="24">24 GB</option><option value="32">32 GB</option><option value="48">48 GB</option><option value="80">80 GB or more</option></select>
+<label for="scene">Safe demonstration concept</label>
+<select id="scene"><option value="forest">Golden forest</option><option value="ocean">Coastal waves</option><option value="rain">Rain on glass</option></select>
+<button id="check" type="submit">Check compatibility</button>
+</form>
+<div id="result" class="result" aria-live="polite" role="status" hidden>
+<strong id="readiness-label">Readiness result</strong><p id="readiness-message"></p>
+<button id="download-plan" type="button" class="secondary">Download local project plan</button>
+<p class="fine">The downloaded file is a non-executable brief, not a model workflow or finished video.</p>
+</div>
+</section>
+<aside class="side" aria-labelledby="model-heading">
+<div class="model-mark">AI <span>✦</span> LOCAL</div>
+<h2 id="model-heading">Wan 2.2 · 5B</h2>
+<p>Published single-GPU example: <strong>24 GB VRAM</strong>. A powerful, compatible desktop is required to attempt local generation. Model downloads, GPUs and electricity still have costs.</p>
+<a href="https://github.com/Wan-Video/Wan2.2" target="_blank" rel="noopener noreferrer">Official Wan model guide</a>
+<a href="https://docs.comfy.org/tutorials/video/wan/wan2_2" target="_blank" rel="noopener noreferrer">ComfyUI local setup guide</a>
+<div class="locked" role="note"><strong>Generation safety hold</strong><p>Generation is disabled. No people, minors, sexual violence, reference uploads, or unrestricted prompts. Releasing generated footage will require independent checks of prompts, every video frame, and audio.</p></div>
+</aside>
+</div>
+<p class="note">Your selections stay in this browser tab. No accounts, cloud GPUs, AI requests, or user media uploads are connected to this page.</p>
+</main></body></html>
