@@ -6,6 +6,7 @@ const root=__dirname;
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const app=fs.readFileSync(path.join(root,'app.js'),'utf8');
 const css=fs.readFileSync(path.join(root,'creator.css'),'utf8');
+const sparkleStudioCss=fs.readFileSync(path.join(root,'sparkle-studio.css'),'utf8');
 const ai=fs.readFileSync(path.join(root,'ai.js'),'utf8');
 const profile=fs.readFileSync(path.join(root,'profile.js'),'utf8');
 const projects=fs.readFileSync(path.join(root,'projects.js'),'utf8');
@@ -25,6 +26,14 @@ assert.match(html,/class="backup-disclosure"/);
 assert.match(html,/Advanced: Back up or move projects/);
 assert.match(html,/role="region" aria-label="Generated creative brief"/);
 assert.match(html,/aria-atomic="true"/);
+assert.match(html,/creator-preview\/sparkle-studio\.css\?v=1/);
+assert.match(html,/← Back to Sparkle/);
+assert.doesNotMatch(html,/<a class="site-link" href="\/">The Sheema Edit<\/a>/);
+for(const color of ['#251b2d','#76677f','#fffaf7','#ff5aa9','#eadfff'])assert(sparkleStudioCss.includes(color),'Original Sparkle token missing: '+color);
+assert.match(sparkleStudioCss,/border-radius:28px/);
+assert.match(sparkleStudioCss,/backdrop-filter:blur\(18px\)/);
+assert.match(sparkleStudioCss,/linear-gradient/);
+
 assert.match(css,/@media\(max-width:560px\)/);
 assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
 assert.match(css,/min-height:46px/);
@@ -141,7 +150,7 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
      const response=await page.goto(origin+studioPath);
      assert.equal(response.status(),200);
      await page.evaluate(()=>document.fonts.ready);
-     assert.equal(await page.evaluate(()=>getComputedStyle(document.body).backgroundColor),'rgb(250, 245, 240)','The production styles must load over HTTPS');
+     assert.equal(await page.evaluate(()=>getComputedStyle(document.body).backgroundColor),'rgb(255, 250, 247)','The production styles must load over HTTPS');
      if(width===390||width===1440){
       const name='initial-'+engine+'-'+width+'.png';
       await page.screenshot({path:path.join(outputDir,name)});report.screenshots.push(name);
@@ -150,9 +159,31 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
      assert.equal(await page.evaluate(()=>document.activeElement.className),'skip-link');
      await page.keyboard.press('Enter');
      assert.equal(await page.evaluate(()=>document.activeElement.id),'creator-workspace');
-     const layout=await page.evaluate(()=>({scrollWidth:document.documentElement.scrollWidth,viewport:innerWidth,h1:document.querySelectorAll('h1').length,background:getComputedStyle(document.body).backgroundColor}));
+     const layout=await page.evaluate(()=>({
+       scrollWidth:document.documentElement.scrollWidth,
+       viewport:innerWidth,
+       h1:document.querySelectorAll('h1').length,
+       background:getComputedStyle(document.body).backgroundColor,
+       gradient:getComputedStyle(document.body).backgroundImage,
+       surface:getComputedStyle(document.querySelector('.video-feature')).borderTopLeftRadius,
+       surfaceGradient:getComputedStyle(document.querySelector('.video-feature')).backgroundImage,
+       headingFont:getComputedStyle(document.querySelector('#creator-studio-title')).fontFamily,
+       buttonRadius:getComputedStyle(document.querySelector('.video-cta')).borderTopLeftRadius,
+       buttonGradient:getComputedStyle(document.querySelector('.video-cta')).backgroundImage,
+       headerGlass:getComputedStyle(document.querySelector('.studio-header')).backdropFilter,
+       brandColor:getComputedStyle(document.querySelector('.brand')).color
+     }));
      assert(layout.scrollWidth<=width+1,'Horizontal overflow at '+engine+' '+width);
-     assert.equal(layout.h1,1);assert.equal(layout.background,'rgb(250, 245, 240)');
+     assert.equal(layout.h1,1);assert.equal(layout.background,'rgb(255, 250, 247)');
+     assert.match(layout.gradient,/linear-gradient/,'Sparkle pink-lavender page background missing');
+     assert.match(layout.surfaceGradient,/linear-gradient/,'Futuristic Creator Studio surface missing');
+     assert.match(layout.headingFont,/Georgia/,'Creator Studio must share Sparkle homepage typography');
+     assert.equal(layout.surface,phone?'23px':'28px','Creator Studio needs rounded Sparkle cards');
+     assert.equal(layout.buttonRadius,'16px','Primary video action needs rounded corners');
+     assert.match(layout.buttonGradient,/linear-gradient/,'Primary action needs Sparkle accent');
+     assert.equal(layout.brandColor,'rgb(37, 27, 45)','Brand colors should match Sparkle home');
+     assert.equal(layout.headerGlass,'blur(18px)','Studio header should carry frosted Sparkle surface');
+
      assert.equal(await page.locator('#studio-tools').getAttribute('open'),null,'Creator tools must begin collapsed');
      assert.equal(await page.locator('#composer').isVisible(),false,'Advanced composer must not crowd landing screen');
      assert(await page.locator('.video-cta').isVisible(),'Video planner must be the primary action');
