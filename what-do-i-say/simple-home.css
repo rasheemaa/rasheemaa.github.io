@@ -35,3 +35,57 @@
 #welcome-card #sparkle-task-result{border-top:1px solid var(--line);margin-top:16px;padding-top:13px}
 #welcome-card #sparkle-task-result textarea{min-height:120px}
 #welcome-card .sparkle-optional{font-weight:400;color:var(--muted)}
+
+
+/* Keep Sparkle's existing colors and glossy theme; stabilize the opened task layout. */
+#chat-thread.sparkle-task-open {
+  flex:0 0 auto;
+  min-height:0;
+  max-height:none;
+  height:auto;
+  overflow:visible;
+  overscroll-behavior:auto;
+}
+#welcome-card[data-active-task]{
+  width:min(100%, 560px);
+  min-width:0;
+  margin-inline:auto;
+  text-align:left;
+}
+#welcome-card[data-active-task] .welcome-question,
+#welcome-card[data-active-task] .welcome-hint{display:none}
+#welcome-card[data-active-task] .sparkle-task-workspace{
+  display:block;
+  min-width:0;
+  width:100%;
+  max-width:100%;
+}
+#welcome-card[data-active-task] #sparkle-task-form,
+#welcome-card[data-active-task] [data-sparkle-panel]{
+  display:block;
+  min-width:0;
+  width:100%;
+}
+#welcome-card[data-active-task] [data-sparkle-panel][hidden]{display:none}
+#welcome-card[data-active-task] .sparkle-task-workspace h3{
+  margin:4px 0 8px;
+}
+#welcome-card[data-active-task] .sparkle-task-workspace textarea{
+  max-width:100%;
+  line-height:1.5;
+}
+#welcome-card[data-active-task] .sparkle-task-continue{
+  width:100%;
+  max-width:100%;
+  margin:18px 0 0;
+  text-align:center;
+}
+#welcome-card[data-active-task] .sparkle-task-status:empty{display:none}
+@media(max-width:680px){
+  #chat-thread.sparkle-task-open{padding-top:14px;padding-bottom:24px}
+  #welcome-card[data-active-task]{margin-block:0 14px;padding:18px 16px}
+  #welcome-card[data-active-task] .sparkle-task-workspace label{margin-top:13px}
+  #welcome-card[data-active-task] .sparkle-task-workspace input,
+  #welcome-card[data-active-task] .sparkle-task-workspace select,
+  #welcome-card[data-active-task] .sparkle-task-workspace textarea{font-size:16px}
+}
