@@ -20,6 +20,21 @@ assert.match(html, /simple-home\.css\?v=1/);
 assert.match(styles, /focus-visible/);
 assert.match(styles, /prefers-reduced-motion/);
 
+
+if (html.includes('id="sparkle-task-workspace"')) {
+  // Stacked Creator Studio branch introduces three distinct local-first tasks.
+  for (const kind of ['write', 'reply', 'fix']) {
+    assert.match(html, new RegExp('data-sparkle-panel="' + kind + '" hidden'));
+    assert.match(script, new RegExp(kind + ': \\{ title:'));
+  }
+  for(const id of ['sparkle-task-form','sparkle-task-back','sparkle-task-result','sparkle-write-idea','sparkle-reply-message','sparkle-reply-idea','sparkle-fix-draft','sparkle-prepared-text']) {
+    assert.match(html, new RegExp('id="' + id + '"'));
+  }
+  assert.match(script,/output\.value = draft\.text/);
+  assert.match(script,/SPARKLE_STAGING_ONLY/);
+  assert.doesNotMatch(script,/\bfetch\s*\(/);
+  console.log('PASS Sparkle new guided task screens; no AI network request');
+} else {
 const prompts = {
   write: 'Help me write a message, caption, or email about: ',
   reply: 'Help me reply to this message: ',
@@ -94,3 +109,5 @@ secondChoice.buttons[1].click();
 assert.equal(secondChoice.field.value, prompts.write, 'switching a choice must not destroy a draft');
 
 console.log('PASS Sparkle simple home: four choices, three guided prompts, accessible focus, preserves drafts, video preview only');
+
+}
