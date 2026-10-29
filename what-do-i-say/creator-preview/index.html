@@ -51,15 +51,15 @@ permalink: /what-do-i-say/creator-preview/
       <summary>More creator tools <span>Briefs, drafts, and saved projects</span></summary>
     <div class="studio-grid">
       <section class="panel" id="composer" aria-labelledby="composer-title">
-          <div class="panel-title"><span class="section-label">The starting point</span><h2 id="composer-title">What are we making?</h2><p>Your ideas lead. Sparkle helps you shape them.</p></div>
-          <label for="task">What are we working on?</label>
-          <select id="task"><option value="content">Make content</option><option value="growth">Grow my page</option><option value="reply">Reply to people</option><option value="sell">Sell something</option><option value="deal">Handle a brand deal</option><option value="pdf">Create a digital product outline</option><option value="performance">Check my performance</option></select>
-          <label for="idea">Tell Sparkle what's happening</label>
+          <div class="panel-title"><span class="section-label">Step 1 · Create</span><h2 id="composer-title">Create a draft</h2><p>Choose what you need, describe your idea, then create an editable brief.</p></div>
+          <label for="task">What do you need help with?</label>
+          <select id="task"><option value="content">Plan a post or video</option><option value="growth">Plan my content schedule</option><option value="reply">Write a reply</option><option value="sell">Promote an offer</option><option value="deal">Review a brand deal</option><option value="pdf">Outline a digital product</option><option value="performance">Review my own metrics</option></select>
+          <label for="idea">What is your idea or situation?</label>
           <textarea id="idea" maxlength="3000" aria-describedby="input-privacy" placeholder="I want to make a relatable POV about setting boundaries without sounding preachy."></textarea>
           <p class="hint" id="input-privacy">No passwords or confidential details. Nothing is posted or sent automatically.</p>
           <div class="fields-row">
-            <div><label for="audience">Who are you speaking to?</label><input id="audience" maxlength="160" placeholder="Creators, moms, your community…"></div>
-            <div><label for="tone">Your vibe</label><select id="tone"><option>Relatable and confident</option><option>Warm and conversational</option><option>Playful and bold</option><option>Clear and professional</option></select></div>
+            <div><label for="audience">Who is this for? <span class="optional">(optional)</span></label><input id="audience" maxlength="160" placeholder="Creators, moms, your community…"></div>
+            <div><label for="tone">How should it sound?</label><select id="tone"><option>Relatable and confident</option><option>Warm and conversational</option><option>Playful and bold</option><option>Clear and professional</option></select></div>
           </div>
           <details class="profile-panel">
             <summary>Your Creator Brain</summary>
@@ -73,13 +73,14 @@ permalink: /what-do-i-say/creator-preview/
               <p id="profile-status" class="status" role="status"></p>
             </div>
           </details>
-          <div class="button-row"><button id="generate-ai" type="button">Generate with AI ✦</button><button id="cancel-ai" type="button" class="secondary" hidden>Cancel generation</button><button id="make" type="button" class="secondary">Build my creative brief</button></div>
+          <div class="button-row"><button id="make" type="button">Create free draft</button></div>
+          <div id="ai-controls" class="button-row" hidden><button id="generate-ai" type="button" class="secondary">Generate with AI ✦</button><button id="cancel-ai" type="button" class="secondary" hidden>Cancel generation</button></div>
           <p id="ai-status" class="status" role="status" aria-live="polite"></p>
-          <p class="hint">AI availability depends on the free daily allowance. Local briefs, editing and saved projects remain available.</p>
+          <p id="ai-hint" class="hint" hidden>AI drafts use the free allowance when available. The free draft option works without AI.</p>
         </section>
       <section class="panel draft-panel" aria-labelledby="draft-title">
-        <div class="panel-title"><span class="section-label">Yours to make your own</span><h2 id="draft-title">Your creative draft</h2><p>Read it, reshape it, keep the parts that feel like you.</p></div>
-        <div id="output" role="region" aria-label="Generated creative brief" tabindex="0" aria-busy="false">Choose a goal and describe your idea to see a structured starter brief.</div>
+        <div class="panel-title"><span class="section-label">Step 2 · Review</span><h2 id="draft-title">Your draft</h2><p>Review, edit, or copy the result. Nothing is posted automatically.</p></div>
+        <div id="output" role="region" aria-label="Generated creative brief" tabindex="0" aria-busy="false">Your free draft will appear here after you choose a task and describe your idea.</div>
         <label for="draft-editor" id="draft-editor-label" hidden>Edit your draft</label>
         <textarea id="draft-editor" hidden aria-label="Editable creator draft" maxlength="12000"></textarea>
         <div class="button-row"><button id="edit-draft" type="button" class="secondary">Edit draft</button><button id="apply-draft" type="button" hidden>Apply edits</button><button id="copy" type="button">Copy brief or AI draft</button></div>
@@ -91,21 +92,28 @@ permalink: /what-do-i-say/creator-preview/
         <p id="handoff-status" class="status" role="status" aria-live="polite"></p>
         <label id="manual-copy-label" for="manual-copy" hidden>Instructions for manual copying</label><textarea id="manual-copy" readonly hidden></textarea>
       </section>
-      <section class="panel saved-panel" aria-label="Your projects">
+      <section class="panel saved-panel" aria-labelledby="saved-heading">
           <details class="projects-disclosure">
-            <summary>Keep your ideas close</summary>
-            <label for="project">Project name</label><input id="project" maxlength="80" placeholder="Friday POV">
-            <div class="button-row"><button id="save" type="button">Save project and draft</button><button id="new-project" type="button" class="secondary">Start a new project</button></div>
-            <label for="project-search">Find a saved project</label><input id="project-search" type="search" maxlength="80" placeholder="Search by project name">
-            <label for="saved">Saved projects</label><select id="saved"><option value="">Select project</option></select>
-            <div class="button-row"><button id="load" type="button" class="secondary">Load</button><button id="delete" type="button" class="quiet">Delete selected project</button></div>
-            <p id="save-status" class="status" role="status"></p>
-            <p class="hint">Saved in this browser on this device. Project saves include the current draft. Nothing is synced to other devices.</p>
-            <details class="danger-zone"><summary>Manage saved data</summary><button id="clear" type="button" class="quiet">Delete all saved projects</button></details>
-            <div class="button-row"><button id="export-projects" type="button" class="secondary">Export project backup</button><button id="import-projects" type="button" class="secondary" aria-describedby="backup-help">Restore project backup</button></div>
-            <input id="project-backup" type="file" accept=".json,application/json" aria-label="Choose a Sparkle project backup" hidden>
-            <p class="hint" id="backup-help">Bring projects and their saved drafts to another browser or Sparkle address. Creator Brain settings stay in this browser.</p>
-            <p id="backup-status" class="status" role="status" aria-live="polite"></p>
+            <summary><span id="saved-heading">Saved projects</span><small>Save or reopen your ideas</small></summary>
+            <p class="saved-section-title">Save this idea</p>
+            <label for="project">Project name</label><input id="project" maxlength="80" placeholder="My Friday POV">
+            <div class="button-row"><button id="save" type="button">Save idea and draft</button><button id="new-project" type="button" class="secondary">Start a new idea</button></div>
+            <p class="hint">Saved here on this device, including your current draft. You can edit it again later.</p>
+            <div class="saved-library">
+              <p class="saved-section-title">Open a saved idea</p>
+              <label for="project-search">Search saved projects <span class="optional">(optional)</span></label><input id="project-search" type="search" maxlength="80" placeholder="Search by name">
+              <label for="saved">Choose a saved project</label><select id="saved"><option value="">Select project</option></select>
+              <div class="button-row"><button id="load" type="button" class="secondary">Open selected project</button><button id="delete" type="button" class="quiet">Delete selected</button></div>
+            </div>
+            <p id="save-status" class="status" role="status" aria-live="polite"></p>
+            <details class="backup-disclosure"><summary>Advanced: Back up or move projects</summary>
+              <p class="hint">Only use this to move saved projects to another browser or keep an offline backup. It's not needed to create or save an idea.</p>
+              <div class="button-row"><button id="export-projects" type="button" class="secondary">Download backup file</button><button id="import-projects" type="button" class="secondary" aria-describedby="backup-help">Restore from backup</button></div>
+              <input id="project-backup" type="file" accept=".json,application/json" aria-label="Choose a Sparkle project backup" hidden>
+              <p class="hint" id="backup-help">Backups include saved ideas and drafts. Creator Brain preferences remain on this device.</p>
+              <p id="backup-status" class="status" role="status" aria-live="polite"></p>
+              <details class="danger-zone"><summary>Delete all saved projects</summary><button id="clear" type="button" class="quiet">Delete every saved project</button></details>
+            </details>
           </details>
         </section>
     </div>
