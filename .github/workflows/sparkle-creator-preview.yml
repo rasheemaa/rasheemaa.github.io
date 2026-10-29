@@ -5,6 +5,7 @@ on:
       - 'what-do-i-say/creator-preview/**'
       - 'what-do-i-say/chat-app.js'
       - 'what-do-i-say/index.html'
+      - 'what-do-i-say/simple-home.*'
       - 'what-do-i-say/service-worker.js'
       - 'assets/css/tool-editorial.css'
       - '.github/workflows/sparkle-creator-preview.yml'
