@@ -130,7 +130,11 @@
     // Never overwrite an existing draft or editor when changing task.
     $('task-mode-status').textContent = 'Updated for: ' + selected.title + '. Existing drafts stay untouched until you create another.';
   };
-  task.addEventListener('change',()=>refresh());
+  task.addEventListener('change',()=>{
+    refresh();
+    // Update the existing saved-form snapshot after the contextual tone changes.
+    tone.dispatchEvent(new Event('change',{bubbles:true}));
+  });
   window.SparkleCreatorTaskFlow={refresh};
   refresh({preserveTone:true});
 })();
