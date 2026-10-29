@@ -160,7 +160,7 @@
     const activeMode=mode;
     const controller=new AbortController();currentController=controller;
     const timeout=setTimeout(()=>controller.abort(),30000);
-    pending=true;button.disabled=true;button.textContent='Sparkle is writing…';
+    pending=true;form.setAttribute('aria-busy','true');button.disabled=true;button.textContent='Sparkle is writing…';
     result.hidden=true;status.textContent='Creating your draft securely. Nothing is sent to anyone.';
     try {
       const res=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'omit',redirect:'error',cache:'no-store',signal:controller.signal,body:JSON.stringify(payload)});
@@ -180,7 +180,7 @@
       else if(mode===activeMode)status.textContent='Sparkle could not connect. Your words are safe.';
     } finally {
       clearTimeout(timeout);if(currentController===controller)currentController=null;
-      pending=false;button.disabled=false;
+      pending=false;form.setAttribute('aria-busy','false');button.disabled=false;
       button.textContent=aiEnabled?'Generate with Sparkle':initial[mode]?.action||'Prepare draft';
     }
   }
