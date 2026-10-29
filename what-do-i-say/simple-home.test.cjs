@@ -32,8 +32,15 @@ if (html.includes('id="sparkle-task-workspace"')) {
   }
   assert.match(script,/output\.value = draft\.text/);
   assert.match(script,/SPARKLE_STAGING_ONLY/);
-  assert.doesNotMatch(script,/\bfetch\s*\(/);
-  console.log('PASS Sparkle new guided task screens; no AI network request');
+  if (script.includes('SPARKLE_TASK_AI_ENABLED')) {
+    assert.match(script,/window\.SPARKLE_TASK_AI_ENABLED === true/);
+    assert.match(script,/fetch\('\/api\/generate'/);
+    assert.match(script,/credentials:'omit'/);
+    assert.match(script,/redirect:'error'/);
+    assert.match(script,/AbortController/);
+    assert.match(script,/if\(aiEnabled\)/);
+  } else assert.doesNotMatch(script,/\bfetch\s*\(/);
+  console.log('PASS Sparkle guided tasks; remote generation requires explicit deployment opt-in');
 } else {
 const prompts = {
   write: 'Help me write a message, caption, or email about: ',
