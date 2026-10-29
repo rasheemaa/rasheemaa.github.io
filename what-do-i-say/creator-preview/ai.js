@@ -64,11 +64,11 @@
       return;
     }
     if (data.idea.length > 3000 || data.audience.length > 160 || data.tone.length > 120 || data.profile.length > 1600) {
-      status.textContent = 'Your idea or Creator Brain exceeds the AI limits. Shorten it and try again. Nothing was sent.';
+      status.textContent = 'Your idea or advanced filters exceeds the AI limits. Shorten it and try again. Nothing was sent.';
       return;
     }
     if (new TextEncoder().encode(JSON.stringify(data)).byteLength > 8000) {
-      status.textContent = 'This request is too large. Shorten your idea or Creator Brain and try again. Nothing was sent.';
+      status.textContent = 'This request is too large. Shorten your idea or advanced filters and try again. Nothing was sent.';
       return;
     }
     const url = endpoint();
@@ -80,7 +80,7 @@
     const pending = {controller: new AbortController(), snapshot: snapshot(), timer: null};
     active = pending;
     setBusy(true);
-    status.textContent = 'Sparkle is drafting. Your reviewed task, idea, audience, tone and saved Creator Brain are sent for this request. Nothing is posted.';
+    status.textContent = 'Sparkle is drafting. Your reviewed task, idea, audience, tone and saved advanced filters are sent for this request. Nothing is posted.';
     pending.timer = setTimeout(() => {
       if (active === pending) cancel('Creator AI timed out. Your previous draft is preserved.');
     }, 30000);
