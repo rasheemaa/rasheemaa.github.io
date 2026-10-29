@@ -70,6 +70,18 @@ async function withBusy(work){
   catch(err){text('Could not finish: '+(err?.message||'unsupported playback')+' You can download the clean source clip.');stopFrame();}
   finally{busy=false;render.disabled=false;preview.disabled=false;}
 }
+const EXPORT_FORMAT=Object.freeze({'9:16':'portrait','16:9':'wide','1:1':'square'});
+function downloadPreRendered(){
+  const safeFormat=EXPORT_FORMAT[format.value],safeTitle=Object.hasOwn(TITLE,title.value)?title.value:null;
+  if(!safeFormat||!safeTitle)throw new Error('Choose a supported video format and title.');
+  const filename='sparkle-'+safeFormat+'-'+safeTitle+'.mp4';
+  const link=document.createElement('a');
+  link.href='./exports/'+safeFormat+'-'+safeTitle+'.mp4';
+  link.download=filename;
+  document.body.append(link);link.click();link.remove();
+  text('Your edited MP4 download has started. This is a pre-rendered people-free clip, with no AI or upload.');
+}
+
 function download(blob,mime){
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;
@@ -88,7 +100,7 @@ preview.addEventListener('click',()=>withBusy(async()=>{
 }));
 render.addEventListener('click',()=>withBusy(async()=>{
   const mime=availableMime();
-  if(!mime){text('This browser cannot record a canvas video. Use Download original clean footage instead.');return;}
+  if(!mime){downloadPreRendered();return;}
   text('Rendering a silent five-second video locally. Keep this tab open.');
   await startVideo();
   const stream=canvas.captureStream(24);
