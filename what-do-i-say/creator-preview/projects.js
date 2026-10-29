@@ -69,6 +69,7 @@
     $('audience').value = '';
     $('task').selectedIndex = 0;
     $('tone').selectedIndex = 0;
+    window.SparkleCreatorTaskFlow?.refresh({preserveTone:false});
     $('project-search').value = '';
     refresh();
     $('saved').value = '';
@@ -125,7 +126,12 @@
     $('idea').value = p.idea || '';
     $('audience').value = p.audience || '';
     if ([...$('task').options].some(o => o.value === p.task)) $('task').value = p.task;
-    if ([...$('tone').options].some(o => o.value === p.tone)) $('tone').value = p.tone;
+    // Refresh task-specific choices before restoring a previously saved tone.
+    window.SparkleCreatorTaskFlow?.refresh({preserveTone:false});
+    if (typeof p.tone === 'string' && p.tone.length <= 120) {
+      if (![...$('tone').options].some(o => o.value === p.tone)) $('tone').add(new Option(p.tone,p.tone));
+      $('tone').value = p.tone;
+    }
     if (typeof p.draft === 'string' && p.draft.length <= 12000) window.SparkleCreatorDrafts?.restoreProject?.(p.draft);
     $('idea').dispatchEvent(new Event('input', { bubbles: true }));
     cleanSnapshot = snapshot(); clearDraft();
@@ -171,6 +177,7 @@
     if (draft && Array.isArray(draft.fields) && draft.fields.length === fields.length && draft.fields.every(value => typeof value === 'string') && Number.isFinite(draft.time) && draft.time <= Date.now()) {
       if (window.confirm('Restore your unsaved Creator Studio draft from this tab?')) {
         fields.forEach((id, i) => { $(id).value = draft.fields[i]; });
+        window.SparkleCreatorTaskFlow?.refresh({preserveTone:true});
         suspendDraft = true;
         $('idea').dispatchEvent(new Event('input', { bubbles: true }));
         suspendDraft = false;
