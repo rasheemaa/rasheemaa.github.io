@@ -23,7 +23,8 @@ permalink: /what-do-i-say/creator-preview/
   <script defer src="/what-do-i-say/creator-preview/backups.js?v=1"></script>
   <script defer src="/what-do-i-say/creator-preview/ai.js?v=3"></script>
   <script defer src="/what-do-i-say/creator-preview/drafts.js?v=2"></script>
-  <script defer src="/what-do-i-say/creator-preview/app.js?v=2"></script>
+  <script defer src="/what-do-i-say/creator-preview/task-flow.js?v=1"></script>
+  <script defer src="/what-do-i-say/creator-preview/app.js?v=3"></script>
   <link rel="stylesheet" href="/what-do-i-say/creator-preview/video-entry.css?v=2">
   <link rel="stylesheet" href="/what-do-i-say/creator-preview/sparkle-studio.css?v=1">
 </head>
@@ -53,15 +54,16 @@ permalink: /what-do-i-say/creator-preview/
       <summary>More creator tools <span>Briefs, drafts, and saved projects</span></summary>
     <div class="studio-grid">
       <section class="panel" id="composer" aria-labelledby="composer-title">
-          <div class="panel-title"><span class="section-label">Step 1 · Create</span><h2 id="composer-title">Create a draft</h2><p>Choose what you need, describe your idea, then create an editable brief.</p></div>
+          <div class="panel-title"><span class="section-label">Step 1 · Create</span><h2 id="composer-title">Plan a post or video</h2><p id="composer-description">Turn your idea into an editable content brief with a clear direction.</p></div>
           <label for="task">What do you need help with?</label>
           <select id="task"><option value="content">Plan a post or video</option><option value="growth">Plan my content schedule</option><option value="reply">Write a reply</option><option value="sell">Promote an offer</option><option value="deal">Review a brand deal</option><option value="pdf">Outline a digital product</option><option value="performance">Review my own metrics</option></select>
-          <label for="idea">What is your idea or situation?</label>
-          <textarea id="idea" maxlength="3000" aria-describedby="input-privacy" placeholder="I want to make a relatable POV about setting boundaries without sounding preachy."></textarea>
+          <label for="idea" id="idea-label">What is your post or video idea?</label>
+          <textarea id="idea" maxlength="3000" aria-describedby="task-help input-privacy" placeholder="I want to make a relatable POV about setting boundaries without sounding preachy."></textarea>
+          <p id="task-help" class="task-help">Share the message and the kind of post you imagine. No personal experiences will be invented.</p>
           <p class="hint" id="input-privacy">No passwords or confidential details. Nothing is posted or sent automatically.</p>
           <div class="fields-row">
-            <div><label for="audience">Who is this for? <span class="optional">(optional)</span></label><input id="audience" maxlength="160" placeholder="Creators, moms, your community…"></div>
-            <div><label for="tone">How should it sound?</label><select id="tone"><option>Relatable and confident</option><option>Warm and conversational</option><option>Playful and bold</option><option>Clear and professional</option></select></div>
+            <div><label for="audience" id="audience-label">Who should this content reach? (optional)</label><input id="audience" maxlength="160" placeholder="People navigating boundaries, my followers…"></div>
+            <div><label for="tone" id="tone-label">What vibe should the post have?</label><select id="tone"><option>Relatable and confident</option><option>Warm and conversational</option><option>Playful and bold</option><option>Clear and professional</option></select></div>
           </div>
           <details class="profile-panel">
             <summary>Your Creator Brain</summary>
@@ -75,13 +77,14 @@ permalink: /what-do-i-say/creator-preview/
               <p id="profile-status" class="status" role="status"></p>
             </div>
           </details>
-          <div class="button-row"><button id="make" type="button">Create free draft</button></div>
+          <p id="task-mode-status" class="task-mode-status" role="status" aria-live="polite"></p>
+          <div class="button-row"><button id="make" type="button">Create content brief</button></div>
           <div id="ai-controls" class="button-row" hidden><button id="generate-ai" type="button" class="secondary">Generate with AI ✦</button><button id="cancel-ai" type="button" class="secondary" hidden>Cancel generation</button></div>
           <p id="ai-status" class="status" role="status" aria-live="polite"></p>
           <p id="ai-hint" class="hint" hidden>AI drafts use the free allowance when available. The free draft option works without AI.</p>
         </section>
       <section class="panel draft-panel" aria-labelledby="draft-title">
-        <div class="panel-title"><span class="section-label">Step 2 · Review</span><h2 id="draft-title">Your draft</h2><p>Review, edit, or copy the result. Nothing is posted automatically.</p></div>
+        <div class="panel-title"><span class="section-label">Step 2 · Review</span><h2 id="draft-title">Your content brief</h2><p id="draft-description">Review your hooks, scene ideas, caption structure and next steps.</p></div>
         <div id="output" role="region" aria-label="Generated creative brief" tabindex="0" aria-busy="false">Your free draft will appear here after you choose a task and describe your idea.</div>
         <label for="draft-editor" id="draft-editor-label" hidden>Edit your draft</label>
         <textarea id="draft-editor" hidden aria-label="Editable creator draft" maxlength="12000"></textarea>
