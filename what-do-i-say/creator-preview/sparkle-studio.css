@@ -268,3 +268,46 @@ button:hover:not(:disabled){filter:brightness(1.05)}
 .filter-reset>summary{font:650 12px/1.5 Inter,system-ui,sans-serif;min-height:44px;color:var(--muted);cursor:pointer}
 .filter-reset .quiet{margin-top:10px}
 @media(max-width:560px){.filter-pills .filter-pill{flex:1 1 138px}.profile-panel>summary{padding:14px 0}}
+
+
+/* One-screen starting choices. Keep all existing detailed tools discoverable. */
+.studio-start-actions{display:grid;grid-template-columns:1fr;gap:10px;max-width:540px;margin:22px 0 12px}
+.studio-start-actions .studio-start-option,
+.video-feature .video-cta.studio-start-option{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:flex-start;
+  gap:3px;
+  text-align:left;
+  min-height:68px;
+  padding:13px 18px;
+  margin:0;
+  width:100%;
+  border-radius:17px;
+  text-decoration:none;
+  cursor:pointer;
+  font:inherit;
+  background:linear-gradient(125deg,#fff,#f5e9ff);
+  border:1px solid #dac4ea;
+  color:#2f2042;
+  box-shadow:0 4px 13px rgba(65,33,94,.07);
+}
+.studio-start-actions .studio-start-option strong{font-size:15px;line-height:1.2;font-weight:800}
+.studio-start-actions .studio-start-option small{font-size:12px;line-height:1.45;font-weight:450;color:#73627f;letter-spacing:0}
+.studio-start-actions .studio-start-edit{
+  background:linear-gradient(125deg,#a61c70,#6941ac);
+  color:#fff;
+  border-color:#934192;
+}
+.studio-start-actions .studio-start-edit small{color:#fae7fa}
+.studio-start-actions .studio-start-option:hover{filter:brightness(1.04);border-color:#9d64bd;transform:none}
+.video-feature .video-note{font-size:12px;line-height:1.45;margin-top:13px;color:#6b5673}
+.video-feature .video-note strong{color:#4a2c55}
+@media(min-width:800px){
+  .studio-start-actions{max-width:520px}
+}
+@media(max-width:650px){
+ .studio-start-actions .studio-start-option{min-height:64px}
+ .video-feature .video-cta.studio-start-option{width:100%}
+}
