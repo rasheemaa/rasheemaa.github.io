@@ -16,6 +16,10 @@
   const generic = byId('message-form');
   const genericStatus = byId('sparkle-status');
   const staging = window.SPARKLE_STAGING_ONLY === true;
+  // An audited same-origin AI deployment must explicitly opt in; never infer availability from a URL.
+  const aiEnabled = window.SPARKLE_TASK_AI_ENABLED === true;
+  let pending = false;
+  let currentController = null;
   const initial = {
     write: { title: 'Write', hint: 'Start from your idea.', action: 'Create draft', focus: 'sparkle-write-idea' },
     reply: { title: 'Reply', hint: 'Use the message you received and your own answer.', action: 'Draft reply', focus: 'sparkle-reply-message' },
@@ -41,12 +45,13 @@
     thread?.classList.add('sparkle-task-open');
     byId('sparkle-task-title').textContent = cfg.title;
     byId('sparkle-task-help').textContent = cfg.hint;
-    byId('sparkle-task-continue').textContent = cfg.action;
+    byId('sparkle-task-continue').textContent = aiEnabled ? 'Generate with Sparkle' : cfg.action;
     choices.hidden = true;
     workspace.hidden = false;
     sections.forEach(panel => { panel.hidden = panel.dataset.sparklePanel !== mode; });
     result.hidden = true;
     status.textContent = '';
+    if (currentController) currentController.abort();
     enableGeneric(false);
     // Keep the keyboard closed on small touchscreens and let the user see the whole form.
     if (thread) thread.scrollTop = 0;
@@ -61,7 +66,8 @@
     workspace.hidden = true;
     result.hidden = true;
     status.textContent = '';
-    enableGeneric(!staging);
+    if (currentController) currentController.abort();
+    enableGeneric(!staging && !aiEnabled);
     document.querySelector('[data-sparkle-start="write"]')?.focus();
   }
 
@@ -120,9 +126,68 @@
     button.addEventListener('click', () => choose(button.dataset.sparkleStart));
   });
   byId('sparkle-task-back')?.addEventListener('click', home);
+  function aiPayload() {
+    if (mode === 'write') {
+      const idea = content('sparkle-write-idea');
+      if (!idea) return {error:'Tell Sparkle what you want to say.'};
+      const type = byId('sparkle-write-type').value;
+      const recipient = content('sparkle-write-to');
+      return {mode:'write',text:'Write a '+type+' using only these notes: '+idea+(recipient?'\nRecipient or audience: '+recipient:''),tone:'warm'};
+    }
+    if (mode === 'reply') {
+      const incoming = content('sparkle-reply-message');
+      const intent = content('sparkle-reply-idea');
+      if (!incoming) return {error:'Paste the message you received.'};
+      if (!intent) return {error:'Add what you want to say back.'};
+      const tones={friendly:'warm',decline:'firm',agree:'warm',clarify:'direct',firm:'firm'};
+      const goal = byId('sparkle-reply-goal').value;
+      return {mode:'reply',tone:tones[goal]||'warm',text:'MESSAGE RECEIVED (not spoken by me):\n'+incoming+'\n\nWHAT I WANT TO SAY BACK:\n'+intent+'\n\nApproach: '+goal};
+    }
+    if (mode === 'fix') {
+      const draft = content('sparkle-fix-draft');
+      if (!draft) return {error:'Paste your draft to polish.'};
+      const style = byId('sparkle-fix-style').value;
+      if (style==='clearer') return {mode:'fix',text:draft,tone:'direct'};
+      return {mode:'fix',refine:style,currentMessage:draft,text:'',tone:style==='firmer'?'firm':'warm'};
+    }
+    return {error:'Choose Write, Reply, or Fix.'};
+  }
+  async function generateWithAI() {
+    if (pending) return;
+    const payload=aiPayload();
+    if (payload.error){result.hidden=true;status.textContent=payload.error;return;}
+    const button=byId('sparkle-task-continue');
+    const activeMode=mode;
+    const controller=new AbortController();currentController=controller;
+    const timeout=setTimeout(()=>controller.abort(),30000);
+    pending=true;button.disabled=true;button.textContent='Sparkle is writing…';
+    result.hidden=true;status.textContent='Creating your draft securely. Nothing is sent to anyone.';
+    try {
+      const res=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'omit',redirect:'error',cache:'no-store',signal:controller.signal,body:JSON.stringify(payload)});
+      const data=await res.json().catch(()=>({}));
+      if(controller.signal.aborted||mode!==activeMode)return;
+      if(!res.ok||typeof data.message!=='string'||!data.message.trim()){
+        status.textContent=res.status===429?'Sparkle has reached her free allowance. Try again later.':
+          res.status===503?'AI writing is unavailable right now. Your words are safe.':
+          'Sparkle could not finish this draft. Your words are safe. Please try again.';
+        return;
+      }
+      output.value=data.message.trim();
+      result.hidden=false;status.textContent='Review and edit before sharing.';
+      output.focus({preventScroll:true});
+    } catch (_) {
+      if(controller.signal.aborted&&mode===activeMode)status.textContent='The request was stopped or timed out. Your words are safe.';
+      else if(mode===activeMode)status.textContent='Sparkle could not connect. Your words are safe.';
+    } finally {
+      clearTimeout(timeout);if(currentController===controller)currentController=null;
+      pending=false;button.disabled=false;
+      button.textContent=aiEnabled?'Generate with Sparkle':initial[mode]?.action||'Prepare draft';
+    }
+  }
   form.addEventListener('submit', event => {
     event.preventDefault();
-    if (!mode) return;
+    if (!mode || pending) return;
+    if(aiEnabled){void generateWithAI();return;}
     const draft = mode === 'write' ? makeWrite() : mode === 'reply' ? makeReply() : makeFix();
     if (draft.error) {
       result.hidden = true;
@@ -147,5 +212,5 @@
     }
   });
   // The staging environment does not expose an active AI chat or send button.
-  if (staging) enableGeneric(false);
+  if (staging || aiEnabled) enableGeneric(false);
 })();
