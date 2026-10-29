@@ -189,3 +189,30 @@ button:hover:not(:disabled){filter:brightness(1.05)}
 @media(prefers-reduced-motion:reduce){
  *,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
 }
+
+
+/* Task-aware creator questions: one clear, calm form for each goal. */
+#composer .task-help{
+  border-left:3px solid #d5a3ef;
+  padding:9px 12px;
+  margin:10px 0 3px;
+  color:var(--muted);
+  background:linear-gradient(95deg,#fbf2ff,#fff9fd);
+  border-radius:0 12px 12px 0;
+  font-size:.8rem;
+  line-height:1.5;
+}
+#composer .task-mode-status{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  margin:-1px!important;
+  padding:0!important;
+  border:0!important;
+  overflow:hidden!important;
+  white-space:nowrap!important;
+  clip:rect(0,0,0,0)!important;
+  clip-path:inset(50%)!important;
+}
+#composer .panel-title p{max-width:48ch}
+#composer #make{width:100%}
