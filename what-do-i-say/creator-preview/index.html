@@ -35,16 +35,20 @@ permalink: /what-do-i-say/creator-preview/
     <div class="ribbon" aria-hidden="true"></div>
   </header>
   <main id="creator-workspace" tabindex="-1">
-    <div class="studio-intro">
-      <div class="eyebrow">A little Sparkle for your next idea</div>
-      <h1>See the scene.<br><em>Shape the story.</em></h1>
-      <p class="intro-copy">Plan your next video, shape the words around it, and keep the creative direction yours. Bring your idea. Keep your voice.</p>
-      <div class="intro-meta"><span class="pill">Creator Studio preview</span><a class="text-link" href="#composer">Start with an idea ↓</a></div>
-    </div>
-    <section class="video-feature" aria-labelledby="video-feature-title">
-      <div class="video-feature-copy"><span class="video-tag">A new space for your next scene</span><h2 id="video-feature-title">Picture it.<br>Give it direction.</h2><p>Shape a video idea into an editable shot plan. Set the frame, find the feeling, and give every scene a purpose.</p><a class="video-cta" href="/what-do-i-say/video-planner/">Plan a video ↗</a><p class="video-note">Free planning. Video generation is not connected in this review.</p></div>
-      <div class="video-feature-art" aria-hidden="true"><div class="video-feature-frame"><span>Sparkle Creator Studio</span><strong>The story<br>starts with you.</strong><span>Video planning workspace</span></div></div>
+    <section class="video-feature" aria-labelledby="creator-studio-title">
+      <div class="video-feature-copy">
+        <div class="eyebrow">Creator Studio</div>
+        <h1 id="creator-studio-title">Create your next video.</h1>
+        <p>Plan scenes, shape your story, and save your ideas.</p>
+        <a class="video-cta" href="/what-do-i-say/video-planner/">Plan a video ↗</a>
+        <p class="video-note">Video generation isn't available yet.</p>
+      </div>
+      <div class="video-feature-art" aria-hidden="true"><div class="video-feature-frame">
+        <span>Sparkle Creator Studio</span><strong>Your story<br>starts here.</strong><span>Video planning workspace</span>
+      </div></div>
     </section>
+    <details class="studio-tools" id="studio-tools">
+      <summary>More creator tools <span>Briefs, drafts, and saved projects</span></summary>
     <div class="studio-grid">
       <section class="panel" id="composer" aria-labelledby="composer-title">
           <div class="panel-title"><span class="section-label">The starting point</span><h2 id="composer-title">What are we making?</h2><p>Your ideas lead. Sparkle helps you shape them.</p></div>
@@ -88,7 +92,7 @@ permalink: /what-do-i-say/creator-preview/
         <label id="manual-copy-label" for="manual-copy" hidden>Instructions for manual copying</label><textarea id="manual-copy" readonly hidden></textarea>
       </section>
       <section class="panel saved-panel" aria-label="Your projects">
-          <details class="projects-disclosure" open>
+          <details class="projects-disclosure">
             <summary>Keep your ideas close</summary>
             <label for="project">Project name</label><input id="project" maxlength="80" placeholder="Friday POV">
             <div class="button-row"><button id="save" type="button">Save project and draft</button><button id="new-project" type="button" class="secondary">Start a new project</button></div>
@@ -105,6 +109,7 @@ permalink: /what-do-i-say/creator-preview/
           </details>
         </section>
     </div>
+    </details>
     <footer class="studio-footer">
       <p class="signature">With Love, Sheema</p>
       <p class="privacy-note">Your Creator Brain, projects and saved drafts stay in this browser. Generate with AI sends the reviewed task, idea, audience, tone and saved Creator Brain to Sparkle's Cloudflare backend for processing. Nothing is posted automatically. Digital product output is an editable outline, not a PDF file.</p>
