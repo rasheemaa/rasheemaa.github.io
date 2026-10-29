@@ -31,7 +31,7 @@
       return;
     }
     const output = $('output');
-    if (output) output.textContent = 'Choose a goal and describe your idea to see a structured starter brief.';
+    if (output) output.textContent = 'Your free draft will appear here after you choose a task and describe your idea.';
     for (const id of ['draft-editor','draft-editor-label','apply-draft']) {
       const element = $(id);
       if (element) element.hidden = true;
