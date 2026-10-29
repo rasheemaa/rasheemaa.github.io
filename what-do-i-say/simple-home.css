@@ -9,3 +9,29 @@
 #welcome-card .sparkle-choice>span:last-child{font-size:1.5rem;color:#6e5c7b}
 @media(max-width:390px){#welcome-card .sparkle-choice{grid-template-columns:40px minmax(0,1fr) 14px;padding:12px;gap:10px}#welcome-card .choice-icon{width:40px;height:40px}}
 @media(prefers-reduced-motion:no-preference){#welcome-card .sparkle-choice{transition:background .15s,border-color .15s}}
+
+
+/* Guided task behavior only. All colors, gradients and corners inherit Sparkle's original design tokens. */
+#welcome-card .sparkle-choices[hidden],
+#welcome-card .sparkle-task-workspace[hidden],
+#welcome-card [data-sparkle-panel][hidden],
+#welcome-card #sparkle-task-result[hidden],
+#message-form[hidden],
+#sparkle-status[hidden]{display:none!important}
+#welcome-card .sparkle-task-workspace{text-align:left}
+#welcome-card .sparkle-task-back{min-height:44px;padding:7px 3px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+#welcome-card .sparkle-task-workspace h3{margin:6px 0 4px;font:800 1.5rem/1.2 Georgia,serif}
+#welcome-card .sparkle-task-help{margin:3px 0 15px;color:var(--muted);font-size:.9rem}
+#welcome-card .sparkle-task-workspace label{display:block;margin:15px 0 6px;text-align:left;font-size:.84rem;font-weight:800}
+#welcome-card .sparkle-task-workspace input,
+#welcome-card .sparkle-task-workspace select,
+#welcome-card .sparkle-task-workspace textarea{display:block;width:100%;min-width:0;min-height:44px;padding:11px 13px;border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink)}
+#welcome-card .sparkle-task-workspace textarea{min-height:100px;resize:vertical}
+#welcome-card .sparkle-task-continue{min-height:44px;margin-top:15px;padding:10px 17px;border:1px solid var(--line);border-radius:16px;background:var(--ink);color:#fff;font-size:.88rem;font-weight:800;cursor:pointer}
+#welcome-card .sparkle-task-continue:focus-visible,
+#welcome-card .sparkle-task-workspace input:focus-visible,
+#welcome-card .sparkle-task-workspace select:focus-visible{outline:3px solid var(--pink);outline-offset:2px}
+#welcome-card .sparkle-task-status{margin:10px 0;color:var(--muted);font-size:.8rem}
+#welcome-card #sparkle-task-result{border-top:1px solid var(--line);margin-top:16px;padding-top:13px}
+#welcome-card #sparkle-task-result textarea{min-height:120px}
+#welcome-card .sparkle-optional{font-weight:400;color:var(--muted)}
