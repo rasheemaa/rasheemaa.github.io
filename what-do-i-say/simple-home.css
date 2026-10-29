@@ -1,0 +1,11 @@
+/* Mobile-first Sparkle task chooser. Scoped to welcome card. */
+#welcome-card .sparkle-choices{display:grid;gap:12px;margin:24px 0 6px;text-align:left}
+#welcome-card .sparkle-choice{appearance:none;display:grid;grid-template-columns:46px minmax(0,1fr) 18px;align-items:center;gap:12px;width:100%;padding:15px;border:1px solid #dfd4e7;border-radius:18px;background:#fff;color:#30283a;text-align:left;text-decoration:none;font:inherit;cursor:pointer;min-height:78px;box-sizing:border-box}
+#welcome-card .sparkle-choice:hover{border-color:#9566b5;background:#fbf7ff}
+#welcome-card .sparkle-choice:focus-visible{outline:3px solid #76519b;outline-offset:3px}
+#welcome-card .sparkle-choice strong{display:block;font-size:1rem;line-height:1.4}
+#welcome-card .sparkle-choice small{display:block;color:#62586a;font-size:.875rem;line-height:1.45;margin-top:3px}
+#welcome-card .choice-icon{display:grid;place-items:center;width:44px;height:44px;border-radius:13px;background:#f1e8fa;font-size:1.4rem;color:#633d87}
+#welcome-card .sparkle-choice>span:last-child{font-size:1.5rem;color:#6e5c7b}
+@media(max-width:390px){#welcome-card .sparkle-choice{grid-template-columns:40px minmax(0,1fr) 14px;padding:12px;gap:10px}#welcome-card .choice-icon{width:40px;height:40px}}
+@media(prefers-reduced-motion:no-preference){#welcome-card .sparkle-choice{transition:background .15s,border-color .15s}}

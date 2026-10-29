@@ -36,6 +36,7 @@ permalink: /what-do-i-say/
 <link rel="stylesheet" href="/what-do-i-say/sparkle.css?v=2">
 <link rel="stylesheet" href="/what-do-i-say/trust.css?v=1">
 <link rel="stylesheet" href="/assets/css/tool-editorial.css?v=2">
+<link rel="stylesheet" href="/what-do-i-say/simple-home.css?v=1">
 </head>
 <body>
 <a class="skip" href="#app">Skip to the tool</a>
@@ -60,9 +61,14 @@ permalink: /what-do-i-say/
 
     <div id="chat-thread" class="chat-thread" aria-live="polite" aria-relevant="additions text">
       <section id="welcome-card" class="welcome-card">
-        <p class="welcome-question">What’s on your mind?</p>
-        <p class="welcome-hint">Start typing. Sparkle will figure out how to help.</p>
-        <a class="creator-entry" href="/what-do-i-say/creator-preview/">Open Creator Studio ↗</a>
+        <h2 class="welcome-question">What can I help you create?</h2>
+        <p class="welcome-hint">Choose what you need. Sparkle will help with the rest.</p>
+        <nav class="sparkle-choices" aria-label="Choose how Sparkle can help">
+          <button class="sparkle-choice" type="button" data-sparkle-start="write"><span class="choice-icon" aria-hidden="true">✎</span><span><strong>Write something</strong><small>Messages, captions, emails and more</small></span><span aria-hidden="true">›</span></button>
+          <button class="sparkle-choice" type="button" data-sparkle-start="reply"><span class="choice-icon" aria-hidden="true">↩</span><span><strong>Reply to someone</strong><small>Find the right words for a response</small></span><span aria-hidden="true">›</span></button>
+          <button class="sparkle-choice" type="button" data-sparkle-start="fix"><span class="choice-icon" aria-hidden="true">✦</span><span><strong>Make it sound better</strong><small>Rewrite, shorten or change the tone</small></span><span aria-hidden="true">›</span></button>
+          <a class="sparkle-choice creator-entry" href="/what-do-i-say/creator-preview/"><span class="choice-icon" aria-hidden="true">▣</span><span><strong>Explore Creator Studio</strong><small>Draft and organize creative projects. Video generation is not available yet.</small></span><span aria-hidden="true">›</span></a>
+        </nav>
       </section>
       <div id="conversation" class="conversation"></div>
     </div>
@@ -105,5 +111,6 @@ permalink: /what-do-i-say/
 <script src="/what-do-i-say/sparkle-first-draft-polish.js?v=1"></script>
 <script src="/what-do-i-say/chat-handoff.js?v=2" defer></script>
 <script src="/what-do-i-say/chat-app.js?v=30" defer></script>
+<script src="/what-do-i-say/simple-home.js?v=1" defer></script>
 </body>
 </html>
