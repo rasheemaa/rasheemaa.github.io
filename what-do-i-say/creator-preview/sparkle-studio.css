@@ -216,3 +216,55 @@ button:hover:not(:disabled){filter:brightness(1.05)}
 }
 #composer .panel-title p{max-width:48ch}
 #composer #make{width:100%}
+
+
+/* Optional Advanced filters: expandable, compact and genuinely actionable. */
+.profile-panel{overflow:hidden}
+.profile-panel>summary{
+  min-height:64px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:5px 12px;
+  list-style:none;
+  padding:15px 5px;
+  margin:0;
+  font-family:Inter,ui-sans-serif,system-ui,sans-serif;
+}
+.profile-panel>summary::-webkit-details-marker{display:none}
+.profile-panel>summary::after{content:"+";font:800 24px/1 Inter,system-ui,sans-serif;color:#7d42a4;margin-left:auto}
+.profile-panel[open]>summary::after{content:"−"}
+.filter-summary-title{font-size:16px;font-weight:800;color:var(--ink)}
+.filter-optional{font-size:11px;font-weight:550;color:var(--muted)}
+.filter-summary-desc{font-size:12px;font-weight:450;color:var(--muted);flex-basis:100%}
+.profile-fields{padding-top:16px;border-top:1px solid var(--line)}
+.profile-fields>.hint:first-child{font-size:13px}
+.filter-block{margin-top:18px}
+.filter-block+.filter-block{padding-top:19px;border-top:1px solid var(--line)}
+.filter-heading{font-size:15px;font-weight:800;margin:0 0 5px}
+.filter-pills{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
+.filter-pills .filter-pill{
+  min-height:46px;
+  padding:10px 14px;
+  border-radius:999px;
+  background:#fff;
+  color:var(--ink);
+  border:1px solid #d9cae6;
+  box-shadow:0 2px 8px rgba(55,35,65,.05);
+  font-size:13px;
+  line-height:1.35;
+  font-weight:650;
+}
+.filter-pills .filter-pill[aria-pressed="true"]{
+  background:linear-gradient(130deg,#ffe5f3,#eee2ff);
+  border-color:#a668bd;
+  color:#52266c;
+  box-shadow:inset 0 0 0 1px rgba(120,48,154,.12);
+}
+.filter-pills .filter-pill[aria-pressed="true"]::before{content:"✓ ";font-weight:850}
+.filter-actions #profile-save{width:100%}
+.filter-reset{border-top:1px solid var(--line);margin-top:18px;padding-top:10px}
+.filter-reset>summary{font:650 12px/1.5 Inter,system-ui,sans-serif;min-height:44px;color:var(--muted);cursor:pointer}
+.filter-reset .quiet{margin-top:10px}
+@media(max-width:560px){.filter-pills .filter-pill{flex:1 1 138px}.profile-panel>summary{padding:14px 0}}
