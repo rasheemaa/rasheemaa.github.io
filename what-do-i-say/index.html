@@ -86,7 +86,9 @@ permalink: /what-do-i-say/
             <div data-sparkle-panel="reply" hidden>
               <label for="sparkle-reply-message">Message you received</label>
               <textarea id="sparkle-reply-message" maxlength="3000" placeholder="Paste the message you need to answer…"></textarea>
-              <label for="sparkle-reply-goal">How should your reply come across?</label>
+              <label for="sparkle-reply-idea">What do you want to say back?</label>
+              <textarea id="sparkle-reply-idea" maxlength="2000" placeholder="Your answer, in your own words…"></textarea>
+              <label for="sparkle-reply-goal">Your approach</label>
               <select id="sparkle-reply-goal"><option value="friendly">Friendly</option><option value="decline">Politely decline</option><option value="agree">Agree or accept</option><option value="clarify">Ask for clarification</option><option value="firm">Firm and direct</option></select>
             </div>
             <div data-sparkle-panel="fix" hidden>
@@ -95,14 +97,14 @@ permalink: /what-do-i-say/
               <label for="sparkle-fix-style">What should change?</label>
               <select id="sparkle-fix-style"><option value="clearer">Make it clearer</option><option value="shorter">Make it shorter</option><option value="softer">Make it softer</option><option value="firmer">Make it firmer</option><option value="professional">Make it professional</option></select>
             </div>
-            <button type="submit" class="sparkle-task-continue" id="sparkle-task-continue">Prepare request</button>
+            <button type="submit" class="sparkle-task-continue" id="sparkle-task-continue">Create draft</button>
             <p class="sparkle-task-status" id="sparkle-task-status" role="status" aria-live="polite"></p>
           </form>
           <div id="sparkle-task-result" hidden>
-            <label for="sparkle-prepared-text">Prepared request</label>
-            <textarea id="sparkle-prepared-text" readonly rows="6"></textarea>
-            <button type="button" id="sparkle-copy-request" class="sparkle-task-continue">Copy request</button>
-            <p class="sparkle-task-status">AI writing is disabled on this test site. No message was sent.</p>
+            <label for="sparkle-prepared-text">Your editable draft</label>
+            <textarea id="sparkle-prepared-text" maxlength="6000" rows="6"></textarea>
+            <button type="button" id="sparkle-copy-request" class="sparkle-task-continue">Copy draft</button>
+            <p class="sparkle-task-status">Created on your device. AI isn’t connected in this preview.</p>
           </div>
         </section>
       </section>
