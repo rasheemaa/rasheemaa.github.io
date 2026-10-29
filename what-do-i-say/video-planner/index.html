@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+  <meta name="description" content="Shape your next video with an editable shot plan, creative direction and scene timing. Free planning in your browser.">
+  <title>Video Planner | Sparkle Creator Studio</title>
+  <link rel="icon" href="/assets/images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./planner.css?v=1">
+  <script type="module" src="./app.mjs?v=1"></script>
+</head>
+<body>
+  <a class="skip" href="#workspace">Skip to video workspace</a>
+  <header class="header"><a class="brand" href="/what-do-i-say/creator-preview/"><span aria-hidden="true">S✦</span>Sparkle<span class="brand-section">Creator Studio</span></a><nav aria-label="Sparkle navigation"><a href="/what-do-i-say/creator-preview/">Writing tools</a><a href="/what-do-i-say/voice-beta/">Voice</a></nav></header>
+  <main id="workspace" tabindex="-1">
+    <section class="intro" aria-labelledby="page-title">
+      <div><p class="eyebrow">Your idea. Your direction.</p><h1 id="page-title">A little thought.<br><em>A whole scene.</em></h1><p class="lede">Give your next video a point of view. Shape the shots, set the feeling, and keep every detail yours.</p></div>
+      <aside class="availability" aria-label="Availability"><span class="dot" aria-hidden="true"></span><strong>Free planning workspace</strong><p>Build and save your shot plan here. Video generation is not connected in this review.</p><p class="policy">Adults only. No minors or sexual violence.</p></aside>
+    </section>
+    <div class="workspace">
+      <section class="direction panel" aria-labelledby="direction-title">
+        <p class="eyebrow">01 / The direction</p><h2 id="direction-title">What do you see?</h2>
+        <label for="title">Project name</label><input id="title" maxlength="80" placeholder="A name for your next idea" autocomplete="off">
+        <label for="concept">Describe your video</label><textarea id="concept" maxlength="2000" placeholder="The scene, the feeling, the little detail that makes it yours…" aria-describedby="local-note"></textarea>
+        <p class="hint" id="local-note">Your plan stays in this browser. Nothing is submitted to a video service.</p>
+        <div class="field-pair"><div><label for="format">Frame</label><select id="format"><option value="9:16">9:16 · Vertical</option><option value="16:9">16:9 · Landscape</option><option value="1:1">1:1 · Square</option></select></div><div><label for="duration">Target length</label><select id="duration"><option value="15">15 seconds</option><option value="30">30 seconds</option><option value="60">60 seconds</option></select></div></div>
+        <label for="style">Visual direction</label><select id="style"><option>Cinematic realism</option><option>Product film</option><option>3D animation</option><option>Illustrated story</option></select>
+        <label for="continuity">Keep these details consistent</label><textarea id="continuity" class="short" maxlength="1000" placeholder="Subject, wardrobe, location, lighting, colors…"></textarea>
+        <label for="sound">Sound direction</label><textarea id="sound" class="short" maxlength="600" placeholder="Ambience, music, silence, or spoken words…"></textarea>
+        <button class="text-button" id="sample" type="button">Try a sample idea ↗</button>
+      </section>
+      <section class="shots panel" aria-labelledby="shots-title">
+        <div class="section-top"><div><p class="eyebrow">02 / The story</p><h2 id="shots-title">Make every shot count.</h2></div><span id="scene-count" class="tag">3 scenes</span></div>
+        <p class="section-copy">Write what happens in each scene. Move the shots until the story feels right.</p>
+        <div class="timing"><p id="timing" role="status" aria-live="polite"></p><button type="button" class="text-button" id="fit">Fit timing</button></div>
+        <div id="scenes"></div>
+        <button type="button" class="secondary wide" id="add-scene">＋ Add a scene</button>
+      </section>
+      <aside class="overview" aria-labelledby="overview-title">
+        <section class="stage"><div class="stage-top"><span class="eyebrow">The bigger picture</span><span id="frame-label">9:16</span></div><div class="frame" id="frame" data-format="9:16"><span class="frame-corner top-left" aria-hidden="true"></span><span class="frame-corner bottom-right" aria-hidden="true"></span><p class="frame-type">SHOT PLAN</p><h2 id="overview-title">Your next idea<br>starts here.</h2><p id="frame-meta">15 seconds · Cinematic realism</p></div><p class="stage-note">A view of your plan. No footage has been generated.</p></section>
+        <ol id="timeline" class="timeline" aria-label="Scene timeline"></ol>
+        <section class="panel keep" aria-labelledby="keep-title"><p class="eyebrow">03 / Make it yours</p><h2 id="keep-title">Keep your direction.</h2><div class="actions"><button type="button" id="save">Save project</button><button type="button" class="secondary" id="show-plan">Review full plan</button></div><label for="saved-projects">Saved video projects</label><select id="saved-projects"><option value="">Choose a project</option></select><div class="actions"><button type="button" class="secondary" id="load">Open project</button><button type="button" class="text-button" id="new">Start fresh</button></div><details><summary>Copy, backup and restore</summary><p class="hint">Backups contain this video plan only. Keep a backup before clearing browser data or moving to another Sparkle address.</p><div class="actions"><button type="button" class="secondary" id="copy">Copy plan</button><button type="button" class="secondary" id="download-plan">Download text plan</button><button type="button" class="secondary" id="backup">Download backup</button><button type="button" class="secondary" id="restore">Restore backup</button><button type="button" class="text-button" id="delete-project">Delete selected project</button></div><input id="backup-file" type="file" accept=".json,application/json" hidden aria-label="Choose a video plan backup"></details><p class="hint">Projects are saved on this device and website address. They do not sync between devices.</p></section>
+      </aside>
+    </div>
+    <p class="notice" id="status" role="status" aria-live="polite">Ready when you are. Your first three scenes are waiting for your direction.</p>
+    <section id="plan-review" class="panel" hidden aria-labelledby="plan-title"><h2 id="plan-title">Your full video plan</h2><p class="hint">This text is your production brief. It contains your direction and scene timing.</p><pre id="plan-text" tabindex="0"></pre></section>
+    <footer><p class="signature">With Love, Sheema</p><p>Space for the story you want to tell.</p><a href="/what-do-i-say/privacy.html">Privacy</a><a href="/what-do-i-say/terms.html">Terms</a><a href="/what-do-i-say/creator-preview/">Back to Sparkle</a></footer>
+  </main>
+  <template id="scene-template"><article class="scene"><div class="scene-top"><h3></h3><div class="scene-controls"><button type="button" data-action="up">↑</button><button type="button" data-action="down">↓</button><button type="button" data-action="remove">Remove</button></div></div><div class="field-pair"><div><label data-label="title">Scene name</label><input data-field="title" maxlength="80"></div><div><label data-label="seconds">Seconds</label><input data-field="seconds" type="number" min="1" max="60" step="1" inputmode="numeric"></div></div><label data-label="action">What happens?</label><textarea data-field="action" maxlength="1000" placeholder="One clear action. One moment to remember."></textarea><label data-label="camera">Camera direction</label><select data-field="camera"><option>Locked frame</option><option>Slow push in</option><option>Slow pull back</option><option>Tracking shot</option><option>Close detail</option><option>Overhead</option></select><label data-label="audio">Sound or spoken words</label><textarea data-field="audio" maxlength="400" class="short" placeholder="Optional. Describe what we hear."></textarea></article></template>
+</body>
+</html>
