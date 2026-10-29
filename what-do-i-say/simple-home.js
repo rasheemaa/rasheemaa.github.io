@@ -3,6 +3,8 @@
   'use strict';
   const byId = id => document.getElementById(id);
   const workspace = byId('sparkle-task-workspace');
+  const welcome = byId('welcome-card');
+  const thread = byId('chat-thread');
   const choices = document.querySelector('#welcome-card .sparkle-choices');
   if (!workspace || !choices) return;
 
@@ -35,6 +37,7 @@
     if (!Object.prototype.hasOwnProperty.call(initial, next)) return;
     mode = next;
     const cfg = initial[mode];
+    if (welcome) welcome.dataset.activeTask = mode;
     byId('sparkle-task-title').textContent = cfg.title;
     byId('sparkle-task-help').textContent = cfg.hint;
     byId('sparkle-task-continue').textContent = cfg.action;
@@ -44,11 +47,14 @@
     result.hidden = true;
     status.textContent = '';
     enableGeneric(false);
-    byId(cfg.focus)?.focus();
+    // Keep the keyboard closed on small touchscreens and let the user see the whole form.
+    if (thread) thread.scrollTop = 0;
+    byId('sparkle-task-title')?.focus({ preventScroll: true });
   }
 
   function home() {
     mode = '';
+    if (welcome) delete welcome.dataset.activeTask;
     choices.hidden = false;
     workspace.hidden = true;
     result.hidden = true;
