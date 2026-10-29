@@ -36,6 +36,8 @@ jobs:
           node --check what-do-i-say/creator-preview/backups.js
           node --check what-do-i-say/creator-preview/profile.js
           node --check what-do-i-say/chat-app.js
+          node --check what-do-i-say/simple-home.js
+          node what-do-i-say/simple-home.test.cjs
           node what-do-i-say/creator-preview/smoke.test.cjs
           node what-do-i-say/creator-preview/storage.test.cjs
           node what-do-i-say/creator-preview/drafts.test.cjs
