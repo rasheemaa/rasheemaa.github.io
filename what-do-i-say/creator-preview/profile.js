@@ -55,9 +55,9 @@
     return '\n\nYOUR SAVED ADVANCED FILTERS\n' + lines.join('\n');
   };
   const paint = selected => {
-    for (const [key, id] of Object.entries(pills)) $(id).setAttribute('aria-pressed', String(selected.includes(key)));
+    for (const [key, id] of Object.entries(pills)) if ($(id)) $(id).setAttribute('aria-pressed', String(selected.includes(key)));
   };
-  const selectedFromUI = () => Object.entries(pills).filter(([, id]) => $(id).getAttribute('aria-pressed') === 'true').map(([key]) => key);
+  const selectedFromUI = () => Object.entries(pills).filter(([, id]) => $(id)?.getAttribute('aria-pressed') === 'true').map(([key]) => key);
   const fill = () => {
     const data = read();
     if (!data) return;
@@ -65,6 +65,7 @@
     paint(chosen(data));
   };
   for (const id of Object.values(pills)) {
+    if (!$(id)) continue;
     $(id).addEventListener('click', () => {
       $(id).setAttribute('aria-pressed', String($(id).getAttribute('aria-pressed') !== 'true'));
       status('Unsaved changes. Select Save filters to apply them to future drafts.');
