@@ -11,7 +11,7 @@ permalink: /what-do-i-say/creator-preview/
   <meta name="referrer" content="no-referrer">
   <meta name="theme-color" content="#fffaf7">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self'; connect-src 'self' https://what-do-i-say-payments.rasheema-abdullah.workers.dev https://sparkle.rasheema-abdullah.workers.dev; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
-  <title>Sparkle Creator Studio | Preview</title>
+  <title>Sparkle Creator Studio | Create Videos and Drafts</title>
   <link rel="icon" href="/assets/images/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,6 +25,7 @@ permalink: /what-do-i-say/creator-preview/
   <script defer src="/what-do-i-say/creator-preview/drafts.js?v=2"></script>
   <script defer src="/what-do-i-say/creator-preview/task-flow.js?v=1"></script>
   <script defer src="/what-do-i-say/creator-preview/app.js?v=4"></script>
+  <script defer src="/what-do-i-say/creator-preview/entry.js?v=1"></script>
   <link rel="stylesheet" href="/what-do-i-say/creator-preview/video-entry.css?v=2">
   <link rel="stylesheet" href="/what-do-i-say/creator-preview/sparkle-studio.css?v=3">
 </head>
@@ -41,17 +42,21 @@ permalink: /what-do-i-say/creator-preview/
     <section class="video-feature" aria-labelledby="creator-studio-title">
       <div class="video-feature-copy">
         <div class="eyebrow">Creator Studio</div>
-        <h1 id="creator-studio-title">Create your next video.</h1>
-        <p>Plan scenes, shape your story, and save your ideas.</p>
-        <a class="video-cta" href="/what-do-i-say/video-planner/">Plan a video ↗</a>
-        <p class="video-note">Video generation isn't available yet.</p>
+        <h1 id="creator-studio-title">What will you create today?</h1>
+        <p>Start with one thing. Sparkle keeps the extra tools out of your way.</p>
+        <div class="studio-start-actions" aria-label="Choose what to create">
+          <a class="studio-start-option studio-start-edit" href="/what-do-i-say/free-engine/"><strong>Edit a video</strong><small>Use real nature footage and save your edit</small></a>
+          <a class="video-cta studio-start-option" href="/what-do-i-say/video-planner/"><strong>Plan a video</strong><small>Outline scenes and organize your idea</small></a>
+          <button class="studio-start-option studio-start-draft" type="button" id="start-creator-draft" aria-controls="studio-tools"><strong>Write or plan something</strong><small>Posts, replies, schedules, and more</small></button>
+        </div>
+        <p class="video-note"><strong>Realistic AI video generation is not available yet.</strong> Edit real footage or plan videos while it is in development.</p>
       </div>
       <div class="video-feature-art" aria-hidden="true"><div class="video-feature-frame">
         <span>Sparkle Creator Studio</span><strong>Your story<br>starts here.</strong><span>Video planning workspace</span>
       </div></div>
     </section>
     <details class="studio-tools" id="studio-tools">
-      <summary>More creator tools <span>Briefs, drafts, and saved projects</span></summary>
+      <summary>All creator tools <span>Create drafts, add filters, and manage saved projects</span></summary>
     <div class="studio-grid">
       <section class="panel" id="composer" aria-labelledby="composer-title">
           <div class="panel-title"><span class="section-label">Step 1 · Create</span><h2 id="composer-title">Plan a post or video</h2><p id="composer-description">Turn your idea into an editable content brief with a clear direction.</p></div>
