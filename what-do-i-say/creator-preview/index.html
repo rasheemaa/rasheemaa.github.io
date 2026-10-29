@@ -18,7 +18,7 @@ permalink: /what-do-i-say/creator-preview/
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/what-do-i-say/creator-preview/creator.css?v=2">
   <script defer src="/what-do-i-say/creator-preview/config.js?v=2"></script>
-  <script defer src="/what-do-i-say/creator-preview/profile.js?v=2"></script>
+  <script defer src="/what-do-i-say/creator-preview/profile.js?v=3"></script>
   <script defer src="/what-do-i-say/creator-preview/projects.js?v=5"></script>
   <script defer src="/what-do-i-say/creator-preview/backups.js?v=1"></script>
   <script defer src="/what-do-i-say/creator-preview/ai.js?v=3"></script>
@@ -66,15 +66,28 @@ permalink: /what-do-i-say/creator-preview/
             <div><label for="tone" id="tone-label">What vibe should the post have?</label><select id="tone"><option>Relatable and confident</option><option>Warm and conversational</option><option>Playful and bold</option><option>Clear and professional</option></select></div>
           </div>
           <details class="profile-panel">
-            <summary>Your Creator Brain</summary>
+            <summary><span class="filter-summary-title">Advanced filters <span class="filter-optional">Optional</span></span><span class="filter-summary-desc">Personalize how Sparkle writes</span></summary>
             <div class="profile-fields">
-              <p class="hint">Save the voice and preferences you want Sparkle to remember on this device. AI uses the saved version.</p>
-              <label for="creator-name">Creator or brand name</label><input id="creator-name" maxlength="80" placeholder="Your creator name">
-              <label for="creator-niche">Your niche</label><input id="creator-niche" maxlength="180" placeholder="Lifestyle, motherhood, mental wellness…">
-              <label for="creator-style">How should your content sound?</label><textarea id="creator-style" maxlength="500" placeholder="Confident, original, conversational. Avoid generic punchlines."></textarea>
-              <label for="creator-avoid">What should Sparkle avoid?</label><textarea id="creator-avoid" maxlength="500" placeholder="Words, topics or approaches you do not want."></textarea>
-              <div class="button-row"><button id="profile-save" type="button">Save Creator Brain</button><button id="profile-clear" type="button" class="secondary">Delete Creator Brain</button></div>
-              <p id="profile-status" class="status" role="status"></p>
+              <p class="hint">Set preferences once and use them across Creator Studio. You can create drafts without filling this out.</p>
+              <div class="filter-block">
+                <p class="filter-heading">Quick preferences</p>
+                <p class="hint">Tap to turn a preference on or off. Save to apply your choices.</p>
+                <div class="filter-pills" role="group" aria-label="Optional writing preferences">
+                  <button id="creator-filter-concise" class="filter-pill" type="button" aria-pressed="false">Keep it concise</button>
+                  <button id="creator-filter-hashtags" class="filter-pill" type="button" aria-pressed="false">No hashtags</button>
+                  <button id="creator-filter-hype" class="filter-pill" type="button" aria-pressed="false">No pushy sales language</button>
+                </div>
+              </div>
+              <div class="filter-block">
+                <p class="filter-heading">Your brand and voice</p>
+                <label for="creator-name">Creator or brand name <span class="filter-optional">(optional)</span></label><input id="creator-name" maxlength="80" placeholder="How you want to be known">
+                <label for="creator-niche">Content focus <span class="filter-optional">(optional)</span></label><input id="creator-niche" maxlength="180" placeholder="Lifestyle, creativity, community…">
+                <label for="creator-style">Your writing style <span class="filter-optional">(optional)</span></label><textarea id="creator-style" maxlength="500" placeholder="Natural, playful, confident, thoughtful…"></textarea>
+                <label for="creator-avoid">What should Sparkle avoid? <span class="filter-optional">(optional)</span></label><textarea id="creator-avoid" maxlength="500" placeholder="Phrases, assumptions, or styles you don't want"></textarea>
+              </div>
+              <div class="button-row filter-actions"><button id="profile-save" type="button">Save filters</button></div>
+              <p id="profile-status" class="status" role="status" aria-live="polite"></p>
+              <details class="filter-reset"><summary>Reset advanced filters</summary><p class="hint">Only removes saved filters from this browser. Projects and drafts stay safe.</p><button id="profile-clear" type="button" class="quiet">Reset saved filters</button></details>
             </div>
           </details>
           <p id="task-mode-status" class="task-mode-status" role="status" aria-live="polite"></p>
@@ -115,7 +128,7 @@ permalink: /what-do-i-say/creator-preview/
               <p class="hint">Only use this to move saved projects to another browser or keep an offline backup. It's not needed to create or save an idea.</p>
               <div class="button-row"><button id="export-projects" type="button" class="secondary">Download backup file</button><button id="import-projects" type="button" class="secondary" aria-describedby="backup-help">Restore from backup</button></div>
               <input id="project-backup" type="file" accept=".json,application/json" aria-label="Choose a Sparkle project backup" hidden>
-              <p class="hint" id="backup-help">Backups include saved ideas and drafts. Creator Brain preferences remain on this device.</p>
+              <p class="hint" id="backup-help">Backups include saved ideas and drafts. Advanced filter preferences remain on this device.</p>
               <p id="backup-status" class="status" role="status" aria-live="polite"></p>
               <details class="danger-zone"><summary>Delete all saved projects</summary><button id="clear" type="button" class="quiet">Delete every saved project</button></details>
             </details>
@@ -125,7 +138,7 @@ permalink: /what-do-i-say/creator-preview/
     </details>
     <footer class="studio-footer">
       <p class="signature">With Love, Sheema</p>
-      <p class="privacy-note">Your Creator Brain, projects and saved drafts stay in this browser. Generate with AI sends the reviewed task, idea, audience, tone and saved Creator Brain to Sparkle's Cloudflare backend for processing. Nothing is posted automatically. Digital product output is an editable outline, not a PDF file.</p>
+      <p class="privacy-note">Your advanced filters, projects and saved drafts stay in this browser. Generate with AI sends the reviewed task, idea, audience, tone and saved advanced filters to Sparkle's Cloudflare backend for processing. Nothing is posted automatically. Digital product output is an editable outline, not a PDF file.</p>
       <p><a href="/what-do-i-say/privacy.html">Privacy</a><a href="/what-do-i-say/terms.html">Terms</a></p>
       <p>Inbox monitoring, automatic replies, publishing, payments and live analytics are not connected in this preview.</p>
     </footer>
