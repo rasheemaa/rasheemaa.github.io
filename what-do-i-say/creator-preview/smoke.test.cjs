@@ -140,7 +140,6 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
       const name='initial-'+engine+'-'+width+'.png';
       await page.screenshot({path:path.join(outputDir,name)});report.screenshots.push(name);
      }
-     if(phone)assert(await page.evaluate(()=>document.getElementById('output').getBoundingClientRect().top<document.getElementById('project').getBoundingClientRect().top),'The draft must follow the composer before project management on phones');
      await page.keyboard.press('Tab');
      assert.equal(await page.evaluate(()=>document.activeElement.className),'skip-link');
      await page.keyboard.press('Enter');
@@ -148,6 +147,13 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
      const layout=await page.evaluate(()=>({scrollWidth:document.documentElement.scrollWidth,viewport:innerWidth,h1:document.querySelectorAll('h1').length,background:getComputedStyle(document.body).backgroundColor}));
      assert(layout.scrollWidth<=width+1,'Horizontal overflow at '+engine+' '+width);
      assert.equal(layout.h1,1);assert.equal(layout.background,'rgb(250, 245, 240)');
+     assert.equal(await page.locator('#studio-tools').getAttribute('open'),null,'Creator tools must begin collapsed');
+     assert.equal(await page.locator('#composer').isVisible(),false,'Advanced composer must not crowd landing screen');
+     assert(await page.locator('.video-cta').isVisible(),'Video planner must be the primary action');
+     await page.locator('#studio-tools > summary').click();
+     assert(await page.locator('#composer').isVisible(),'Creator tools must expand on demand');
+     if(phone)assert(await page.evaluate(()=>document.getElementById('output').getBoundingClientRect().top<document.getElementById('project').getBoundingClientRect().top),'The draft must follow the composer before project management on phones');
+     if(width===390||width===1440)await page.locator('.projects-disclosure > summary').click();
      const targets=await page.locator('button:visible,input:visible,select:visible,summary:visible').evaluateAll(nodes=>nodes.map(node=>({id:node.id,height:node.getBoundingClientRect().height})));
      assert(targets.every(target=>target.height>=44),'Small touch target: '+JSON.stringify(targets.filter(t=>t.height<44)));
      const tasks=['content','growth','reply','sell','deal','pdf','performance'];
@@ -183,7 +189,10 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
       acceptDialogs=false;await page.locator('#new-project').click();
       assert.equal(await page.locator('#draft-editor').inputValue(),'Do not discard this edit');acceptDialogs=true;
       await page.locator('#apply-draft').click();await page.locator('#save-output').click();
-      await page.reload();assert.equal(await page.locator('#output').innerText(),'Do not discard this edit');
+      await page.reload();
+      await page.locator('#studio-tools > summary').click();
+      await page.locator('.projects-disclosure > summary').click();
+      assert.equal(await page.locator('#output').innerText(),'Do not discard this edit');
       assert.equal(await page.locator('#creator-name').inputValue(),'Test Creator');
       await page.locator('#idea').fill('');await page.locator('#make').click();
       assert.equal(await page.locator('#output').innerText(),'Do not discard this edit');
