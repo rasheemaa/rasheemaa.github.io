@@ -98,13 +98,14 @@ permalink: /what-do-i-say/
               <select id="sparkle-fix-style"><option value="clearer">Make it clearer</option><option value="shorter">Make it shorter</option><option value="softer">Make it softer</option><option value="firmer">Make it firmer</option><option value="professional">Make it professional</option></select>
             </div>
             <button type="submit" class="sparkle-task-continue" id="sparkle-task-continue">Create draft</button>
+            <button type="button" class="sparkle-task-back" id="sparkle-task-cancel" hidden>Cancel request</button>
             <p class="sparkle-task-status" id="sparkle-task-status" role="status" aria-live="polite"></p>
           </form>
           <div id="sparkle-task-result" hidden>
             <label for="sparkle-prepared-text">Your editable draft</label>
             <textarea id="sparkle-prepared-text" maxlength="6000" rows="6"></textarea>
             <button type="button" id="sparkle-copy-request" class="sparkle-task-continue">Copy draft</button>
-            <p class="sparkle-task-status">Created on your device. AI isn’t connected in this preview.</p>
+            <p class="sparkle-task-status" id="sparkle-draft-origin">Created on your device. AI isn’t connected in this preview.</p>
           </div>
         </section>
       </section>

@@ -18,14 +18,47 @@
   const staging = window.SPARKLE_STAGING_ONLY === true;
   // An audited same-origin AI deployment must explicitly opt in; never infer availability from a URL.
   const aiEnabled = window.SPARKLE_TASK_AI_ENABLED === true;
-  let pending = false;
-  let currentController = null;
+  let active = null;
+  const drafts = new Map();
   const initial = {
     write: { title: 'Write', hint: 'Start from your idea.', action: 'Create draft', focus: 'sparkle-write-idea' },
     reply: { title: 'Reply', hint: 'Use the message you received and your own answer.', action: 'Draft reply', focus: 'sparkle-reply-message' },
     fix: { title: 'Fix', hint: 'Polish an existing draft.', action: 'Polish draft', focus: 'sparkle-fix-draft' }
   };
   let mode = '';
+
+  function setBusy(busy) {
+    form.setAttribute('aria-busy', String(busy));
+    byId('sparkle-task-continue').disabled = busy;
+    byId('sparkle-task-continue').textContent = busy ? 'Sparkle is writing…' :
+      aiEnabled ? 'Generate with Sparkle' : initial[mode]?.action || 'Prepare draft';
+    byId('sparkle-task-cancel').hidden = !busy;
+  }
+  function cancelPending(message = '') {
+    if (!active) return;
+    const request = active;
+    active = null;
+    clearTimeout(request.timer);
+    request.controller.abort();
+    setBusy(false);
+    if (message) status.textContent = message;
+  }
+  const inputSnapshot = () => JSON.stringify([mode, ...[
+    'sparkle-write-type','sparkle-write-idea','sparkle-write-to',
+    'sparkle-reply-message','sparkle-reply-idea','sparkle-reply-goal',
+    'sparkle-fix-draft','sparkle-fix-style'
+  ].map(id => byId(id).value)]);
+  function rememberDraft() {
+    if (mode && !result.hidden) drafts.set(mode, {
+      text: output.value, origin: byId('sparkle-draft-origin').textContent
+    });
+  }
+  function showDraft(text, origin) {
+    output.value = text;
+    byId('sparkle-draft-origin').textContent = origin;
+    result.hidden = false;
+    rememberDraft();
+  }
 
   const content = id => (byId(id)?.value || '').trim();
   const clean = value => String(value || '').replace(/\r\n?/g, '\n')
@@ -39,6 +72,8 @@
 
   function choose(next) {
     if (!Object.prototype.hasOwnProperty.call(initial, next)) return;
+    rememberDraft();
+    cancelPending();
     mode = next;
     const cfg = initial[mode];
     if (welcome) welcome.dataset.activeTask = mode;
@@ -49,9 +84,10 @@
     choices.hidden = true;
     workspace.hidden = false;
     sections.forEach(panel => { panel.hidden = panel.dataset.sparklePanel !== mode; });
-    result.hidden = true;
+    const saved = drafts.get(mode);
+    result.hidden = !saved;
+    if (saved) showDraft(saved.text, saved.origin);
     status.textContent = '';
-    if (currentController) currentController.abort();
     enableGeneric(false);
     // Keep the keyboard closed on small touchscreens and let the user see the whole form.
     if (thread) thread.scrollTop = 0;
@@ -59,6 +95,8 @@
   }
 
   function home() {
+    rememberDraft();
+    cancelPending();
     mode = '';
     if (welcome) delete welcome.dataset.activeTask;
     thread?.classList.remove('sparkle-task-open');
@@ -66,7 +104,6 @@
     workspace.hidden = true;
     result.hidden = true;
     status.textContent = '';
-    if (currentController) currentController.abort();
     enableGeneric(!staging && !aiEnabled);
     document.querySelector('[data-sparkle-start="write"]')?.focus();
   }
@@ -126,6 +163,14 @@
     button.addEventListener('click', () => choose(button.dataset.sparkleStart));
   });
   byId('sparkle-task-back')?.addEventListener('click', home);
+  byId('sparkle-task-cancel').addEventListener('click', () =>
+    cancelPending('Request cancelled. Your words and last draft are preserved.'));
+  for (const event of ['input','change']) form.addEventListener(event, () =>
+    cancelPending('Your input changed, so the request was cancelled. Your last draft is preserved.'));
+  output.addEventListener('input', () => {
+    cancelPending('Your draft changed, so the request was cancelled.');
+    rememberDraft();
+  });
   function aiPayload() {
     if (mode === 'write') {
       const idea = content('sparkle-write-idea');
@@ -153,50 +198,48 @@
     return {error:'Choose Write, Reply, or Fix.'};
   }
   async function generateWithAI() {
-    if (pending) return;
+    if (active) return;
     const payload=aiPayload();
-    if (payload.error){result.hidden=true;status.textContent=payload.error;return;}
-    const button=byId('sparkle-task-continue');
-    const activeMode=mode;
-    const controller=new AbortController();currentController=controller;
-    const timeout=setTimeout(()=>controller.abort(),30000);
-    pending=true;form.setAttribute('aria-busy','true');button.disabled=true;button.textContent='Sparkle is writing…';
-    result.hidden=true;status.textContent='Creating your draft securely. Nothing is sent to anyone.';
+    if (payload.error){status.textContent=payload.error;return;}
+    rememberDraft();
+    const controller=new AbortController();
+    const request={controller, snapshot:inputSnapshot(), timer:setTimeout(()=>controller.abort(),30000)};
+    active=request;
+    setBusy(true);
+    status.textContent='Creating your draft securely. Nothing is sent to anyone.';
     try {
       const res=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'omit',redirect:'error',cache:'no-store',signal:controller.signal,body:JSON.stringify(payload)});
       const data=await res.json().catch(()=>({}));
-      if(controller.signal.aborted||mode!==activeMode)return;
-      if(!res.ok||typeof data.message!=='string'||!data.message.trim()){
+      if(active!==request||controller.signal.aborted||inputSnapshot()!==request.snapshot)return;
+      if(!res.ok||typeof data.message!=='string'||!data.message.trim()||data.message.length>6000){
         status.textContent=res.status===429?'Sparkle has reached her free allowance. Try again later.':
           res.status===503?'AI writing is unavailable right now. Your words are safe.':
           'Sparkle could not finish this draft. Your words are safe. Please try again.';
         return;
       }
-      output.value=data.message.trim();
-      result.hidden=false;status.textContent='Review and edit before sharing.';
+      showDraft(data.message.trim(),'Created with Sparkle AI. Review and edit before sharing.');
+      status.textContent='Review and edit before sharing.';
       output.focus({preventScroll:true});
     } catch (_) {
-      if(controller.signal.aborted&&mode===activeMode)status.textContent='The request was stopped or timed out. Your words are safe.';
-      else if(mode===activeMode)status.textContent='Sparkle could not connect. Your words are safe.';
+      if(active!==request)return;
+      if(controller.signal.aborted)status.textContent='The request was stopped or timed out. Your words and last draft are safe.';
+      else status.textContent='Sparkle could not connect. Your words and last draft are safe.';
     } finally {
-      clearTimeout(timeout);if(currentController===controller)currentController=null;
-      pending=false;form.setAttribute('aria-busy','false');button.disabled=false;
-      button.textContent=aiEnabled?'Generate with Sparkle':initial[mode]?.action||'Prepare draft';
+      clearTimeout(request.timer);
+      if(active===request){active=null;setBusy(false);}
     }
   }
   form.addEventListener('submit', event => {
     event.preventDefault();
-    if (!mode || pending) return;
+    if (!mode || active) return;
     if(aiEnabled){void generateWithAI();return;}
     const draft = mode === 'write' ? makeWrite() : mode === 'reply' ? makeReply() : makeFix();
     if (draft.error) {
-      result.hidden = true;
       status.textContent = draft.error;
       return;
     }
     status.textContent = '';
-    output.value = draft.text;
-    result.hidden = false;
+    showDraft(draft.text, 'Created on your device. AI isn’t connected in this preview.');
     if (draft.note) status.textContent = draft.note;
     output.focus();
     output.setSelectionRange(0, 0);
