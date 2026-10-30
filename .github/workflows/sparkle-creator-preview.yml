@@ -1,5 +1,10 @@
 name: Sparkle Creator preview checks
 on:
+  push:
+    branches: [feature/sparkle-video-planner-20261028]
+    paths:
+      - 'what-do-i-say/creator-preview/**'
+      - '.github/workflows/sparkle-creator-preview.yml'
   pull_request:
     paths:
       - 'what-do-i-say/creator-preview/**'
@@ -57,3 +62,4 @@ jobs:
           name: sparkle-creator-studio
           path: .github/reports/creator-studio/
           retention-days: 1
+
