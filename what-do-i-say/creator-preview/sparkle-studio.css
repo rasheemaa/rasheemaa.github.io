@@ -313,6 +313,10 @@ button:hover:not(:disabled){filter:brightness(1.05)}
 }
 
 /* Studio polish: a restrained surface hierarchy and consistent, readable controls. */
+.video-feature .available-tools-title{font:600 12px/1.5 "DM Sans",system-ui,sans-serif;color:#6c5c75;margin:24px 0 10px;letter-spacing:.03em}
+.video-feature .available-tools-title+.studio-start-actions{margin-top:0}
+.video-feature #video-availability{padding:14px 16px;border:1px solid #e2d4eb;border-radius:12px;background:#f7f2fc;font-size:13px;line-height:1.65;max-width:49ch;margin-top:22px}
+.video-feature #video-availability strong{display:block;margin-bottom:4px}
 body{background-image:linear-gradient(160deg,#fffaf7,#fcf8ff 68%,#f6f1ff);font-family:"DM Sans",ui-sans-serif,system-ui,sans-serif;line-height:1.6}
 .header-inner{max-width:1130px;padding:14px 28px;min-height:76px}
 .brand{font-weight:700;letter-spacing:-.02em}
