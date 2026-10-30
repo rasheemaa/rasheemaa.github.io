@@ -1,0 +1,41 @@
+name: Sparkle video planning checks
+on:
+  pull_request:
+    paths:
+      - 'what-do-i-say/video-planner/**'
+      - 'what-do-i-say/free-engine/**'
+      - 'what-do-i-say/creator-preview/**'
+      - '.github/scripts/video-planner.test.mjs'
+      - '.github/workflows/sparkle-video-planner.yml'
+  push:
+    branches: [feature/sparkle-video-planner-20261028]
+permissions:
+  contents: read
+jobs:
+  video-plans:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Check video planner and safe backups
+        run: |
+          node --check what-do-i-say/video-planner/app.mjs
+          node --check what-do-i-say/video-planner/model.mjs
+          node --test .github/scripts/video-planner.test.mjs
+      - name: Check local AI candidate and safety lock
+        run: |
+          node --check what-do-i-say/free-engine/local-ai/lab.mjs
+          node --check what-do-i-say/free-engine/local-ai/contract.mjs
+          node --test what-do-i-say/free-engine/local-ai/contract.test.mjs
+      - name: Check existing Creator project behavior
+        run: |
+          node what-do-i-say/creator-preview/smoke.test.cjs
+          node what-do-i-say/creator-preview/storage.test.cjs
+          node what-do-i-say/creator-preview/drafts.test.cjs
+          node what-do-i-say/creator-preview/ai.test.cjs
+          node what-do-i-say/creator-preview/backups.test.cjs

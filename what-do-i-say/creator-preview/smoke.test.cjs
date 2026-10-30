@@ -6,6 +6,7 @@ const root=__dirname;
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const app=fs.readFileSync(path.join(root,'app.js'),'utf8');
 const css=fs.readFileSync(path.join(root,'creator.css'),'utf8');
+const sparkleStudioCss=fs.readFileSync(path.join(root,'sparkle-studio.css'),'utf8');
 const ai=fs.readFileSync(path.join(root,'ai.js'),'utf8');
 const profile=fs.readFileSync(path.join(root,'profile.js'),'utf8');
 const projects=fs.readFileSync(path.join(root,'projects.js'),'utf8');
@@ -17,8 +18,36 @@ for(const id of ['task','idea','tone','audience','project','project-search','sav
 assert.match(html,/noindex,nofollow/);
 assert.match(html,/class="skip-link" href="#creator-workspace"/);
 assert.match(html,/id="creator-workspace" tabindex="-1"/);
+assert.match(html,/<h2 id="composer-title">Plan a post or video<\/h2>/);
+assert.match(html,/id="make" type="button">Create content brief<\/button>/);
+assert.match(html,/id="ai-controls" class="button-row" hidden/);
+assert.match(html,/id="saved-heading">Saved projects<\/span>/);
+assert.match(html,/class="backup-disclosure"/);
+assert.match(html,/task-flow\.js\?v=1/);
+for(const id of ['idea-label','task-help','audience-label','tone-label','composer-description','draft-description','task-mode-status']){
+  assert.match(html,new RegExp('id="'+id+'"'),'Missing contextual task field: '+id);
+}
+const taskFlow=fs.readFileSync(path.join(root,'task-flow.js'),'utf8');
+for(const mode of ['content','growth','reply','sell','deal','pdf','performance'])assert.match(taskFlow,new RegExp('\\b'+mode+':\\{'),'Task mode is missing: '+mode);
+assert.match(taskFlow,/window\.SparkleCreatorTaskFlow/);
+
+assert.match(html,/Advanced filters/);
+for(const id of ['creator-filter-concise','creator-filter-hashtags','creator-filter-hype'])assert.match(html,new RegExp('id="'+id+'"'));
+assert.match(html,/Reset saved filters/);
+assert.match(profile,/sparkle_creator_profile_v1/);
+assert.match(profile,/briefNotes/);
+assert.match(app,/SparkleCreatorProfile\?\.briefNotes\(\)/);
+assert.match(html,/Advanced: Back up or move projects/);
 assert.match(html,/role="region" aria-label="Generated creative brief"/);
 assert.match(html,/aria-atomic="true"/);
+assert.match(html,/creator-preview\/sparkle-studio\.css\?v=4/);
+assert.match(html,/← Back to Sparkle/);
+assert.doesNotMatch(html,/<a class="site-link" href="\/">The Sheema Edit<\/a>/);
+for(const color of ['#251b2d','#76677f','#fffaf7','#ff5aa9','#eadfff'])assert(sparkleStudioCss.includes(color),'Original Sparkle token missing: '+color);
+assert.match(sparkleStudioCss,/border-radius:28px/);
+assert.match(sparkleStudioCss,/backdrop-filter:blur\(18px\)/);
+assert.match(sparkleStudioCss,/linear-gradient/);
+
 assert.match(css,/@media\(max-width:560px\)/);
 assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
 assert.match(css,/min-height:46px/);
@@ -29,7 +58,12 @@ assert.match(html,/form-action 'none'/);
 assert.doesNotMatch(html,/unsafe-inline|unsafe-eval|\son(?:click|load|error|submit|focus)\s*=/i);
 for(const tag of html.match(/<script\b[^>]*>/gi)||[])assert.match(tag,/\bsrc=/,'Executable code must be in a CSP-protected local file');
 assert.match(html,/creator-preview\/config.js\?v=2/);
-assert.match(html,/creator-preview\/profile.js\?v=2/);
+assert.match(html,/creator-preview\/profile.js\?v=3/);
+assert.match(html,/creator-preview\/entry.js\?v=1/);
+assert.match(html,/Realistic AI video generation is not available yet/);
+assert.match(html,/Edit a video/);
+assert.match(html,/Write or plan something/);
+assert.match(html,/href="\/what-do-i-say\/free-engine\/"/);
 assert.match(html,/creator-preview\/drafts.js\?v=2/);
 assert.match(html,/creator-preview\/backups.js\?v=1/);
 assert.match(app,/const updateBriefLength=/);
@@ -135,42 +169,108 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
      const response=await page.goto(origin+studioPath);
      assert.equal(response.status(),200);
      await page.evaluate(()=>document.fonts.ready);
-     assert.equal(await page.evaluate(()=>getComputedStyle(document.body).backgroundColor),'rgb(250, 245, 240)','The production styles must load over HTTPS');
+     assert.equal(await page.evaluate(()=>getComputedStyle(document.body).backgroundColor),'rgb(255, 250, 247)','The production styles must load over HTTPS');
      if(width===390||width===1440){
       const name='initial-'+engine+'-'+width+'.png';
       await page.screenshot({path:path.join(outputDir,name)});report.screenshots.push(name);
      }
-     if(phone)assert(await page.evaluate(()=>document.getElementById('output').getBoundingClientRect().top<document.getElementById('project').getBoundingClientRect().top),'The draft must follow the composer before project management on phones');
      await page.keyboard.press('Tab');
      assert.equal(await page.evaluate(()=>document.activeElement.className),'skip-link');
      await page.keyboard.press('Enter');
      assert.equal(await page.evaluate(()=>document.activeElement.id),'creator-workspace');
-     const layout=await page.evaluate(()=>({scrollWidth:document.documentElement.scrollWidth,viewport:innerWidth,h1:document.querySelectorAll('h1').length,background:getComputedStyle(document.body).backgroundColor}));
+     const layout=await page.evaluate(()=>({
+       scrollWidth:document.documentElement.scrollWidth,
+       viewport:innerWidth,
+       h1:document.querySelectorAll('h1').length,
+       background:getComputedStyle(document.body).backgroundColor,
+       gradient:getComputedStyle(document.body).backgroundImage,
+       surface:getComputedStyle(document.querySelector('.video-feature')).borderTopLeftRadius,
+       surfaceGradient:getComputedStyle(document.querySelector('.video-feature')).backgroundImage,
+       headingFont:getComputedStyle(document.querySelector('#creator-studio-title')).fontFamily,
+       buttonRadius:getComputedStyle(document.querySelector('.video-cta')).borderTopLeftRadius,
+       buttonGradient:getComputedStyle(document.querySelector('.video-cta')).backgroundImage,
+       headerGlass:getComputedStyle(document.querySelector('.studio-header')).backdropFilter,
+       brandColor:getComputedStyle(document.querySelector('.brand')).color
+     }));
      assert(layout.scrollWidth<=width+1,'Horizontal overflow at '+engine+' '+width);
-     assert.equal(layout.h1,1);assert.equal(layout.background,'rgb(250, 245, 240)');
+     assert.equal(layout.h1,1);assert.equal(layout.background,'rgb(255, 250, 247)');
+     assert.match(layout.gradient,/linear-gradient/,'Sparkle pink-lavender page background missing');
+     assert.match(layout.surfaceGradient,/linear-gradient/,'Futuristic Creator Studio surface missing');
+     assert.match(layout.headingFont,/Georgia/,'Creator Studio must share Sparkle homepage typography');
+     assert.equal(layout.surface,phone?'23px':'28px','Creator Studio needs rounded Sparkle cards');
+     assert.equal(layout.buttonRadius,'17px','Video planning option needs rounded corners');
+     assert.match(layout.buttonGradient,/linear-gradient/,'Primary action needs Sparkle accent');
+     assert.equal(layout.brandColor,'rgb(37, 27, 45)','Brand colors should match Sparkle home');
+     assert.equal(layout.headerGlass,'blur(18px)','Studio header should carry frosted Sparkle surface');
+
+     assert.equal(await page.locator('#studio-tools').getAttribute('open'),null,'Creator tools must begin collapsed');
+     assert.equal(await page.locator('#composer').isVisible(),false,'Advanced composer must not crowd landing screen');
+     assert(await page.locator('.video-cta').isVisible(),'Video planner must remain accessible');
+     assert(await page.locator('.studio-start-edit').isVisible(),'Working footage editor must be immediately accessible');
+     assert(await page.locator('#start-creator-draft').isVisible(),'Drafting must be one click away');
+     if (width===390 || width===1440) {
+       await page.locator('#start-creator-draft').click();
+       assert.equal(await page.locator('#studio-tools').getAttribute('open'),'','Draft shortcut must expand tools');
+       assert.equal(await page.locator('#task').isVisible(),true);
+       await page.locator('#studio-tools > summary').click();
+     }
+     await page.locator('#studio-tools > summary').click();
+     assert(await page.locator('#composer').isVisible(),'Creator tools must expand on demand');
+     assert.equal(await page.locator('#composer-title').innerText(),'Plan a post or video');
+     assert(await page.locator('#make').isVisible(),'Free draft must be the primary action');
+     assert(await page.locator('#generate-ai').isVisible(),'Mocked available AI remains accessible');
+     assert(await page.locator('.projects-disclosure > summary').innerText().then(s=>s.includes('Saved projects')));
+     assert(await page.locator('.backup-disclosure').getAttribute('open')===null,'Advanced backups stay collapsed');
+     if(phone)assert(await page.evaluate(()=>document.getElementById('output').getBoundingClientRect().top<document.getElementById('project').getBoundingClientRect().top),'The draft must follow the composer before project management on phones');
+     if(width===390||width===1440)await page.locator('.projects-disclosure > summary').click();
      const targets=await page.locator('button:visible,input:visible,select:visible,summary:visible').evaluateAll(nodes=>nodes.map(node=>({id:node.id,height:node.getBoundingClientRect().height})));
      assert(targets.every(target=>target.height>=44),'Small touch target: '+JSON.stringify(targets.filter(t=>t.height<44)));
-     const tasks=['content','growth','reply','sell','deal','pdf','performance'];
-     for(const task of tasks){
+     const taskCases=[
+       ['content','Plan a post or video','What is your post or video idea?','Create content brief','Your content brief','Relatable and confident'],
+       ['growth','Plan your content schedule','What is your content goal?','Create posting plan','Your posting plan','Practical and encouraging'],
+       ['reply','Plan your response','What did they say, and what do you want to say back?','Create reply outline','Your reply outline','Warm and conversational'],
+       ['sell','Plan an offer','What are you offering and why does it help?','Create promotion brief','Your promotion brief','Friendly and helpful'],
+       ['deal','Review a brand deal','What is the brand offering or requesting?','Create deal review','Your brand deal review','Clear and professional'],
+       ['pdf','Outline a digital product','What digital product do you want to make?','Create product outline','Your product outline','Warm and conversational'],
+       ['performance','Review your content metrics','What were your actual results, and from when?','Create metrics review','Your metrics review','Clear and professional']
+     ];
+     for(const [task,title,question,button,draftTitle,defaultTone] of taskCases){
+      const previousDraft=await page.locator('#output').innerText();
       await page.locator('#task').selectOption(task);
+      assert.equal(await page.locator('#composer-title').innerText(),title);
+      assert.equal(await page.locator('#idea-label').innerText(),question);
+      assert.equal(await page.locator('#make').innerText(),button);
+      assert.equal(await page.locator('#draft-title').innerText(),draftTitle);
+      assert.equal(await page.locator('#tone').inputValue(),defaultTone);
+      assert(await page.locator('#idea').getAttribute('placeholder'));
+      assert(await page.locator('#audience').getAttribute('placeholder'));
+      assert(await page.locator('#task-help').innerText());
+      assert.equal(await page.locator('#output').innerText(),previousDraft,'Task switching must preserve current work');
       await page.locator('#idea').fill(task==='performance'?'Last week: 1000 views, 90 likes, 15 saves, 4 shares. Suggest an experiment.':'An original creator idea for '+task);
       await page.locator('#generate-ai').click();
       await page.waitForFunction(task=>document.getElementById('output').textContent.startsWith('Draft for '+task),task);
-      assert.equal(lastPayload.task,task);count++;
+      assert.equal(lastPayload.task,task);
+      assert.equal(lastPayload.tone,defaultTone);
+      count++;
      }
      const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa','wcag22aa']).analyze();
      assert.deepEqual(axe.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>n.target)})),[],'Accessibility violations at '+engine+' '+width);
      if(width===390||width===1440){
-      await page.locator('.profile-panel summary').click();
+      await page.locator('.profile-panel > summary').click();
       await page.locator('#creator-name').fill('Test Creator');
+      await page.locator('#creator-filter-concise').click();
+      await page.locator('#creator-filter-hashtags').click();
+      assert.equal(await page.locator('#creator-filter-concise').getAttribute('aria-pressed'),'true');
       await page.locator('#creator-style').fill('Original and conversational');
       await page.locator('#creator-avoid').fill('Do not invent my experiences');
       await page.locator('#profile-save').click();
       assert.match(await page.locator('#profile-status').innerText(),/saved/);
-      await page.locator('.profile-panel summary').click();
+      await page.locator('.profile-panel > summary').click();
       await page.locator('#idea').fill('A relatable video about boundaries');
       await page.locator('#make').click();
       assert.match(await page.locator('#output').innerText(),/STARTER FRAMEWORK/);
+      assert.match(await page.locator('#output').innerText(),/YOUR SAVED ADVANCED FILTERS/);
+      assert.match(await page.locator('#output').innerText(),/Do not include hashtags/);
       await page.locator('#edit-draft').click();await page.locator('#draft-editor').fill('Keep this edited project draft');await page.locator('#apply-draft').click();
       await page.locator('#project').fill('First idea');await page.locator('#save').click();
       const first=await page.locator('#saved').inputValue();
@@ -183,8 +283,14 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
       acceptDialogs=false;await page.locator('#new-project').click();
       assert.equal(await page.locator('#draft-editor').inputValue(),'Do not discard this edit');acceptDialogs=true;
       await page.locator('#apply-draft').click();await page.locator('#save-output').click();
-      await page.reload();assert.equal(await page.locator('#output').innerText(),'Do not discard this edit');
+      await page.reload();
+      await page.locator('#studio-tools > summary').click();
+      await page.locator('.projects-disclosure > summary').click();
+      assert.equal(await page.locator('#output').innerText(),'Do not discard this edit');
       assert.equal(await page.locator('#creator-name').inputValue(),'Test Creator');
+      await page.locator('.profile-panel > summary').click();
+      assert.equal(await page.locator('#creator-filter-hashtags').getAttribute('aria-pressed'),'true');
+      await page.locator('.profile-panel > summary').click();
       await page.locator('#idea').fill('');await page.locator('#make').click();
       assert.equal(await page.locator('#output').innerText(),'Do not discard this edit');
       mode='quota';await page.locator('#idea').fill('Preserve this');await page.locator('#generate-ai').click();
@@ -200,6 +306,8 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
       mode='ok';await page.locator('#generate-ai').click();
       await page.waitForFunction(()=>document.getElementById('output').textContent.startsWith('Draft for'));
       assert.match(lastPayload.profile,/Do not invent my experiences/);
+      assert.match(lastPayload.profile,/Do not include hashtags/);
+      await page.locator('.backup-disclosure > summary').click();
       const downloadPromise=page.waitForEvent('download');await page.locator('#export-projects').click();
       const download=await downloadPromise;assert.equal(download.suggestedFilename(),'sparkle-projects-backup.json');
       const backupPath=await download.path();
@@ -249,7 +357,7 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
       assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('sparkle_creator_projects_v1')).length),3);
       const name='creator-'+engine+'-'+width+'.png';await page.screenshot({path:path.join(outputDir,name),fullPage:true});report.screenshots.push(name);
       await page.locator('#clear-output').click();
-      await page.locator('.profile-panel summary').click();await page.locator('#profile-clear').click();
+      await page.locator('.profile-panel > summary').click();await page.locator('.filter-reset > summary').click();await page.locator('#profile-clear').click();
       assert.equal(await page.locator('#creator-name').inputValue(),'');
       count+=24;
      }

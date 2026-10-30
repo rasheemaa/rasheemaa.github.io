@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; script-src 'self'; media-src 'self' blob:; img-src 'self' blob:; connect-src 'none'; object-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'">
+<title>Free Video Engine | Sparkle Creator Studio</title>
+<link rel="stylesheet" href="./engine.css?v=1"><script type="module" src="./engine.mjs?v=1"></script>
+</head><body>
+<a class="skip" href="#engine">Skip to editor</a>
+<header><a class="brand" href="/what-do-i-say/creator-preview/">S✦ Sparkle</a><a href="/what-do-i-say/video-planner/">Back to video planner</a></header>
+<main id="engine">
+<p class="eyebrow">Creator Studio · Local Video Engine</p>
+<h1>Real footage. <em>Your edit.</em></h1>
+<p class="lead">Create a short video from licensed nature footage. Export on your device or download a prepared edit. No AI inference, subscription, account, or upload.</p>
+<div class="layout">
+<section class="editor" aria-labelledby="setup">
+<h2 id="setup">Create your clip</h2>
+<label for="format">Video format</label><select id="format"><option value="9:16">9:16 · Vertical</option><option value="16:9">16:9 · Wide</option><option value="1:1">1:1 · Square</option></select>
+<label for="title">On-screen title</label><select id="title"><option value="flow">FIND YOUR FLOW</option><option value="pause">A MOMENT TO PAUSE</option><option value="breathe">LET THE DAY BREATHE</option></select>
+<div class="actions"><button id="preview" type="button">Preview video</button><button id="render" type="button">Export free video</button></div>
+<p id="status" role="status" aria-live="polite">The clip is ready to preview.</p>
+<a id="fallback" href="./stream.mp4" download="sparkle-nature-footage.mp4">Download original clean footage instead</a>
+<details><summary>What can this mode do?</summary>
+<p>Uses actual footage licensed CC0. It can resize, add one of three fixed titles, and export a five-second video locally where your browser supports canvas recording. Otherwise it downloads a pre-rendered version with your selected format and title. It does not invent scenes with generative AI and never processes people's likenesses.</p>
+<p>AI video generation is still in development. Sparkle will handle model setup behind the scenes when a safe, sustainable service is ready. You will not need to install models or download project files.</p>
+</details>
+</section>
+<section class="stage" aria-label="Preview">
+<div class="frame" id="frame"><canvas id="canvas" width="360" height="640" aria-label="Nature video preview"></canvas></div>
+<p class="caption">Pre-reviewed nature footage. Adults-only policy remains in effect throughout Creator Studio.</p>
+</section>
+</div>
+<p class="credits">Footage: “Water flowing strem” by BhotaRohit, <a href="https://commons.wikimedia.org/wiki/File:Water_flowing_strem.webm" rel="noopener noreferrer" target="_blank">Wikimedia Commons</a>, CC0 1.0. Converted for playback. Source was reviewed for a nature-only demo. <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noopener noreferrer">License</a>.</p>
+<p class="safety">No uploads, cloud video generation, minors, sexual violence, or user-provided subjects in this preview. Never upload private footage to a third-party site to try to bypass safeguards.</p>
+</main>
+<video id="source" src="./stream.mp4" muted playsinline preload="metadata" crossorigin="anonymous" hidden></video>
+</body></html>
