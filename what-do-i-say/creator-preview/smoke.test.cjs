@@ -206,7 +206,8 @@ if(process.env.CREATOR_BROWSER_TEST==='1'){
 
      assert.equal(await page.locator('#studio-tools').getAttribute('open'),null,'Creator tools must begin collapsed');
      assert.equal(await page.locator('#composer').isVisible(),false,'Advanced composer must not crowd landing screen');
-     assert(await page.locator('.video-cta').isVisible(),'Video planner must remain accessible');
+     assert(await page.locator('.video-cta').isVisible(),'Video creation entry must remain accessible');
+     assert.match(await page.locator('.video-cta').innerText(),/Create a video/);
      assert.equal(await page.locator('.studio-start-edit').count(),0,'Do not substitute the nature demo for creating or editing a user video');
      assert(await page.locator('#start-creator-draft').isVisible(),'Drafting must be one click away');
      if (width===390 || width===1440) {
