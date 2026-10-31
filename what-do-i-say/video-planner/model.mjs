@@ -41,6 +41,27 @@ export function newScene(index = 0) {
 export function newProject() {
   return {title: '', concept: '', format: '9:16', duration: 15, style: 'Cinematic realism', continuity: '', sound: '', scenes: [0, 1, 2].map(newScene)};
 }
+// Start with the user's exact words. This is local organization, not AI writing.
+// Never replace an existing scene or a setting the user has already edited.
+export function beginPlan(value) {
+  const p = normalizeProject(value);
+  if (!p.concept.trim()) throw new Error('Describe your video idea first.');
+  const untouched = p.scenes.length === 3 && p.scenes.every((scene, index) =>
+    JSON.stringify(scene) === JSON.stringify(newScene(index)));
+  if (!untouched) return p;
+  const chunks = [];
+  for (let start = 0; start < p.concept.length;) {
+    let end = Math.min(start + 1000, p.concept.length);
+    const last = p.concept.charCodeAt(end - 1);
+    if (end < p.concept.length && last >= 0xd800 && last <= 0xdbff) end--;
+    chunks.push(p.concept.slice(start, end)); start = end;
+  }
+  const firstLine = p.concept.trim().split(/\n|(?<=[.!?])\s/u)[0].replace(/\s+/g, ' ');
+  const suggestedTitle = firstLine.length <= 80 ? firstLine : firstLine.slice(0,77).replace(/\s+\S*$/u,'') + '…';
+  const next = {...p, title:p.title.trim() ? p.title : suggestedTitle,
+    scenes:chunks.map((action,index) => ({...newScene(index),title:chunks.length === 1 ? 'Your idea' : 'Part ' + (index + 1),action}))};
+  return fitTiming(next);
+}
 export function exampleProject() {
   return {title: 'After the rain', concept: 'A quiet city evening after rain. Reflections, warm windows and a moment of stillness. No people appear.', format: '9:16', duration: 15, style: 'Cinematic realism', continuity: 'One empty city street at blue hour. Wet pavement, warm amber windows, deep violet shadows. Keep the weather and light consistent.', sound: 'Soft rainfall and distant city ambience. No speech or music.', scenes: [
     {title: 'The first reflection', seconds: 5, camera: 'Close detail', action: 'A puddle reflects one warm window. A single drop breaks the reflection into ripples.', audio: 'One clear water drop over soft rain.'},

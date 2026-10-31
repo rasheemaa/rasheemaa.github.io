@@ -1,7 +1,30 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {newProjectId, newProject, exampleProject, normalizeProject, totalSeconds, fitTiming, exportIssues, renderBrief, encodeBackup, decodeBackup, MAX_BACKUP_BYTES} from '../../what-do-i-say/video-planner/model.mjs';
+import {newProjectId, newProject, exampleProject, beginPlan, normalizeProject, totalSeconds, fitTiming, exportIssues, renderBrief, encodeBackup, decodeBackup, MAX_BACKUP_BYTES} from '../../what-do-i-say/video-planner/model.mjs';
+
+test('one idea becomes a timed editable plan without invented words or mutation', () => {
+  for (const duration of [15,30,60]) {
+    const source = {...newProject(),concept:'A close view of my handmade earrings. Warm light.\nEnd on the finished pair.',duration};
+    const snapshot = structuredClone(source), p = beginPlan(source);
+    assert.deepEqual(source,snapshot);
+    assert.equal(p.scenes.length,1); assert.equal(p.scenes[0].action,source.concept);
+    assert.equal(totalSeconds(p),duration); assert.deepEqual(exportIssues(p),[]);
+  }
+});
+
+test('starting a plan preserves long Unicode ideas and existing creative work', () => {
+  const source = {...newProject(),concept:'x'.repeat(999)+'✦🙂'.repeat(330)};
+  const p = beginPlan(source);
+  assert.equal(p.scenes.map(s=>s.action).join(''),source.concept);
+  assert(p.scenes.every(s=>s.action.length<=1000 && !/[\uD800-\uDBFF]$/.test(s.action)));
+  assert.deepEqual(normalizeProject(p),p);
+  for (const existing of [exampleProject(),{...newProject(),concept:'My idea',scenes:[{...newProject().scenes[0],camera:'Overhead'}]}]) {
+    assert.deepEqual(beginPlan(existing),existing);
+  }
+  assert.deepEqual(beginPlan({...p,concept:'Changed idea'}).scenes,p.scenes);
+  assert.throws(()=>beginPlan(newProject()),/Describe/);
+});
 
 test('new plans leave creative details to the user', () => {
   const p = newProject();

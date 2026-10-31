@@ -4,10 +4,14 @@ on:
     branches: [feature/sparkle-video-planner-20261028]
     paths:
       - 'what-do-i-say/creator-preview/**'
+      - 'what-do-i-say/video-planner/**'
+      - '.github/scripts/video-planner-browser.mjs'
       - '.github/workflows/sparkle-creator-preview.yml'
   pull_request:
     paths:
       - 'what-do-i-say/creator-preview/**'
+      - 'what-do-i-say/video-planner/**'
+      - '.github/scripts/video-planner-browser.mjs'
       - 'what-do-i-say/chat-app.js'
       - 'what-do-i-say/index.html'
       - 'what-do-i-say/service-worker.js'
@@ -54,12 +58,15 @@ jobs:
         timeout-minutes: 6
         env:
           CREATOR_BROWSER_TEST: '1'
-        run: node what-do-i-say/creator-preview/smoke.test.cjs
+        run: |
+          node what-do-i-say/creator-preview/smoke.test.cjs
+          node .github/scripts/video-planner-browser.mjs
       - name: Save screenshots and browser results
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: sparkle-creator-studio
-          path: .github/reports/creator-studio/
+          path: |
+            .github/reports/creator-studio/
+            .github/reports/video-planner/
           retention-days: 1
-

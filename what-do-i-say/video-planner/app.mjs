@@ -1,4 +1,4 @@
-import {MAX_SCENES, MAX_BACKUP_BYTES, newProjectId, newProject, newScene, exampleProject, normalizeProject, totalSeconds, fitTiming, renderBrief, encodeBackup, decodeBackup} from './model.mjs?v=1';
+import {MAX_SCENES, MAX_BACKUP_BYTES, newProjectId, newProject, newScene, exampleProject, beginPlan, normalizeProject, totalSeconds, fitTiming, renderBrief, encodeBackup, decodeBackup} from './model.mjs?v=2';
 
 const KEY = 'sparkle_video_plans_v1', RECOVERY = 'sparkle_video_plan_recovery_v1';
 const $ = id => document.getElementById(id);
@@ -112,10 +112,18 @@ function renderScenes() {
 function render() {
   fields.forEach(field => {$(field).value = project[field];});
   renderScenes(); updateOverview(); $('plan-review').hidden = true;
+  $('plan-workspace').hidden = !project.concept.trim() && !project.scenes.some(scene => scene.action || scene.audio) && !activeId;
+}
+function focusControl(control) {
+  if (control.closest('#plan-workspace')) $('plan-workspace').hidden = false;
+  for (let parent = control.parentElement; parent; parent = parent.parentElement) {
+    if (parent.tagName === 'DETAILS') parent.open = true;
+  }
+  control.focus();
 }
 function inputIsValid() {
   for (const control of document.querySelectorAll('input:not([type=file]),textarea,select')) {
-    if (!control.checkValidity()) {control.reportValidity(); control.focus(); return false;}
+    if (!control.checkValidity()) {focusControl(control); control.reportValidity(); return false;}
   }
   return true;
 }
@@ -136,6 +144,22 @@ function replaceProject(next, notice) {
   render(); remember(); message(notice); return true;
 }
 
+$('start-plan').addEventListener('click', () => {
+  if (!inputIsValid()) return;
+  try {
+    const previous = JSON.stringify(project.scenes);
+    project = beginPlan(project); render(); changed();
+    $('plan-workspace').hidden = false; $('preview-heading').focus();
+    message(previous === JSON.stringify(project.scenes)
+      ? 'Your existing scenes are kept. Open Edit scenes to refine your plan.'
+      : 'Your words are now in a starting scene plan. Edit the scenes or save it when you are ready.');
+  } catch (error) {message(error.message); $('concept').focus();}
+});
+$('edit-scenes').addEventListener('click', () => {
+  $('scene-editor').open = true;
+  $('scene-0-action').focus();
+});
+$('open-library').addEventListener('click', () => { $('library').open = true; });
 fields.forEach(field => $(field).addEventListener('input', () => {
   project[field] = field === 'duration' ? Number($(field).value) : $(field).value;
   changed();
@@ -150,7 +174,7 @@ $('add-scene').addEventListener('click', () => {
 });
 $('sample').addEventListener('click', () => replaceProject(exampleProject(), 'Sample loaded. This is an editable example plan, not generated footage.'));
 $('new').addEventListener('click', () => {
-  if (replaceProject(newProject(), 'A fresh plan is ready. Saved projects are still available.')) {clean = JSON.stringify(project); remember(); $('title').focus();}
+  if (replaceProject(newProject(), 'A fresh plan is ready. Saved projects are still available.')) {clean = JSON.stringify(project); remember(); $('scene-editor').open = false; $('concept').focus();}
 });
 $('save').addEventListener('click', async () => {
   if (!inputIsValid()) return;
