@@ -74,10 +74,12 @@ test('backup projection carries no provider URLs or authorization flags', () => 
   const restored = decodeBackup(encodeBackup(p));
   assert(!('videoUrl' in restored)); assert(!('moderationApproved' in restored)); assert(!('generationEndpoint' in restored.scenes[0]));
 });
-test('the workspace cannot connect to a generator or embed an external provider', () => {
+test('the workspace allows only same-origin guarded jobs and private Blob playback', () => {
   const html = readFileSync(new URL('../../what-do-i-say/video-planner/index.html', import.meta.url), 'utf8');
   const script = readFileSync(new URL('../../what-do-i-say/video-planner/app.mjs', import.meta.url), 'utf8');
-  assert(html.includes("connect-src 'none'")); assert(html.includes("frame-src 'none'"));
-  assert(!/<(?:iframe|video|audio)\b/i.test(html)); assert(!/\b(?:fetch|XMLHttpRequest|WebSocket)\s*\(/.test(script));
+  assert(html.includes("connect-src 'self'")); assert(html.includes("frame-src 'none'"));
+  assert(html.includes('media-src blob:'));assert(!/<(?:iframe|audio)\b/i.test(html));
+  assert(html.includes('id="generate-video" type="button" hidden disabled'));
+  assert(!/\b(?:fetch|XMLHttpRequest|WebSocket)\s*\(/.test(script));
   assert(!/innerHTML|insertAdjacentHTML|\.outerHTML\s*=/.test(script));
 });

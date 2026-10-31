@@ -5,12 +5,14 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
   <meta name="referrer" content="no-referrer">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; media-src blob:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
   <meta name="description" content="Start with your video idea. Build a simple, editable scene plan and save it in your browser.">
   <title>Create a Video | Sparkle Creator Studio</title>
   <link rel="icon" href="/assets/images/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./planner.css?v=2">
+  <link rel="stylesheet" href="./generation.css?v=1">
   <script type="module" src="./app.mjs?v=2"></script>
+  <script type="module" src="./generation.mjs?v=1"></script>
 </head>
 <body>
   <a class="skip" href="#workspace">Skip to video workspace</a>
@@ -20,6 +22,9 @@
     <section class="direction panel" aria-label="Start your video plan">
       <label for="concept" class="prompt-label">Describe your video</label><textarea id="concept" maxlength="2000" placeholder="A short film about my handmade jewelry. Warm light, close details, and a slow reveal of the finished piece…" aria-describedby="local-note"></textarea>
       <div class="start-row"><p class="hint" id="local-note">Your words stay in this browser.</p><button id="start-plan" type="button" aria-controls="plan-workspace">Continue <span aria-hidden="true">→</span></button></div>
+      <div class="generation-actions"><button id="generate-video" type="button" hidden disabled>Generate video</button><button id="cancel-video" type="button" class="secondary" hidden disabled>Cancel generation</button></div>
+      <p id="generation-details" class="hint" hidden></p>
+      <p id="video-progress" class="notice" role="status" aria-live="polite"></p>
       <details id="creative-settings" class="settings"><summary>Format, length &amp; creative details <span class="summary-hint">Optional</span></summary>
         <div class="settings-body"><div class="field-pair"><div><label for="format">Frame</label><select id="format"><option value="9:16">9:16 · Vertical</option><option value="16:9">16:9 · Landscape</option><option value="1:1">1:1 · Square</option></select></div><div><label for="duration">Target length</label><select id="duration"><option value="15">15 seconds</option><option value="30">30 seconds</option><option value="60">60 seconds</option></select></div></div>
         <label for="style">Visual direction</label><select id="style"><option>Cinematic realism</option><option>Product film</option><option>3D animation</option><option>Illustrated story</option></select>
@@ -28,7 +33,8 @@
         <button class="text-button" id="sample" type="button">Try an example plan</button></div>
       </details>
     </section>
-    <p class="availability" aria-label="Availability"><strong>Planning is available now.</strong> Video creation and editing are not available yet. Your idea is placed into an editable scene plan; no AI or footage is generated.</p>
+    <p class="availability" id="generation-availability" aria-label="Availability"><strong>Planning is available now.</strong> Video creation and editing are not available yet. Your idea is placed into an editable scene plan; no AI or footage is generated.</p>
+    <section id="video-result" class="panel" hidden aria-labelledby="video-result-title"><h2 id="video-result-title" tabindex="-1">Your generated video</h2><video id="generated-video" controls playsinline preload="metadata" aria-label="Generated video preview"></video><a id="download-video" download="sparkle-video.mp4">Download video</a></section>
     <div id="plan-workspace" hidden>
       <section class="overview panel" aria-labelledby="preview-heading">
         <div class="section-top"><div><p class="eyebrow">Your scene outline</p><h2 id="preview-heading" tabindex="-1">Here’s your starting point.</h2></div><span id="scene-count" class="tag">1 scene</span></div>

@@ -12,6 +12,7 @@ const types={'.html':'text/html','.mjs':'application/javascript','.css':'text/cs
 const server=http.createServer(async(req,res)=>{
   try {
     const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
+    if(pathname==='/api/video/capabilities'){res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({ready:false}));return;}
     const file=resolve(root,'.'+pathname+(pathname.endsWith('/')?'index.html':''));
     if(!file.startsWith(root+sep)){res.writeHead(403).end();return;}
     const content=await readFile(file);
@@ -34,6 +35,8 @@ try {
       assert.equal(await page.locator('#plan-workspace').isVisible(),false);
       assert.equal(await page.locator('#creative-settings').getAttribute('open'),null);
       assert.equal(await page.locator('#start-plan').isVisible(),true);
+      assert.equal(await page.locator('#generate-video').isVisible(),false);
+      assert.equal(await page.locator('#video-result').isVisible(),false);
       const overflow=()=>page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth);
       assert.equal(await overflow(),false);
       await page.screenshot({path:resolve(reports,name+'-start.png'),fullPage:true});

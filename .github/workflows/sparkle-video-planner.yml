@@ -6,6 +6,7 @@ on:
       - 'what-do-i-say/free-engine/**'
       - 'what-do-i-say/creator-preview/**'
       - '.github/scripts/video-planner.test.mjs'
+      - '.github/scripts/video-client.test.mjs'
       - '.github/workflows/sparkle-video-planner.yml'
   push:
     branches: [feature/sparkle-video-planner-20261028]
@@ -26,7 +27,9 @@ jobs:
         run: |
           node --check what-do-i-say/video-planner/app.mjs
           node --check what-do-i-say/video-planner/model.mjs
-          node --test .github/scripts/video-planner.test.mjs
+          node --check what-do-i-say/video-planner/video-client.mjs
+          node --check what-do-i-say/video-planner/generation.mjs
+          node --test .github/scripts/video-planner.test.mjs .github/scripts/video-client.test.mjs
       - name: Check local AI candidate and safety lock
         run: |
           node --check what-do-i-say/free-engine/local-ai/lab.mjs
