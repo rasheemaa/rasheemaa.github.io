@@ -29,7 +29,7 @@ try {
       const context=await browser.newContext({viewport:{width,height:844},serviceWorkers:'block',acceptDownloads:true});
       const page=await context.newPage(), errors=[], external=[];
       page.on('pageerror',e=>errors.push(e.message));
-      page.on('request',r=>{if(!r.url().startsWith(origin))external.push(r.url());});
+      page.on('request',r=>{if(new URL(r.url()).origin!==origin)external.push(r.url());});
       page.on('dialog',d=>d.accept());
       assert.equal((await page.goto(origin+'/what-do-i-say/video-planner/')).status(),200);
       assert.equal(await page.locator('#plan-workspace').isVisible(),false);

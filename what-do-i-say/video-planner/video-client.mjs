@@ -38,7 +38,9 @@ export class VideoClient {
       }
       if(!/^application\/json(?:\s*;|\s*$)/i.test(response.headers.get('Content-Type')||''))throw new VideoFailure();
       const parts=await bounded(response,16384);
-      const value=JSON.parse(await new Blob(parts).text());
+      const size=parts.reduce((n,part)=>n+part.byteLength,0),bytes=new Uint8Array(size);let offset=0;
+      for(const part of parts){bytes.set(part,offset);offset+=part.byteLength;}
+      const value=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
       if(!response.ok)throw new VideoFailure(value?.error||value?.code);
       return value;
     }catch(error){if(error instanceof VideoFailure)throw error;throw new VideoFailure();}
