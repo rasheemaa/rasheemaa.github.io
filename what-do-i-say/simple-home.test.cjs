@@ -30,7 +30,11 @@ if (html.includes('id="sparkle-task-workspace"')) {
   for(const id of ['sparkle-task-form','sparkle-task-back','sparkle-task-result','sparkle-write-idea','sparkle-reply-message','sparkle-reply-idea','sparkle-fix-draft','sparkle-prepared-text']) {
     assert.match(html, new RegExp('id="' + id + '"'));
   }
-  assert.match(script,/showDraft\(draft\.text/);
+  assert.match(script,/showDraft\(draft\.text,/);
+  assert.match(script,/output\.value = text/);
+  // The stacked branch now routes local and AI results through showDraft.
+  // Exercise actual cancellation, retry and per-task draft restoration as well.
+  require('../.github/scripts/sparkle-guided-writing-test.cjs');
   assert.match(script,/SPARKLE_STAGING_ONLY/);
   if (script.includes('SPARKLE_TASK_AI_ENABLED')) {
     assert.match(script,/window\.SPARKLE_TASK_AI_ENABLED === true/);
@@ -118,4 +122,3 @@ assert.equal(secondChoice.field.value, prompts.write, 'switching a choice must n
 console.log('PASS Sparkle simple home: four choices, three guided prompts, accessible focus, preserves drafts, video preview only');
 
 }
-
