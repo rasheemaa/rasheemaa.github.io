@@ -57,7 +57,9 @@ try{
       await page.locator('#caption-analyze').click();await page.getByText('Video captioning is unavailable right now. Your video and draft are preserved.',{exact:true}).waitFor();
       assert.equal(await page.locator('#caption-text').inputValue(),'My edited caption about the plum grid.');
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
-      const a11y=await new AxeBuilder({page}).analyze();assert.deepEqual(a11y.violations.filter(v=>['critical','serious'].includes(v.impact)).map(v=>v.id),[]);
+      const a11y=await new AxeBuilder({page}).analyze(),violations=a11y.violations.filter(v=>['critical','serious'].includes(v.impact));
+      await writeFile(resolve(reports,name+'-accessibility.json'),JSON.stringify(violations,null,2));
+      assert.deepEqual(violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))})),[]);
       await page.screenshot({path:resolve(reports,name+'-caption.png'),fullPage:true});assert.deepEqual(errors,[]);
       console.log('PASS '+name+': explicit upload consent, actual sampled frames and full PCM audio, content hashes, caption review, preserved failure and accessibility; synthetic API replies only.');
       await context.close();
