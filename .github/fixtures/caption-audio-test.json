@@ -1,0 +1,9 @@
+{
+  "purpose": "Synthetic browser video-caption preparation fixture; never an AI result or analysis quality proof",
+  "sha256": "2bc562f418ca4fafd5b6fc22e77060fac4253a3cb8fa769b3a33f1d5d500026a",
+  "content": "Constant plum grid and a 440 Hz sine wave; no people or speech",
+  "width": 576,
+  "height": 1024,
+  "frameRate": 24,
+  "generation": "Existing synthetic video-editor-test.mp4 plus FFmpeg lavfi sine=frequency=440:sample_rate=48000; H.264 video copied; AAC audio; shortest"
+}

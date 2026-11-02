@@ -13,7 +13,7 @@ permalink: /what-do-i-say/privacy/
 <meta name="theme-color" content="#FAF5F0"><link rel="stylesheet" href="/assets/css/tool-editorial.css?v=2">
 </head>
 <body><main class="wrap"><a class="back" href="/what-do-i-say/">← Back to What Do I Say?</a><article>
-<p class="muted">Last updated October 24, 2026</p>
+<p class="muted">Last updated November 2, 2026</p>
 <h1>Privacy</h1>
 <p>What Do I Say? is designed to keep message content limited to the services needed to generate your draft. Processing differs by device so Sparkle can stay reliable.</p>
 <h2>How message generation works</h2>
@@ -22,10 +22,16 @@ permalink: /what-do-i-say/privacy/
 <h2>Creator Studio</h2>
 <p>Building a creative brief, editing a draft and managing saved projects use your browser's storage. Your Creator Brain contains the name, niche, writing preferences and topics you choose to save on that device.</p>
 <p>When Creator AI is available and you choose Generate with AI, Sparkle sends the reviewed task, idea, audience, tone and saved Creator Brain to its Cloudflare backend for generation. Saved projects and backup files are not uploaded automatically. Sparkle does not publish posts, send replies, contact brands or read social accounts from Creator Studio.</p>
+<h2>Captions for uploaded videos</h2>
+<p>When video captioning is available, selecting a video previews it on your device. Nothing is sent until you choose Analyze. Your browser extracts sampled still frames and, unless you choose visuals only, the entire audio track. Sparkle sends these samples, your caption preferences and a hash of the video through its Cloudflare connection to Sparkle's own computer for visual analysis, speech transcription and caption writing. The original video file stays on your device. Analysis models run locally on that computer; this flow does not use a paid third-party AI API.</p>
+<p>Analysis uses sampled frames and may miss brief events. Review captions before posting. Sparkle does not identify people, post to your social accounts or train its models on these uploads. Raw analysis samples are deleted after completion or cancellation. Unfinished uploads and completed captions expire after 30 minutes; cleanup runs while the host is online and resumes after a restart. For duplicate checking, Sparkle keeps protected hashes of normalized captions and word signatures rather than a permanent plaintext caption history. Exact duplicate checking persists across service restarts. Recent word and phrase overlap is also checked to reduce near copies.</p>
+<p>Your caption history in Studio is kept in memory for this visit. Copy or download captions you want to keep. A cancelled or expired server result cannot be recovered. Normal technical request data, such as IP address and time, may be processed by Cloudflare and the host; media contents and transcripts are not intentionally written to operational logs.</p>
 <h2>Project backups and moving between addresses</h2>
 <p>Export project backup downloads a readable JSON file containing project names, ideas, preferences and saved drafts. Anyone with that file can read its contents, so keep it somewhere private. Choosing a backup for restoration reads it in your browser; it is not sent to the AI service.</p>
 <p>Restoring a valid backup adds projects and keeps existing projects and the current draft. Projects with conflicting IDs are kept as separate copies. Project backups do not contain Creator Brain settings.</p>
 <p>Saved work belongs to this browser and the exact website address. It does not transfer automatically between devices, between a preview and the public site, or between addresses with and without www. Use project export and restore to move saved projects.</p>
+<h2>Video plans</h2>
+<p>The video planning workspace stores saved plans in this browser under a separate video project store. Tab recovery keeps the current plan in this tab. Plans contain your concept, scene direction, timing, visual and sound preferences. No plan is submitted to a video service, and no video or audio is generated. Downloading a backup exports the current video plan only. Restoring a backup opens an unsaved plan and does not replace saved projects. Video plans do not sync between devices or website addresses.</p>
 <h2>Browser storage</h2>
 <ul><li>Your browser may store Creator Brain settings, projects, saved drafts, unsaved-draft recovery data, product preferences and legacy purchase information from earlier versions. Sparkle no longer requires trial or purchase verification for access.</li><li>The app may cache interface files and local model files needed for normal operation.</li><li>Clearing site data can remove local projects, drafts, profiles, preferences and legacy purchase-recovery information. Export important projects first. A downloaded backup is a separate file that you manage.</li></ul>
 <h2>Payments</h2>

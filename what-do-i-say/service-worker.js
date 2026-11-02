@@ -1,4 +1,4 @@
-const CACHE = 'wdis-v46';
+const CACHE = 'wdis-v47';
 const SHELL = [
   '/assets/css/tool-editorial.css?v=2',
   '/what-do-i-say/creator-preview/',
@@ -40,7 +40,8 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
-  if (request.method !== 'GET' || url.origin !== self.location.origin) return;
+  if (request.method !== 'GET' || url.origin !== self.location.origin ||
+      url.pathname.startsWith('/api/') || request.cache === 'no-store' || request.headers.has('Authorization')) return;
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
     const fresh = request.mode === 'navigate' || FRESH.has(url.pathname);
@@ -51,7 +52,7 @@ self.addEventListener('fetch', event => {
     }
     try {
       const response = await fetch(fresh ? new Request(request, { cache: 'no-store' }) : request);
-      if (response.ok) {
+      if (response.ok && !/no-store|private/i.test(response.headers.get('Cache-Control') || '')) {
         try { await cache.put(key, response.clone()); } catch (_) {}
       }
       return response;
