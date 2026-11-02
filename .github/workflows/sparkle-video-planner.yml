@@ -29,6 +29,7 @@ jobs:
           node --check what-do-i-say/video-planner/model.mjs
           node --check what-do-i-say/video-planner/video-client.mjs
           node --check what-do-i-say/video-planner/generation.mjs
+          node --check what-do-i-say/video-planner/video-editor.mjs
           node --test .github/scripts/video-planner.test.mjs .github/scripts/video-client.test.mjs
       - name: Check local AI candidate and safety lock
         run: |

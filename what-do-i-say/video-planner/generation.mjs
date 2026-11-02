@@ -1,7 +1,9 @@
 import {VideoClient,VideoFailure} from './video-client.mjs?v=1';
+import {attachVideoEditor} from './video-editor.mjs?v=1';
 const client=new VideoClient(), $=id=>document.getElementById(id);
+const editor=attachVideoEditor();
 const labels={queued:'Your video is waiting to render.',screening:'Checking your prompt.',generating:'Creating your video. This can take a few minutes.',reviewing:'Checking the finished video before showing it.'};
-let active=null, stopped=false, controller=null, mediaURL=null, wake=null, cancellation=null;
+let active=null, stopped=false, controller=null, wake=null, cancellation=null;
 function status(message){$('video-progress').textContent=message;}
 function pause(){return new Promise(resolve=>{const timer=setTimeout(()=>{wake=null;resolve();},4000);wake=()=>{clearTimeout(timer);wake=null;resolve();};});}
 function busy(value){$('generate-video').disabled=value;$('cancel-video').hidden=!value;$('cancel-video').disabled=!active;}
@@ -12,7 +14,7 @@ if(capabilities){
   $('local-note').textContent='Saved scene plans stay in this browser.';
   $('generation-details').hidden=false;
   $('generation-details').textContent='Generate a 5-second silent video in portrait or landscape. Your prompt is sent to Sparkle when you choose Generate video.';
-  $('generation-availability').textContent='Prompt-to-video is available for short silent clips. Editing your own footage is not available yet. Scene planning stays on this device.';
+  $('generation-availability').textContent='Create a short silent video, preview it, trim it on this device or refine your prompt, then download. Scene planning stays on this device.';
 }
 
 $('generate-video').addEventListener('click',async()=>{
@@ -35,10 +37,8 @@ $('generate-video').addEventListener('click',async()=>{
     }
     status('Preparing your video for playback.');
     const blob=await client.file(active,controller.signal);if(stopped)return;
-    const next=URL.createObjectURL(blob),previous=mediaURL;mediaURL=next;
-    $('generated-video').src=next;$('download-video').href=next;
+    editor.accept(blob);
     $('video-result').hidden=false;$('video-result-title').focus();
-    if(previous)URL.revokeObjectURL(previous);
     client.forget();status('Your video is ready. Play it or download the MP4.');
   }catch(error){if(!stopped)status(error instanceof VideoFailure?error.message:'The video could not be finished. Your idea is still here.');}
   finally{if(cancellation)await cancellation;busy(false);active=null;controller=null;wake?.();}
@@ -50,4 +50,4 @@ $('cancel-video').addEventListener('click',async()=>{
     .catch(()=>status('Cancellation could not be confirmed. Your idea is still here. Retry the same idea to check its existing request.'));
   await cancellation;
 });
-window.addEventListener('pagehide',()=>{controller?.abort();wake?.();if(mediaURL)URL.revokeObjectURL(mediaURL);});
+window.addEventListener('pagehide',event=>{controller?.abort();wake?.();if(event.persisted)editor.suspend();else editor.dispose();});

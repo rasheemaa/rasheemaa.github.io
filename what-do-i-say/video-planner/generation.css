@@ -6,3 +6,11 @@
 #download-video{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border-radius:99px;background:#582d59;color:#fff;text-decoration:none;font-weight:600}
 #download-video:focus-visible{outline:3px solid #83528b;outline-offset:4px}
 #generate-video:disabled{opacity:.6}
+.video-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:18px}
+.video-actions [hidden],#video-editor[hidden]{display:none}
+.video-editor{margin-top:24px;border-top:1px solid #d9cbd9;padding-top:20px}
+.video-editor summary{font-weight:600;cursor:pointer;min-height:44px;display:list-item}
+.video-editor .field-pair{margin-top:18px}
+#edit-progress:empty{display:none}
+#download-original{display:inline-block;min-height:44px;padding:12px 0;color:#582d59}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
