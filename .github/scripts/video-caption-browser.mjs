@@ -10,7 +10,7 @@ import AxeBuilder from '@axe-core/playwright';
 const root=resolve('.'),reports=resolve('.github/reports/video-captions');await mkdir(reports,{recursive:true});
 const fixture=resolve('.github/fixtures/caption-audio-test.mp4'),bytes=await readFile(fixture);
 assert.equal(createHash('sha256').update(bytes).digest('hex'),'2bc562f418ca4fafd5b6fc22e77060fac4253a3cb8fa769b3a33f1d5d500026a');
-const job='d'.repeat(32),parts=new Map();let manifest,refuse=false,creates=0;
+const job='d'.repeat(32),parts=new Map();let manifest,refuse=false,creates=0,polls=0;
 const json=(res,value,status=200)=>{res.writeHead(status,{'Content-Type':'application/json'});res.end(JSON.stringify(value));};
 const server=http.createServer(async(req,res)=>{
   try{
@@ -24,7 +24,8 @@ const server=http.createServer(async(req,res)=>{
       }
       const part=/\/parts\/(frame|audio)\/(\d+)$/.exec(path);
       if(part){parts.set(part[1]+':'+part[2],Buffer.from(JSON.parse(body).data,'base64'));return json(res,{received:true});}
-      if(path.endsWith('/commit'))return json(res,{id:job,state:'ready',expires:2000000000,caption:'Plum tones and clean white lines, arranged in a simple grid.',summary:'Visuals: A still plum grid with white lines.\nNo clear speech detected.'});
+      if(path.endsWith('/commit'))return json(res,{id:job,state:'queued',expires:2000000000});
+      if(req.method==='GET'&&path==='/api/captions/jobs/'+job){polls++;if(polls===1)return json(res,{id:job,state:'analyzing',expires:2000000000});return json(res,{id:job,state:'ready',expires:2000000000,caption:'Plum tones and clean white lines, arranged in a simple grid.',summary:'Visuals: A still plum grid with white lines.\nNo clear speech detected.'});}
       if(req.method==='DELETE')return json(res,{id:job,state:'cancelled',expires:2000000000});
     }
     const file=resolve(root,'.'+path+(path.endsWith('/')?'index.html':''));if(!file.startsWith(root+sep)){res.writeHead(403).end();return;}
@@ -38,10 +39,13 @@ try{
   const browser=await chromium.launch({headless:true});
   try{
     for(const [name,width] of [['desktop',1280],['phone',390]]){
-      refuse=false;parts.clear();const before=creates,context=await browser.newContext({viewport:{width,height:900},acceptDownloads:true});
+      refuse=false;polls=0;parts.clear();const before=creates,context=await browser.newContext({viewport:{width,height:900},acceptDownloads:true});
       const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
       await page.route('https://fonts.googleapis.com/**',route=>route.abort());await page.route('https://fonts.gstatic.com/**',route=>route.abort());
-      await page.goto(origin+'/what-do-i-say/creator-preview/');await page.locator('#start-video-caption').click();
+      await page.goto(origin+'/what-do-i-say/creator-preview/');
+      await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
+      await page.evaluate(async id=>{const cache=await caches.open('wdis-v47');await cache.put('/api/captions/jobs/'+id,Response.json({id,state:'analyzing',expires:2000000000,staleTestFixture:true}));},job);
+      await page.locator('#start-video-caption').click();
       assert.equal(await page.locator('#video-caption').isVisible(),true);
       await page.locator('#caption-file').setInputFiles(fixture);
       await page.waitForFunction(()=>document.querySelector('#caption-preview').readyState>=1);
@@ -52,7 +56,8 @@ try{
       for(const part of manifest.parts){const received=parts.get(part.kind+':'+part.index);assert(received);assert.equal(received.length,part.bytes);assert.equal(createHash('sha256').update(received).digest('hex'),part.sha256);}
       const audio=Buffer.concat(manifest.parts.filter(p=>p.kind==='audio').map(p=>parts.get('audio:'+p.index)));
       assert.equal(audio.subarray(0,4).toString(),'RIFF');assert.equal(audio.subarray(8,12).toString(),'WAVE');await writeFile(resolve(reports,name+'-extracted-audio.wav'),audio);
-      assert.match(await page.locator('#caption-text').inputValue(),/Plum tones/);
+      assert.match(await page.locator('#caption-text').inputValue(),/Plum tones/);assert(polls>=2,'A controlled page must receive fresh status responses');
+      await page.evaluate(async id=>{const cache=await caches.open('wdis-v47'),url='/api/captions/jobs/'+id;const old=await cache.match(url);if(!(await old.json()).staleTestFixture)throw Error('Private API response was cached');await cache.delete(url);for(const key of await cache.keys())if(new URL(key.url).pathname.startsWith('/api/'))throw Error('API response remained in offline storage');},job);
       await page.locator('#caption-text').fill('My edited caption about the plum grid.');refuse=true;
       await page.locator('#caption-analyze').click();await page.getByText('Video captioning is unavailable right now. Your video and draft are preserved.',{exact:true}).waitFor();
       assert.equal(await page.locator('#caption-text').inputValue(),'My edited caption about the plum grid.');

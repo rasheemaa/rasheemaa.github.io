@@ -65,5 +65,16 @@ $('caption-use-suggestion').addEventListener('click',()=>{if(suggestion)show(sug
 $('caption-restore').addEventListener('click',()=>{const value=history[Number($('caption-history-select').value)];if(value){const copy={...value};show({caption:copy.text,summary:copy.summary},copy.name);}});
 $('caption-copy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('caption-text').value);status('Caption copied. Nothing was posted.');}catch{$('caption-text').focus();$('caption-text').select();status('Select and copy your caption from the text box.');}});
 $('caption-download').addEventListener('click',()=>{const blob=new Blob([$('caption-text').value],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='sparkle-caption.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
-client.capabilities().then(value=>{available=Boolean(value);$('caption-availability').textContent=available?'Video analysis is available. Sparkle checks the clip before writing; each new suggestion is checked for duplicates.':'Video captioning is not connected right now. You can select and preview a clip; nothing will be sent.';busy(Boolean(active));});
+let availabilityRequest=0;
+async function refreshAvailability(){
+  const version=++availabilityRequest,value=await client.capabilities();if(version!==availabilityRequest)return;
+  available=Boolean(value);$('caption-availability').textContent=available?'Video analysis is available. Sparkle checks the clip before writing; each new suggestion is checked for duplicates.':'Video captioning is not connected right now. You can select and preview a clip; nothing will be sent.';busy(Boolean(active));
+}
+void refreshAvailability();
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{void refreshAvailability();});
+  // Update the existing offline shell on direct Studio visits too. New workers
+  // purge the previous release cache and never cache authenticated/API results.
+  void navigator.serviceWorker.register('../service-worker.js',{updateViaCache:'none'}).catch(()=>{});
+}
 window.addEventListener('pagehide',event=>{stop();if(!event.persisted&&previewURL)URL.revokeObjectURL(previewURL);});
