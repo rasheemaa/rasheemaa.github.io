@@ -13,7 +13,7 @@ category_key: "lifestyle"
 edit_type: "The edit"
 cover_note: "Self care planner for nurses: complete 2026 guide"
 read_time: "9 min read"
-image: "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/ee6ac553-10cb-4921-ac82-ebd4b87ff793/featured.jpg"
+image: "/assets/images/ryze/self-care-planner-for-nurses-complete-guide/featured.jpg"
 image_alt: "Self care planner for nurses: complete 2026 guide"
 ---
 <p>Nurses&#x27; self care planning is making room for your own needs around work and home, with the aim of protecting personal time rather than filling it. A self care planner for nurses in 2026 should fit changing shifts, interrupted plans, and the parts of your life that don&#x27;t belong to work.</p>
@@ -115,7 +115,7 @@ image_alt: "Self care planner for nurses: complete 2026 guide"
 </tr>
 </tbody></table>
 <p>The simplest distinction is this: choose a blank notebook when freedom matters most, phone notes when carrying less matters most, or an undated printable when you want an existing structure. None requires a daily streak.</p>
-<figure><img src="https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/ee6ac553-10cb-4921-ac82-ebd4b87ff793/body-814c510f432a9ca4fdf8bf65f2227279.jpg" alt="Three planning formats: a blank notebook, phone notes, and an undated printable" loading="lazy" decoding="async"><figcaption>Choose the amount of structure you want, not the fullest looking sample page.</figcaption></figure><p>If you choose something from The Sheema Edit&#x27;s journal and planner shop, check its description and preview against those same needs. A reflection page and a scheduling page do different jobs; you don&#x27;t have to make either one do everything.</p>
+<figure><img src="/assets/images/ryze/self-care-planner-for-nurses-complete-guide/body-814c510f432a9ca4fdf8bf65f2227279.jpg" alt="Three planning formats: a blank notebook, phone notes, and an undated printable" loading="lazy" decoding="async"><figcaption>Choose the amount of structure you want, not the fullest looking sample page.</figcaption></figure><p>If you choose something from The Sheema Edit&#x27;s journal and planner shop, check its description and preview against those same needs. A reflection page and a scheduling page do different jobs; you don&#x27;t have to make either one do everything.</p>
 <h2>Common planning traps to skip</h2>
 <p>These aren&#x27;t character flaws. They&#x27;re ways a well meant tool can become one more thing to manage.</p>
 <h3>Treating an off day as an empty day</h3>

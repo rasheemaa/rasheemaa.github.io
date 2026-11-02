@@ -13,7 +13,7 @@ category_key: "lifestyle"
 edit_type: "The edit"
 cover_note: "Best journal prompts for postpartum anxiety in 2026"
 read_time: "10 min read"
-image: "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/17c4c83e-c57e-4163-848a-627172152ed9/featured.jpg"
+image: "/assets/images/ryze/best-journal-prompts-for-postpartum-anxiety/featured.jpg"
 image_alt: "Best journal prompts for postpartum anxiety in 2026"
 ---
 <p><strong>Best overall: “What do I need someone to understand today?” Best for a crowded mind: “What am I carrying right now?” Best when words feel hard: “Today feels like…”</strong> These journal prompts for postpartum anxiety offer different starting points for 2026, without asking you to turn a difficult day into a personal growth assignment.</p>
@@ -85,7 +85,7 @@ image_alt: "Best journal prompts for postpartum anxiety in 2026"
 </tr>
 </tbody></table>
 <p>You don’t need to work through this table in order. If one question feels like an invitation and another feels like an interrogation, choose the invitation.</p>
-<figure><img src="https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/17c4c83e-c57e-4163-848a-627172152ed9/body-495b8c152a670da396ce293a595c6ee4.jpg" alt="Three different journaling purposes: name the need, set it down, and ask for support." loading="lazy" decoding="async"><figcaption>Choose a purpose that fits today rather than completing every prompt.</figcaption></figure><h2>1. Name the need: best overall starting point</h2>
+<figure><img src="/assets/images/ryze/best-journal-prompts-for-postpartum-anxiety/body-495b8c152a670da396ce293a595c6ee4.jpg" alt="Three different journaling purposes: name the need, set it down, and ask for support." loading="lazy" decoding="async"><figcaption>Choose a purpose that fits today rather than completing every prompt.</figcaption></figure><h2>1. Name the need: best overall starting point</h2>
 <p><strong>Prompt: What do I need someone to understand today?</strong></p>
 <p>This question gives you room to describe your experience without defending it. You might write that you want company without conversation, or that being asked what you need feels like another decision.</p>
 <p>Try beginning with: “What looks manageable from the outside feels different because…” You can stop before the explanation becomes a courtroom presentation. Your journal doesn’t need supporting exhibits.</p>

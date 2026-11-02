@@ -13,7 +13,7 @@ category_key: "lifestyle"
 edit_type: "The edit"
 cover_note: "An undated weekly planner for working moms with changing weeks"
 read_time: "10 min read"
-image: "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/3c573bcf-368b-4c92-a357-dd4beff7a7ef/featured.jpg"
+image: "/assets/images/ryze/undated-weekly-planner-for-working-moms/featured.jpg"
 image_alt: "An undated weekly planner for working moms with changing weeks"
 ---
 <p>A working mom’s undated weekly planner is a planning page you date yourself, with the aim of making room for work, family, and your own needs as the week changes. If you’re choosing an undated weekly planner for working moms in 2026, look for space to move things around, not another place to prove how much you can carry.</p>
@@ -127,7 +127,7 @@ image_alt: "An undated weekly planner for working moms with changing weeks"
 </tr>
 </tbody></table>
 <p>A blank notebook is a good starting place when you don’t know what sections you need. An undated printable makes more sense once you know which structure you want to reuse. A digital calendar can remain your appointment home while paper holds the thoughts you don’t want squeezed between meeting invitations.</p>
-<figure><img src="https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/3c573bcf-368b-4c92-a357-dd4beff7a7ef/body-fe6c4e3063e25f41e3a7c88037f2991c.jpg" alt="Paper planning options beside a digital calendar option for time reminders" loading="lazy" decoding="async"><figcaption>Your appointment reminders and your reflection space don’t have to live in the same place.</figcaption></figure><p>The Sheema Edit’s printable journals and planners belong in the conversation when you want a prepared paper format. They don’t need to replace a calendar that already works for you. Check the specific listing rather than assuming a printable includes every section you’ve imagined.</p>
+<figure><img src="/assets/images/ryze/undated-weekly-planner-for-working-moms/body-fe6c4e3063e25f41e3a7c88037f2991c.jpg" alt="Paper planning options beside a digital calendar option for time reminders" loading="lazy" decoding="async"><figcaption>Your appointment reminders and your reflection space don’t have to live in the same place.</figcaption></figure><p>The Sheema Edit’s printable journals and planners belong in the conversation when you want a prepared paper format. They don’t need to replace a calendar that already works for you. Check the specific listing rather than assuming a printable includes every section you’ve imagined.</p>
 <h2>Common planning mistakes working moms make</h2>
 <p>These are page problems you can change, not personality flaws you need to fix. If one sounds familiar, you don’t need to start over. Adjust the part that’s getting in your way.</p>
 <h3>Treating every open box as an invitation</h3>

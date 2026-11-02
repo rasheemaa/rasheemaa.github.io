@@ -13,7 +13,7 @@ category_key: "lifestyle"
 edit_type: "The edit"
 cover_note: "Best printable planners for anxiety management in 2026"
 read_time: "9 min read"
-image: "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/956fdff3-ff58-4f82-a4e7-c32954f2b8c6/featured.jpg"
+image: "/assets/images/ryze/best-printable-planners-for-anxiety-management/featured.jpg"
 image_alt: "Best printable planners for anxiety management in 2026"
 ---
 <p><strong>Best overall: an undated weekly page. Best for sorting through feelings: a reflection page. Best for keeping things simple: a blank page with one prompt.</strong> The best printable planner for anxiety management in 2026 gives your thoughts somewhere to land without giving you another routine to maintain.</p>
@@ -87,7 +87,7 @@ image_alt: "Best printable planners for anxiety management in 2026"
 </tr>
 </tbody></table>
 <p><strong>Your next page</strong> doesn&#x27;t need every feature in this table. Choose the format that matches what you want help holding today.</p>
-<figure><img src="https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/956fdff3-ff58-4f82-a4e7-c32954f2b8c6/body-65640eb25d09420b0dc9287e8ccf30c7.jpg" alt="Six printable page formats arranged around a choice of your next page" loading="lazy" decoding="async"><figcaption>Choose a page for the job you need, rather than combining every format.</figcaption></figure><p>You don&#x27;t need a complete planner system to begin. One useful page is enough.</p>
+<figure><img src="/assets/images/ryze/best-printable-planners-for-anxiety-management/body-65640eb25d09420b0dc9287e8ccf30c7.jpg" alt="Six printable page formats arranged around a choice of your next page" loading="lazy" decoding="async"><figcaption>Choose a page for the job you need, rather than combining every format.</figcaption></figure><p>You don&#x27;t need a complete planner system to begin. One useful page is enough.</p>
 <h2>1. Undated weekly: best for seeing the week together</h2>
 <p>An undated weekly page puts appointments, reminders, and everyday responsibilities into a shared view. Look for a layout with room beside the schedule, so your week isn&#x27;t reduced to a wall of obligations.</p>
 <p>This is the default recommendation when your main frustration is remembering what happens when. You can write the dates yourself and leave unused weeks alone.</p>
