@@ -66,7 +66,7 @@ read_time: "9 min read"
 <li><strong>My requests:</strong> help you want to ask another person for.</li>
 <li><strong>My plans:</strong> something you&#x27;ve chosen to put on a calendar.</li>
 </ul>
-<figure><img src="https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/9d8493aa-81cf-4f69-915b-1fba879099ce/body-904928e2e570c2ee1ae8dca530947423.jpg" alt="Three overlapping circles distinguish feelings, requests, and plans." loading="lazy" decoding="async"><figcaption>A feeling can stay a feeling without becoming another assignment.</figcaption></figure><h3>Protect your boundaries</h3>
+<figure><img src="/assets/images/ryze/healing-journal-for-caregivers-complete-guide/body-904928e2e570c2ee1ae8dca530947423.jpg" alt="Three overlapping circles distinguish feelings, requests, and plans." loading="lazy" decoding="async"><figcaption>A feeling can stay a feeling without becoming another assignment.</figcaption></figure><h3>Protect your boundaries</h3>
 <p>You don&#x27;t have to share an entry to prove that you&#x27;re communicating. Private reflection and a conversation with someone else are different choices.</p>
 <p>You can use writing to find a sentence you&#x27;d like to say aloud, then keep the rest to yourself. If you&#x27;re looking for a starting point, these <a href="https://thesheemaedit.com/self-reflection-journal-prompts-for-boundaries" rel="noopener noreferrer">journal prompts for boundaries</a> offer a related direction to explore.</p>
 <p>Keep sensitive details about the person you care for out of a personal entry unless they&#x27;re necessary to what you want to express. Your feelings deserve space without turning the notebook into another person&#x27;s record.</p>

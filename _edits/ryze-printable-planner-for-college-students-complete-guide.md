@@ -13,7 +13,7 @@ category_key: "lifestyle"
 edit_type: "The edit"
 cover_note: "Printable planner for college students: complete 2026 guide"
 read_time: "9 min read"
-image: "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/74878858-0b89-43f9-9bfb-900859b89d6e/featured.jpg"
+image: "/assets/images/ryze/printable-planner-for-college-students-complete-guide/featured.jpg"
 image_alt: "Printable planner for college students: complete 2026 guide"
 ---
 <p>College students’ printable planning is a paper system for organizing classes, assignments, and personal needs with the aim of making the week easier to manage. A printable planner for college students should leave room for changing deadlines, work shifts, and ordinary life, including motherhood if you’re raising children while studying.</p>
@@ -132,7 +132,7 @@ image_alt: "Printable planner for college students: complete 2026 guide"
 </tr>
 </tbody></table>
 <p>You can combine a Weekly overview with an Assignment tracker or Reflection page when they serve different needs. Keep only the pages you consult; a larger collection isn’t automatically a more useful one.</p>
-<figure><img src="https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/74878858-0b89-43f9-9bfb-900859b89d6e/body-f1a1e3967f1dd520a77dfaadb49c8485.jpg" alt="A weekly overview connected to optional assignment, daily, and reflection pages" loading="lazy" decoding="async"><figcaption>Add a page when it serves a different need, not simply because it exists.</figcaption></figure><h2>Common mistakes college students make with printable planners</h2>
+<figure><img src="/assets/images/ryze/printable-planner-for-college-students-complete-guide/body-f1a1e3967f1dd520a77dfaadb49c8485.jpg" alt="A weekly overview connected to optional assignment, daily, and reflection pages" loading="lazy" decoding="async"><figcaption>Add a page when it serves a different need, not simply because it exists.</figcaption></figure><h2>Common mistakes college students make with printable planners</h2>
 <h3>Printing the whole semester before testing the layout</h3>
 <p>A layout can look lovely and still leave no room for your actual assignment names. Print a sample or sketch the arrangement first, then write in a real week.</p>
 <p>Check how it looks in your own handwriting. Tiny boxes do not become more generous through optimism.</p>
