@@ -39,7 +39,7 @@ try{
   const browser=await chromium.launch({headless:true});
   try{
     for(const [name,width] of [['desktop',1280],['phone',390]]){
-      refuse=false;polls=0;parts.clear();const before=creates,context=await browser.newContext({viewport:{width,height:900},acceptDownloads:true});
+      refuse=false;polls=0;parts.clear();const before=creates,context=await browser.newContext({viewport:{width,height:900},acceptDownloads:true,permissions:['clipboard-read','clipboard-write']});
       const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
       await page.route('https://fonts.googleapis.com/**',route=>route.abort());await page.route('https://fonts.gstatic.com/**',route=>route.abort());
       await page.goto(origin+'/what-do-i-say/creator-preview/');
@@ -57,6 +57,8 @@ try{
       const audio=Buffer.concat(manifest.parts.filter(p=>p.kind==='audio').map(p=>parts.get('audio:'+p.index)));
       assert.equal(audio.subarray(0,4).toString(),'RIFF');assert.equal(audio.subarray(8,12).toString(),'WAVE');await writeFile(resolve(reports,name+'-extracted-audio.wav'),audio);
       assert.match(await page.locator('#caption-text').inputValue(),/Plum tones/);assert(polls>=2,'A controlled page must receive fresh status responses');
+      await page.locator('#caption-copy').click();
+      assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),await page.locator('#caption-text').inputValue(),'Copy must write the exact caption through the standard browser clipboard API');
       await page.evaluate(async id=>{const cache=await caches.open('wdis-v47'),url='/api/captions/jobs/'+id;const old=await cache.match(url);if(!(await old.json()).staleTestFixture)throw Error('Private API response was cached');await cache.delete(url);for(const key of await cache.keys())if(new URL(key.url).pathname.startsWith('/api/'))throw Error('API response remained in offline storage');},job);
       await page.locator('#caption-text').fill('My edited caption about the plum grid.');refuse=true;
       await page.locator('#caption-analyze').click();await page.getByText('Video captioning is unavailable right now. Your video and draft are preserved.',{exact:true}).waitFor();
