@@ -48,3 +48,13 @@ test('a server error preserves a useful stable error and never exposes private d
   const client=new CaptionClient(async()=>reply({error:'caption_unverified',internal:'private model details'},503));
   await assert.rejects(client.create({context:''}),error=>error.code==='caption_unverified'&&!error.message.includes('private'));
 });
+
+test('creative proposals are explicitly unverified and cannot bypass the existing job verification flow',async()=>{
+ const candidates=['Silence is not a setting I enabled for supervised sleep.'];
+ let sent;const client=new CaptionClient(async(url,options)=>{sent={url,options};return Response.json({candidates,requiresVideoVerification:true,profile:'sheema-voice-20261103-v2'});});
+ assert.deepEqual(await client.voice('a'.repeat(32),{context:'',tone:'natural',previous:[]}),candidates);
+ assert.equal(sent.url,'/api/captions/jobs/'+'a'.repeat(32)+'/voice');assert.equal(sent.options.method,'POST');
+ assert.equal(sent.options.headers.Authorization,'Bearer '+client.owner);
+ const fake=new CaptionClient(async()=>Response.json({candidates,requiresVideoVerification:false,profile:'x'}));
+ await assert.rejects(fake.voice('a'.repeat(32),{context:'',tone:'natural',previous:[]}),e=>e.code==='caption_voice_unverified');
+});

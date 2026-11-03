@@ -1,6 +1,9 @@
 const ID=/^[a-f0-9]{32}$/,STATES=new Set(['uploading','queued','analyzing','drafting','verifying','ready','failed','cancelled','expired']);
 const random=n=>Array.from(crypto.getRandomValues(new Uint8Array(n)),x=>x.toString(16).padStart(2,'0')).join('');
-const MESSAGES={caption_busy:'Sparkle is analyzing another video. Please try again shortly.',caption_daily_limit:'The free caption allowance is used for today. Try again tomorrow.',
+const MESSAGES={caption_voice_allowance:'The shared free writing allowance is used for today. Your caption is safe. Try again tomorrow.',
+ caption_voice_unavailable:'Caption writing is unavailable right now. Your video and caption are safe.',
+ caption_voice_unverified:'Sparkle could not verify a fresh caption in your voice. Your previous caption is safe.',
+ caption_busy:'Sparkle is analyzing another video. Please try again shortly.',caption_daily_limit:'The free caption allowance is used for today. Try again tomorrow.',
  caption_unverified:'Sparkle could not verify a fresh caption for this clip. Your previous caption is preserved.',
  caption_interrupted:'Video analysis was interrupted. Your previous caption is preserved.',rate_limited:'Please wait a moment before trying again.',
  caption_upload_incomplete:'The video analysis upload was interrupted. Retry to resume it.',request_conflict:'Your video or caption options changed. Start a new analysis.',
@@ -8,9 +11,9 @@ const MESSAGES={caption_busy:'Sparkle is analyzing another video. Please try aga
 export class CaptionFailure extends Error{constructor(code='caption_unavailable'){super(MESSAGES[code]||MESSAGES.caption_unavailable);this.code=code;}}
 export class CaptionClient{
   constructor(fetcher=(...args)=>fetch(...args)){this.fetcher=fetcher;this.owner=random(32);this.pending=null;}
-  async request(path,{method='GET',body,signal}={}){
+  async request(path,{method='GET',body,signal,timeoutMs=15000}={}){
     const controller=new AbortController(),abort=()=>controller.abort();signal?.addEventListener('abort',abort,{once:true});if(signal?.aborted)abort();
-    const timer=setTimeout(abort,15000);
+    const timer=setTimeout(abort,Math.min(45000,Math.max(1000,timeoutMs)));
     try{
       const r=await this.fetcher('/api/captions'+path,{method,body:body===undefined?undefined:JSON.stringify(body),headers:{Authorization:'Bearer '+this.owner,...(body!==undefined?{'Content-Type':'application/json'}:{})},
         credentials:'omit',cache:'no-store',redirect:'error',signal:controller.signal});
@@ -46,6 +49,14 @@ export class CaptionClient{
   }
   async commit(id,signal){if(!ID.test(id))throw new CaptionFailure();return this.job(await this.request('/jobs/'+id+'/commit',{method:'POST',signal}),id);}
   async status(id,signal){if(!ID.test(id))throw new CaptionFailure();return this.job(await this.request('/jobs/'+id,{signal}),id);}
+  async voice(id,preferences,signal){
+    if(!ID.test(id))throw new CaptionFailure();
+    const value=await this.request('/jobs/'+id+'/voice',{method:'POST',body:preferences,signal,timeoutMs:45000});
+    if(value?.requiresVideoVerification!==true||typeof value.profile!=='string'||!Array.isArray(value.candidates)||
+      !value.candidates.length||value.candidates.length>3||value.candidates.some(s=>typeof s!=='string'||s.length<20||s.length>130||/[\p{Pd}\u2212#\r\n]/u.test(s)))throw new CaptionFailure('caption_voice_unverified');
+    return value.candidates;
+  }
   async cancel(id){if(!ID.test(id))throw new CaptionFailure();return this.job(await this.request('/jobs/'+id,{method:'DELETE'}),id);}
   forget(){this.pending=null;}
 }
+

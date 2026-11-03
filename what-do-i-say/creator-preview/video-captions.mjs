@@ -1,9 +1,11 @@
-import {CaptionClient,CaptionFailure} from './caption-client.mjs';
+import {CaptionClient,CaptionFailure} from './caption-client.mjs?v=2';
 import {prepareCaptionMedia} from './caption-media.mjs';
+import {captionInVoice} from './caption-voice-workflow.mjs?v=1';
 const $=id=>document.getElementById(id),client=new CaptionClient();
-let available=false,file=null,previewURL=null,prepared=null,active=null,pendingId=null,wake=null,suggestion=null,sourceName='',history=[];
+$('caption-file-help').textContent='Up to 2 minutes and 64 MB. Your original stays on this device. When you choose Analyze, selected frames and audio are sent to Sparkle. A clip description and transcript excerpt are used by its Cloudflare text writer. Nothing is posted.';
+let available=false,file=null,previewURL=null,prepared=null,active=null,pendingId=null,suggestion=null,sourceName='',history=[];
 let elapsedTimer=null,startedAt=0;
-const stages={uploading:'Preparing your video for analysis.',queued:'Your video is waiting for analysis.',analyzing:'Sparkle is analyzing the visuals and speech. This may take a few minutes.',drafting:'Writing fresh captions based on your video.',verifying:'Checking that the caption matches your clip and is different from earlier suggestions.'};
+let voiceState={};
 function status(text){$('caption-status').textContent=text;}
 function busy(value){
   $('caption-analyze').disabled=value||!available||!file;$('caption-cancel').hidden=!value;
@@ -22,11 +24,10 @@ function busy(value){
 }
 function viewOutput(){$('caption-result-title').focus();$('caption-result').scrollIntoView({block:'start',behavior:'instant'});}
 function stop(message){
-  const task=active;active=null;task?.controller.abort();wake?.();
+  const task=active;active=null;task?.controller.abort();
   const id=task?.id||pendingId;pendingId=null;if(id)void client.cancel(id).catch(()=>{});
   client.forget();busy(false);if(message&&(task||id))status(message);
 }
-function pause(signal){return new Promise(resolve=>{const timer=setTimeout(done,2000);function done(){clearTimeout(timer);signal.removeEventListener('abort',done);wake=null;resolve();}wake=done;signal.addEventListener('abort',done,{once:true});if(signal.aborted)done();});}
 function remember(){
   const text=$('caption-text').value;if(!text.trim())return;
   history.unshift({text,name:sourceName,summary:$('caption-evidence').textContent});history=history.slice(0,8);
@@ -42,7 +43,7 @@ function show(result,name){
 $('start-video-caption').addEventListener('click',()=>{$('video-caption').hidden=false;$('video-caption-title').focus();$('video-caption').scrollIntoView({block:'start',behavior:'instant'});});
 $('caption-view-output').addEventListener('click',viewOutput);
 $('caption-file').addEventListener('change',()=>{
-  stop();prepared=null;suggestion=null;$('caption-use-suggestion').hidden=true;
+  stop();prepared=null;voiceState={};suggestion=null;$('caption-use-suggestion').hidden=true;
   if(previewURL)URL.revokeObjectURL(previewURL);previewURL=null;
   file=$('caption-file').files?.[0]||null;
   if(file&&(!file.size||file.size>64*1024*1024)){status('Choose a video up to 64 MB and 2 minutes long.');file=null;}
@@ -50,7 +51,7 @@ $('caption-file').addEventListener('change',()=>{
   else{$('caption-preview').removeAttribute('src');$('caption-preview').hidden=true;}
   busy(false);
 });
-for(const id of ['caption-context','caption-tone','caption-visual-only'])for(const event of ['input','change'])$(id).addEventListener(event,()=>{stop('Your options changed. Your caption is preserved.');if(id==='caption-visual-only')prepared=null;});
+for(const id of ['caption-context','caption-tone','caption-visual-only'])for(const event of ['input','change'])$(id).addEventListener(event,()=>{stop('Your options changed. Your caption is preserved.');if(id==='caption-visual-only'){prepared=null;voiceState={};}});
 $('caption-cancel').addEventListener('click',()=>stop('Analysis cancelled. Your video and caption are preserved.'));
 $('caption-analyze').addEventListener('click',async()=>{
   if(active||!available||!file)return;
@@ -59,19 +60,10 @@ $('caption-analyze').addEventListener('click',async()=>{
   try{
     if(!prepared)prepared=await prepareCaptionMedia(task.file,{signal,visualOnly:$('caption-visual-only').checked,onProgress:message=>{if(active===task)status(message);}});
     signal.throwIfAborted();
-    const data={...prepared.manifest,context:$('caption-context').value.trim(),tone:$('caption-tone').value};
-    let job=await client.create(data,signal);task.id=job.id;pendingId=job.id;
-    if(job.state==='uploading'){
-      for(let offset=0;offset<data.parts.length;offset+=3){
-        signal.throwIfAborted();status(`Sending analysis samples ${Math.min(offset+3,data.parts.length)} of ${data.parts.length}.`);
-        await Promise.all(data.parts.slice(offset,offset+3).map((part,index)=>client.part(job.id,part,prepared.chunks[offset+index],signal)));
-      }
-      job=await client.commit(job.id,signal);
-    }
-    while(job.state!=='ready'){
-      signal.throwIfAborted();if(['failed','cancelled','expired'].includes(job.state)){pendingId=null;client.forget();throw new CaptionFailure(job.error||'caption_unverified');}
-      status(stages[job.state]||'Analyzing your video.');await pause(signal);signal.throwIfAborted();job=await client.status(job.id,signal);
-    }
+    const messages={source:'Finding the moment and dialogue in your clip.',voice:'Writing a short caption in your voice.',checking:'Checking the exact caption against your clip and earlier suggestions.'};
+    const job=await captionInVoice(client,prepared,{context:$('caption-context').value.trim(),tone:$('caption-tone').value,state:voiceState,signal,
+      onProgress:stage=>{if(active===task)status(messages[stage]||'Working on your caption.');},
+      onJob:id=>{task.id=id;pendingId=id;}});
     if(active!==task||signal.aborted)return;pendingId=null;client.forget();
     if($('caption-text').value!==task.snapshot){suggestion={result:job,name:task.file.name};$('caption-result').dataset.state='ready';$('caption-use-suggestion').hidden=false;status('A new caption is ready. Your current edits were kept. Choose Use new suggestion when you are ready.');}
     else show(job,task.file.name);
@@ -85,7 +77,7 @@ $('caption-download').addEventListener('click',()=>{const blob=new Blob([$('capt
 let availabilityRequest=0;
 async function refreshAvailability(){
   const version=++availabilityRequest,value=await client.capabilities();if(version!==availabilityRequest)return;
-  available=Boolean(value);$('caption-availability').textContent=available?'Video analysis is available. Sparkle checks the clip before writing; each new suggestion is checked for duplicates.':'Video captioning is not connected right now. You can select and preview a clip; nothing will be sent.';busy(Boolean(active));
+  available=Boolean(value?.voiceDrafting);$('caption-availability').textContent=available?'Your default voice: relatable, confident and a little unhinged. Every caption is checked against your clip. A shared free writing allowance applies.':'Video captioning is not connected right now. You can select and preview a clip; nothing will be sent.';busy(Boolean(active));
 }
 void refreshAvailability();
 if('serviceWorker' in navigator){
@@ -95,3 +87,4 @@ if('serviceWorker' in navigator){
   void navigator.serviceWorker.register('../service-worker.js',{updateViaCache:'none'}).catch(()=>{});
 }
 window.addEventListener('pagehide',event=>{stop();if(!event.persisted&&previewURL)URL.revokeObjectURL(previewURL);});
+
