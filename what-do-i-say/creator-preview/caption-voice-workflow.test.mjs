@@ -21,11 +21,18 @@ test('a changed model caption is never substituted for an unchecked proposal',as
  const f=setup(['A different freshly verified caption about a sleep scene.','Another caption that is not one of the proposed words.']);
  await assert.rejects(captionInVoice(f.client,prepared,f.options),e=>e.code==='caption_voice_unverified');
  assert.equal(f.creates.length,3);assert.equal(f.voices.length,1);
+ assert.deepEqual(f.options.state.options,[]);
 });
 test('remaining proposals reuse the same free writing pass while every displayed option gets its own video check',async()=>{
  const f=setup();await captionInVoice(f.client,prepared,f.options);const second=await captionInVoice(f.client,prepared,f.options);
  assert.equal(f.voices.length,1);assert.equal(f.creates.length,3);assert.equal(second.caption,proposals[1]);
  assert(!f.creates[2].context.includes(proposals[0]));assert.equal(f.options.state.used.length,2);
+});
+test('cosmetic punctuation is allowed only on the actual verified version, without different words or added emoji',async()=>{
+ const checked='Silence is not a setting I enabled for supervised sleep!';const f=setup([checked]);
+ assert.equal((await captionInVoice(f.client,prepared,f.options)).caption,checked);
+ const changed=setup([proposals[0]+' 🖕',proposals[0]+' 🖕']);
+ await assert.rejects(captionInVoice(changed.client,prepared,changed.options),e=>e.code==='caption_voice_unverified');
 });
 test('a tone or custom preference change reuses factual evidence but creates a fresh writing pass',async()=>{
  const f=setup();await captionInVoice(f.client,prepared,f.options);await captionInVoice(f.client,prepared,{...f.options,context:'Keep this gentle.',tone:'polished'});

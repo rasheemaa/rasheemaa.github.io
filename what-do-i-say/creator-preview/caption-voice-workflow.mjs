@@ -1,6 +1,8 @@
 import {CaptionFailure} from './caption-client.mjs?v=2';
 export const SOURCE_CONTEXT='Write a neutral factual caption about the actual exchange or visible action. Keep its exact situation. Do not add a joke, personal history or unseen event. A performed dialogue is a scene, not proof of the creator\'s experience.';
-const sameWords=text=>text.normalize('NFKC').replace(/[\u2018\u2019]/gu,"'").replace(/\s+/gu,' ').trim().toLowerCase();
+const sameWords=text=>(text.normalize('NFKC').toLowerCase().match(/[\p{L}\p{N}]+/gu)||[]).join(' ');
+const emoji=text=>new Set([...text].filter(c=>/\p{Extended_Pictographic}/u.test(c)));
+const matchesProposal=(proposal,checked)=>sameWords(proposal)===sameWords(checked)&&[...emoji(checked)].every(c=>emoji(proposal).has(c));
 export function preferredCaptionContext(candidates){
   if(!Array.isArray(candidates)||!candidates.length||candidates.length>3||candidates.some(s=>typeof s!=='string'||s.length>130))throw new CaptionFailure('caption_voice_unverified');
   const context='Preferred caption words, preserve exactly when supported by the actual clip: '+JSON.stringify(candidates);
@@ -42,13 +44,13 @@ export async function captionInVoice(client,prepared,{context,tone,state,signal,
     signal?.throwIfAborted();onProgress('checking');
     let job;
     try{job=await verifiedCaptionJob(client,prepared,{context:preferredCaptionContext(options),tone,signal,onJob,wait,onProgress:()=>onProgress('checking')});}
-    catch(error){if(error instanceof CaptionFailure&&error.code==='caption_unverified'&&attempt===0)continue;throw error;}
+    catch(error){if(error instanceof CaptionFailure&&error.code==='caption_unverified'){if(attempt===0)continue;state.options=[];throw new CaptionFailure('caption_voice_unverified');}throw error;}
     // The exact returned words were independently checked against the actual
     // video and registered by the original freshness ledger. A model rewrite
     // is never treated as approval of a different proposed caption.
-    const match=options.find(text=>sameWords(text)===sameWords(job.caption));
-    if(match){state.used.push(job.caption);state.options=state.options.filter(text=>sameWords(text)!==sameWords(match));state.source=job;return job;}
+    const match=options.find(text=>matchesProposal(text,job.caption));
+    if(match){state.used.push(job.caption);state.options=state.options.filter(text=>sameWords(text)!==sameWords(match));return job;}
     onProgress('checking');
   }
-  throw new CaptionFailure('caption_voice_unverified');
+  state.options=[];throw new CaptionFailure('caption_voice_unverified');
 }
