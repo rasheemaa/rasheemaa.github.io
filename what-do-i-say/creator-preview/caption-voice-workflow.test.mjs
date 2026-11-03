@@ -34,6 +34,12 @@ test('cosmetic punctuation is allowed only on the actual verified version, witho
  const changed=setup([proposals[0]+' 🖕',proposals[0]+' 🖕']);
  await assert.rejects(captionInVoice(changed.client,prepared,changed.options),e=>e.code==='caption_voice_unverified');
 });
+test('equivalent contractions can use the verified wording while a changed negation cannot',async()=>{
+ const checked='Silence isn’t a setting I enabled for supervised sleep.';const f=setup([checked]);
+ assert.equal((await captionInVoice(f.client,prepared,f.options)).caption,checked);
+ const changed=setup(['Silence is a setting I enabled for supervised sleep.','Silence is a setting I enabled for supervised sleep.']);
+ await assert.rejects(captionInVoice(changed.client,prepared,changed.options),e=>e.code==='caption_voice_unverified');
+});
 test('a tone or custom preference change reuses factual evidence but creates a fresh writing pass',async()=>{
  const f=setup();await captionInVoice(f.client,prepared,f.options);await captionInVoice(f.client,prepared,{...f.options,context:'Keep this gentle.',tone:'polished'});
  assert.equal(f.creates.length,3);assert.equal(f.voices.length,2);assert.equal(f.voices[1].prefs.context,'Keep this gentle.');

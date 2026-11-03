@@ -62,4 +62,6 @@ test('daily limit errors show the actual reset time instead of a misleading tomo
  const retryAt=(Math.floor(Date.now()/86400000)+1)*86400;
  const client=new CaptionClient(async()=>Response.json({error:'caption_daily_limit',retryAt},{status:429}));
  await assert.rejects(client.create({}),error=>error.code==='caption_daily_limit'&&error.retryAt===retryAt&&/resets/.test(error.message)&&!/tomorrow/.test(error.message));
+ const writing=new CaptionClient(async()=>Response.json({error:'caption_voice_allowance',retryAt},{status:429}));
+ await assert.rejects(writing.voice('a'.repeat(32),{context:'',tone:'natural',previous:[]}),error=>error.code==='caption_voice_allowance'&&error.retryAt===retryAt&&/currently unavailable/.test(error.message)&&!/tomorrow/.test(error.message));
 });

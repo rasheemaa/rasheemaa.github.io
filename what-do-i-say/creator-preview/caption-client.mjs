@@ -1,18 +1,19 @@
 const ID=/^[a-f0-9]{32}$/,STATES=new Set(['uploading','queued','analyzing','drafting','verifying','ready','failed','cancelled','expired']);
 const random=n=>Array.from(crypto.getRandomValues(new Uint8Array(n)),x=>x.toString(16).padStart(2,'0')).join('');
-const MESSAGES={caption_voice_allowance:'The shared free writing allowance is used for today. Your caption is safe. Try again tomorrow.',
+const MESSAGES={caption_voice_allowance:'The shared free writing allowance is currently unavailable. Your caption is safe. Please try again later.',
  caption_voice_unavailable:'Caption writing is unavailable right now. Your video and caption are safe.',
  caption_voice_unverified:'Sparkle could not verify a fresh caption in your voice. Your previous caption is safe.',
- caption_busy:'Sparkle is analyzing another video. Please try again shortly.',caption_daily_limit:'The free caption allowance is used for today. Try again tomorrow.',
+ caption_busy:'Sparkle is analyzing another video. Please try again shortly.',caption_daily_limit:'The free caption allowance is used. Please try again after the next daily reset.',
  caption_unverified:'Sparkle could not verify a fresh caption for this clip. Your previous caption is preserved.',
  caption_interrupted:'Video analysis was interrupted. Your previous caption is preserved.',rate_limited:'Please wait a moment before trying again.',
  caption_upload_incomplete:'The video analysis upload was interrupted. Retry to resume it.',request_conflict:'Your video or caption options changed. Start a new analysis.',
  caption_unavailable:'Video captioning is unavailable right now. Your video and draft are preserved.'};
 export class CaptionFailure extends Error{
  constructor(code='caption_unavailable',retryAt){
-  const timed=code==='caption_daily_limit'&&Number.isSafeInteger(retryAt)&&retryAt>Date.now()/1000&&retryAt<Date.now()/1000+90000;
+  const timed=['caption_daily_limit','caption_voice_allowance'].includes(code)&&Number.isSafeInteger(retryAt)&&retryAt>Date.now()/1000&&retryAt<Date.now()/1000+90000;
   const reset=timed?new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'}).format(new Date(retryAt*1000)):'';
-  super(timed?'The free caption allowance is used. It resets '+reset+'. Your caption is safe.':MESSAGES[code]||MESSAGES.caption_unavailable);
+  const prefix=code==='caption_voice_allowance'?'The shared free writing allowance is currently unavailable. Its daily limit resets ':'The free caption allowance is used. It resets ';
+  super(timed?prefix+reset+'. Your caption is safe.':MESSAGES[code]||MESSAGES.caption_unavailable);
   this.code=code;if(timed)this.retryAt=retryAt;
  }
 }

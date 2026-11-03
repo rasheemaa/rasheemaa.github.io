@@ -1,8 +1,18 @@
 import {CaptionFailure} from './caption-client.mjs?v=2';
 export const SOURCE_CONTEXT='Write a neutral factual caption about the actual exchange or visible action. Keep its exact situation. Do not add a joke, personal history or unseen event. A performed dialogue is a scene, not proof of the creator\'s experience.';
-const sameWords=text=>(text.normalize('NFKC').toLowerCase().match(/[\p{L}\p{N}]+/gu)||[]).join(' ');
-const emoji=text=>new Set([...text].filter(c=>/\p{Extended_Pictographic}/u.test(c)));
-const matchesProposal=(proposal,checked)=>sameWords(proposal)===sameWords(checked)&&[...emoji(checked)].every(c=>emoji(proposal).has(c));
+const sameWords=text=>{
+ let value=text.normalize('NFKC').toLowerCase().replace(/[\u2018\u2019]/gu,"'");
+ for(const [short,long]of Object.entries({"i'm":'i am',"you're":'you are',"we're":'we are',"they're":'they are',
+  "don't":'do not',"doesn't":'does not',"didn't":'did not',"isn't":'is not',"aren't":'are not',"wasn't":'was not',"weren't":'were not',
+  "can't":'can not',cannot:'can not',"won't":'will not',"shouldn't":'should not',"couldn't":'could not',"wouldn't":'would not',
+  "mustn't":'must not',"haven't":'have not',"hasn't":'has not',"hadn't":'had not'}))value=value.replace(new RegExp('\\b'+short+'\\b','gu'),long);
+ return (value.match(/[\p{L}\p{N}]+/gu)||[]).join(' ');
+};
+const emoji=text=>[...new Intl.Segmenter(undefined,{granularity:'grapheme'}).segment(text)].map(x=>x.segment).filter(x=>/[\p{Extended_Pictographic}\p{Regional_Indicator}\u20e3]/u.test(x)).map(x=>x.replace(/[\p{Emoji_Modifier}\ufe0f]/gu,''));
+const matchesProposal=(proposal,checked)=>{
+ if(sameWords(proposal)!==sameWords(checked))return false;
+ const allowed=emoji(proposal);for(const item of emoji(checked)){const index=allowed.indexOf(item);if(index<0)return false;allowed.splice(index,1);}return true;
+};
 export function preferredCaptionContext(candidates){
   if(!Array.isArray(candidates)||!candidates.length||candidates.length>3||candidates.some(s=>typeof s!=='string'||s.length>130))throw new CaptionFailure('caption_voice_unverified');
   const context='Preferred caption words, preserve exactly when supported by the actual clip: '+JSON.stringify(candidates);
@@ -37,7 +47,9 @@ export async function captionInVoice(client,prepared,{context,tone,state,signal,
     onProgress('source');state.source=await verifiedCaptionJob(client,prepared,{context:SOURCE_CONTEXT,tone:'polished',signal,onJob,wait,onProgress:()=>onProgress('source')});
   }
   if(!state.options?.length){
-    onProgress('voice');state.options=await client.voice(state.source.id,{context,tone,previous:state.used.slice(-6)},signal);
+    onProgress('voice');const proposed=await client.voice(state.source.id,{context,tone,previous:state.used.slice(-6)},signal);
+    state.options=proposed.filter(text=>!state.used.some(previous=>sameWords(previous)===sameWords(text)));
+    if(!state.options.length)throw new CaptionFailure('caption_voice_unverified');
   }
   const options=state.options.slice();
   for(let attempt=0;attempt<2;attempt++){
