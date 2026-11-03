@@ -28,8 +28,8 @@ permalink: /what-do-i-say/creator-preview/
   <script defer src="/what-do-i-say/creator-preview/entry.js?v=1"></script>
   <link rel="stylesheet" href="/what-do-i-say/creator-preview/video-entry.css?v=2">
   <link rel="stylesheet" href="/what-do-i-say/creator-preview/sparkle-studio.css?v=6">
-  <link rel="stylesheet" href="/what-do-i-say/creator-preview/video-captions.css?v=2">
-  <script type="module" src="/what-do-i-say/creator-preview/video-captions.mjs?v=2"></script>
+  <link rel="stylesheet" href="/what-do-i-say/creator-preview/video-captions.css?v=3">
+  <script type="module" src="/what-do-i-say/creator-preview/video-captions.mjs?v=3"></script>
 </head>
 <body>
   <a class="skip-link" href="#creator-workspace" tabindex="0">Skip to Creator Studio</a>
@@ -61,6 +61,8 @@ permalink: /what-do-i-say/creator-preview/
     <section class="panel video-caption" id="video-caption" hidden aria-labelledby="video-caption-title">
       <p class="eyebrow">Your video. Your words.</p><h2 id="video-caption-title" tabindex="-1">Let’s caption your clip.</h2>
       <p>Sparkle analyzes sampled video frames and speech, then writes a fresh social-media caption based on what’s there.</p>
+      <button id="caption-view-output" type="button" class="secondary caption-output-jump" aria-controls="caption-result">View generated captions ↓</button>
+      <div class="caption-workspace"><div class="caption-inputs">
       <label for="caption-file">Choose your video</label><input id="caption-file" type="file" accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm" aria-describedby="caption-file-help">
       <p class="hint" id="caption-file-help">Up to 2 minutes and 64 MB. Your original stays on this device. When you choose Analyze, selected frames and audio are sent to Sparkle. Nothing is posted.</p>
       <video id="caption-preview" controls playsinline preload="metadata" hidden aria-label="Your selected video preview"></video>
@@ -72,12 +74,18 @@ permalink: /what-do-i-say/creator-preview/
       <p class="hint" id="caption-availability">Checking video captioning availability.</p>
       <p class="hint">Sparkle analyzes sampled frames and speech. Brief events may be missed; review the caption before posting. <a href="../privacy/">How your video is handled</a> · <a href="../video-planner/third-party.html">Open source notices</a></p>
       <div class="button-row"><button id="caption-analyze" type="button" disabled>Analyze video &amp; write caption</button><button id="caption-cancel" type="button" class="secondary" hidden>Cancel analysis</button></div>
-      <p id="caption-status" class="status" role="status" aria-live="polite"></p>
-      <section id="caption-result" hidden aria-labelledby="caption-result-title"><h3 id="caption-result-title">Your caption</h3><label for="caption-text" id="caption-for">Review and edit your caption</label><textarea id="caption-text" maxlength="2200" rows="5"></textarea>
+      </div>
+      <section id="caption-result" aria-labelledby="caption-result-title" data-state="empty">
+        <p class="eyebrow">Your output</p><h3 id="caption-result-title" tabindex="-1">Generated captions</h3>
+        <p id="caption-empty" class="caption-empty">Your caption will appear here. Choose a video, then select <strong>Analyze video &amp; write caption</strong>.</p>
+        <p id="caption-status" class="status" role="status" aria-live="polite"></p>
+        <p id="caption-elapsed" class="hint" aria-live="off" hidden></p>
+        <div id="caption-editor" hidden aria-busy="false"><label for="caption-text" id="caption-for">Review and edit your caption</label><textarea id="caption-text" maxlength="2200" rows="5"></textarea>
         <div class="button-row"><button id="caption-copy" type="button">Copy caption</button><button id="caption-download" type="button" class="secondary">Download text</button><button id="caption-use-suggestion" type="button" class="secondary" hidden>Use new suggestion</button></div>
         <details><summary>What Sparkle analyzed</summary><p id="caption-evidence" class="caption-evidence"></p></details>
         <details id="caption-history" hidden><summary>Previous captions from this visit</summary><label for="caption-history-select">Choose a previous caption</label><select id="caption-history-select"></select><button id="caption-restore" type="button" class="secondary">Restore previous caption</button></details>
-      </section>
+        </div>
+      </section></div>
     </section>
     <details class="studio-tools" id="studio-tools">
       <summary>All creator tools <span>Create drafts, add filters, and manage saved projects</span></summary>

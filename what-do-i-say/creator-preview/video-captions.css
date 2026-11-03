@@ -1,4 +1,4 @@
-#video-caption[hidden],#caption-preview[hidden],#caption-result[hidden],#caption-history[hidden],.video-caption [hidden]{display:none}
+#video-caption[hidden],#caption-preview[hidden],#caption-history[hidden],.video-caption [hidden]{display:none}
 .video-caption{margin:24px 0;padding:clamp(20px,4vw,36px);min-width:0}
 .video-caption h2{font-size:clamp(26px,4vw,38px);line-height:1.18;margin:8px 0 16px}
 .video-caption>p{max-width:68ch;line-height:1.65}
@@ -11,8 +11,15 @@
 .caption-check{display:flex;align-items:center;gap:12px;min-height:48px;line-height:1.4;margin-top:14px}
 .caption-check input{width:20px;height:20px;margin:0;flex:none;accent-color:#6b3a78}
 .video-caption #caption-context{min-height:88px}.video-caption #caption-text{min-height:150px;resize:vertical}
-#caption-result{border-top:1px solid var(--line);margin-top:26px;padding-top:20px}
+.caption-workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:start;margin-top:24px}
+.caption-inputs{min-width:0}.caption-output-jump{margin-top:6px}
+#caption-result{min-width:0;border:1px solid var(--line);border-radius:18px;background:#fffcfa;padding:24px;scroll-margin-top:24px}
+#caption-result h3{font-size:28px;line-height:1.2;margin:6px 0 18px;color:#42234e}
+#caption-result .eyebrow{margin:0}.caption-empty{color:var(--muted);line-height:1.65;margin:0}
+#caption-status:empty{display:none}#caption-elapsed{font-variant-numeric:tabular-nums;line-height:1.5}
+#caption-result[data-state="working"]{border-color:#9a74a3;box-shadow:0 0 0 2px #eadfff}
 #caption-for{overflow-wrap:anywhere}.caption-evidence{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65;color:var(--muted)}
 .video-caption button:disabled{opacity:.58;cursor:default}
 .video-caption :focus-visible{outline:3px solid #83528b;outline-offset:4px}
-@media(max-width:650px){.video-caption .button-row{flex-wrap:wrap}.video-caption .button-row button{flex:1 1 100%}.video-caption{padding:20px}}
+@media(max-width:900px){.caption-workspace{grid-template-columns:minmax(0,1fr);gap:24px}}
+@media(max-width:650px){.video-caption .button-row{flex-wrap:wrap}.video-caption .button-row button{flex:1 1 100%}.video-caption{padding:20px}#caption-result{padding:20px}}
