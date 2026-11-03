@@ -58,6 +58,7 @@ try{
       await page.locator('#caption-analyze').click();
       await page.waitForFunction(()=>document.querySelector('#caption-result').dataset.state==='working');
       assert.equal(await page.locator('#caption-elapsed').isVisible(),true);
+      assert.equal(await page.locator('#caption-result #caption-cancel').isVisible(),true,'Cancellation stays beside the visible progress');
       await page.locator('#caption-editor').waitFor({state:'visible',timeout:60000});
       assert.equal(manifest.audioMode,'included');assert.equal(manifest.videoSha256,createHash('sha256').update(bytes).digest('hex'));
       assert(manifest.parts.some(p=>p.kind==='audio'));assert(manifest.parts.filter(p=>p.kind==='frame').length>=3);
@@ -82,6 +83,10 @@ try{
       await page.locator('#caption-history > summary').click();
       await page.locator('#caption-history-select').selectOption('0');await page.locator('#caption-restore').click();
       assert.equal(await page.locator('#caption-text').inputValue(),'My edited caption about the plum grid.','History restoration preserves the edited earlier result');
+      polls=0;await page.locator('#caption-analyze').click();
+      await page.locator('#caption-result #caption-cancel').click();
+      await page.getByText('Analysis cancelled. Your video and caption are preserved.',{exact:true}).waitFor();
+      assert.equal(await page.locator('#caption-text').inputValue(),'My edited caption about the plum grid.');
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
       const a11y=await new AxeBuilder({page}).analyze(),violations=a11y.violations.filter(v=>['critical','serious'].includes(v.impact));
       await writeFile(resolve(reports,name+'-accessibility.json'),JSON.stringify(violations,null,2));

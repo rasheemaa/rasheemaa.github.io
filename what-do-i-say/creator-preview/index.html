@@ -73,13 +73,14 @@ permalink: /what-do-i-say/creator-preview/
       </details>
       <p class="hint" id="caption-availability">Checking video captioning availability.</p>
       <p class="hint">Sparkle analyzes sampled frames and speech. Brief events may be missed; review the caption before posting. <a href="../privacy/">How your video is handled</a> · <a href="../video-planner/third-party.html">Open source notices</a></p>
-      <div class="button-row"><button id="caption-analyze" type="button" disabled>Analyze video &amp; write caption</button><button id="caption-cancel" type="button" class="secondary" hidden>Cancel analysis</button></div>
+      <div class="button-row"><button id="caption-analyze" type="button" disabled>Analyze video &amp; write caption</button></div>
       </div>
       <section id="caption-result" aria-labelledby="caption-result-title" data-state="empty">
         <p class="eyebrow">Your output</p><h3 id="caption-result-title" tabindex="-1">Generated captions</h3>
         <p id="caption-empty" class="caption-empty">Your caption will appear here. Choose a video, then select <strong>Analyze video &amp; write caption</strong>.</p>
         <p id="caption-status" class="status" role="status" aria-live="polite"></p>
         <p id="caption-elapsed" class="hint" aria-live="off" hidden></p>
+        <button id="caption-cancel" type="button" class="secondary" hidden>Cancel analysis</button>
         <div id="caption-editor" hidden aria-busy="false"><label for="caption-text" id="caption-for">Review and edit your caption</label><textarea id="caption-text" maxlength="2200" rows="5"></textarea>
         <div class="button-row"><button id="caption-copy" type="button">Copy caption</button><button id="caption-download" type="button" class="secondary">Download text</button><button id="caption-use-suggestion" type="button" class="secondary" hidden>Use new suggestion</button></div>
         <details><summary>What Sparkle analyzed</summary><p id="caption-evidence" class="caption-evidence"></p></details>
