@@ -1,6 +1,6 @@
 {
   "source": "Ryze public Supabase article images",
-  "recorded_utc": "2026-11-02T21:49:54+00:00",
+  "recorded_utc": "2026-11-03T20:39:37+00:00",
   "images": {
     "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/17c4c83e-c57e-4163-848a-627172152ed9/body-495b8c152a670da396ce293a595c6ee4.jpg": {
       "path": "/assets/images/ryze/best-journal-prompts-for-postpartum-anxiety/body-495b8c152a670da396ce293a595c6ee4.jpg",
@@ -82,6 +82,16 @@
       "bytes": 101424,
       "sha256": "f8ae866c9c4f6d0692a4ae62b62ae662bdc31756adb9a50fea74df452d696502"
     },
+    "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/6a89509c-cfb7-4a7c-a310-5d7b962b5ec7/body-9c6e52cbd43aad61fe2252a7ab0ef2dc.jpg": {
+      "path": "/assets/images/ryze/self-care-planner-for-therapists-complete-guide/body-9c6e52cbd43aad61fe2252a7ab0ef2dc.jpg",
+      "bytes": 77605,
+      "sha256": "9c6e52cbd43aad61fe2252a7ab0ef2dc92cb1b9040a414d13526906782bef332"
+    },
+    "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/6a89509c-cfb7-4a7c-a310-5d7b962b5ec7/featured.jpg": {
+      "path": "/assets/images/ryze/self-care-planner-for-therapists-complete-guide/featured.jpg",
+      "bytes": 172830,
+      "sha256": "7913c935e2bf66c97442c9d8a464c26cffbb060664f924c70c9a612922c66107"
+    },
     "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/74878858-0b89-43f9-9bfb-900859b89d6e/body-f1a1e3967f1dd520a77dfaadb49c8485.jpg": {
       "path": "/assets/images/ryze/printable-planner-for-college-students-complete-guide/body-f1a1e3967f1dd520a77dfaadb49c8485.jpg",
       "bytes": 75625,
@@ -111,6 +121,16 @@
       "path": "/assets/images/ryze/best-printable-weekly-planners-for-busy-moms/featured.jpg",
       "bytes": 104043,
       "sha256": "69f3409d619bceb996166d58c06cca28eb6b9b3c76c820bb854d57eed0e68a3e"
+    },
+    "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/7d43f4a2-d94b-4c14-be62-5b1e4ce38411/body-a94ef037c7c5ea9be5f0918d14ef7f58.jpg": {
+      "path": "/assets/images/ryze/healing-journal-for-military-spouses-complete-guide/body-a94ef037c7c5ea9be5f0918d14ef7f58.jpg",
+      "bytes": 54142,
+      "sha256": "a94ef037c7c5ea9be5f0918d14ef7f58c5187457e5a23f5a2da978aa8079bfe9"
+    },
+    "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/7d43f4a2-d94b-4c14-be62-5b1e4ce38411/featured.jpg": {
+      "path": "/assets/images/ryze/healing-journal-for-military-spouses-complete-guide/featured.jpg",
+      "bytes": 177233,
+      "sha256": "e02f85b513719a68e955b2dabbe7db74797a92e78b78dd26db8ec28465785db7"
     },
     "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/8fe18812-e1ac-4224-b287-d204a75f86be/body-b5d346e3d5782abc8d183c39d84bc54c.jpg": {
       "path": "/assets/images/ryze/how-to-use-an-undated-weekly-planner/body-b5d346e3d5782abc8d183c39d84bc54c.jpg",
@@ -176,6 +196,16 @@
       "path": "/assets/images/ryze/best-journal-prompts-for-forgiveness-and-healing/featured.jpg",
       "bytes": 147900,
       "sha256": "0e0f942e586c525156492f500ac3e3ad77c3b7c047a2095cdaee67ed1ea859b2"
+    },
+    "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/b507840c-13e3-43b1-9e76-789a09740aff/body-1ccfba82dafc9eb667d6ad0dcdba42fc.jpg": {
+      "path": "/assets/images/ryze/mom-planner-for-homeschool-moms-complete-guide/body-1ccfba82dafc9eb667d6ad0dcdba42fc.jpg",
+      "bytes": 70149,
+      "sha256": "1ccfba82dafc9eb667d6ad0dcdba42fc0266ace0a6fe42300af566c9615461e2"
+    },
+    "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/b507840c-13e3-43b1-9e76-789a09740aff/featured.jpg": {
+      "path": "/assets/images/ryze/mom-planner-for-homeschool-moms-complete-guide/featured.jpg",
+      "bytes": 150451,
+      "sha256": "4779e6dd90926e3c51e6a20f6a5a754b29b8d290f8d519cec5f136f982a9d0e8"
     },
     "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/b8e322d8-3b21-45fc-a7b6-0f59c45e7b00/body-94ff8f1c5f8e3bc28f6f296ead686efe.jpg": {
       "path": "/assets/images/ryze/best-mom-planners-for-toddler-moms/body-94ff8f1c5f8e3bc28f6f296ead686efe.jpg",

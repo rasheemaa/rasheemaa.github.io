@@ -13,7 +13,7 @@ category_key: "lifestyle"
 edit_type: "The edit"
 cover_note: "Healing journal for military spouses: complete 2026 guide"
 read_time: "10 min read"
-image: "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/7d43f4a2-d94b-4c14-be62-5b1e4ce38411/featured.jpg"
+image: "/assets/images/ryze/healing-journal-for-military-spouses-complete-guide/featured.jpg"
 image_alt: "Healing journal for military spouses: complete 2026 guide"
 ---
 <p>A healing journal for military spouses is a private space for reflection, with the aim of making room for your feelings alongside the demands of military family life. If you’re also raising children, that space can hold the part of your day that wasn’t about packing lunches, managing changes, or being the person who remembers everything.</p>
@@ -53,7 +53,7 @@ image_alt: "Healing journal for military spouses: complete 2026 guide"
 <li><strong>What I need:</strong> Notice the need before deciding whether anything belongs on a calendar.</li>
 </ul>
 <p>This layout keeps the event, your response, and your needs visible without requiring a long entry.</p>
-<figure><img src="https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/7d43f4a2-d94b-4c14-be62-5b1e4ce38411/body-a94ef037c7c5ea9be5f0918d14ef7f58.jpg" alt="Three reflection prompts separating an event, your feelings, and your needs." loading="lazy" decoding="async"><figcaption>A feeling can deserve space without becoming another task.</figcaption></figure><p>If practical planning would genuinely help, use a separate sheet with room to move things around. The Sheema Edit offers printable journals and planners; start with paper you have, and consider a printable only if the format suits you. The guide to <a href="https://thesheemaedit.com/how-to-use-an-undated-weekly-planner" rel="noopener noreferrer">using an undated weekly planner</a> is a separate place to explore that approach without turning this reflection page into a schedule.</p>
+<figure><img src="/assets/images/ryze/healing-journal-for-military-spouses-complete-guide/body-a94ef037c7c5ea9be5f0918d14ef7f58.jpg" alt="Three reflection prompts separating an event, your feelings, and your needs." loading="lazy" decoding="async"><figcaption>A feeling can deserve space without becoming another task.</figcaption></figure><p>If practical planning would genuinely help, use a separate sheet with room to move things around. The Sheema Edit offers printable journals and planners; start with paper you have, and consider a printable only if the format suits you. The guide to <a href="https://thesheemaedit.com/how-to-use-an-undated-weekly-planner" rel="noopener noreferrer">using an undated weekly planner</a> is a separate place to explore that approach without turning this reflection page into a schedule.</p>
 <h3>Match the prompt to the season you’re actually in</h3>
 <p>The same question won’t fit every stage of military life. Before a separation, you might want to name what you’re anticipating. During a move, you might want to acknowledge what you miss before anyone asks whether you’ve made friends yet.</p>
 <p>Choose the prompt that feels closest, not the one that sounds most positive. You can also write about a book, a friendship, your work, or an ordinary pleasant afternoon. Being a military spouse doesn’t have to be the subject of every page.</p>

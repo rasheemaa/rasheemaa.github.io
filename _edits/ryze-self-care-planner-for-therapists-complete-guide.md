@@ -13,7 +13,7 @@ category_key: "lifestyle"
 edit_type: "The edit"
 cover_note: "Self care planner for therapists: complete 2026 guide"
 read_time: "10 min read"
-image: "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/6a89509c-cfb7-4a7c-a310-5d7b962b5ec7/featured.jpg"
+image: "/assets/images/ryze/self-care-planner-for-therapists-complete-guide/featured.jpg"
 image_alt: "Self care planner for therapists: complete 2026 guide"
 ---
 <p>Therapists’ self care planning is a way to make room for personal needs alongside caring for others, with the aim of keeping work from taking up your whole life. A self care planner for therapists in 2026 should hold your needs, not become another place where you feel behind, especially when your next shift is motherhood.</p>
@@ -128,7 +128,7 @@ image_alt: "Self care planner for therapists: complete 2026 guide"
 </tr>
 </tbody></table>
 <p>The distinction is simple: a notebook holds thoughts, a weekly planner shows commitments, and a calendar marks time. A printable journal is useful when you want its particular structure, not merely because it looks more intentional than the paper you already own.</p>
-<figure><img src="https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/6a89509c-cfb7-4a7c-a310-5d7b962b5ec7/body-9c6e52cbd43aad61fe2252a7ab0ef2dc.jpg" alt="Four planning formats: blank notebook, undated weekly planner, printable journal, and digital calendar." loading="lazy" decoding="async"></figure><h2>Common mistakes therapists make with self care planners</h2>
+<figure><img src="/assets/images/ryze/self-care-planner-for-therapists-complete-guide/body-9c6e52cbd43aad61fe2252a7ab0ef2dc.jpg" alt="Four planning formats: blank notebook, undated weekly planner, printable journal, and digital calendar." loading="lazy" decoding="async"></figure><h2>Common mistakes therapists make with self care planners</h2>
 <h3>Turning reflection into more professional work</h3>
 <p>If every entry sounds like a formal assessment, try a less polished question. What am I tired of pretending is fine? You’re writing for yourself, not submitting a note for review.</p>
 <p>You can also skip interpretation entirely. Naming that you feel disappointed, relieved, or hungry is enough information for one page.</p>
