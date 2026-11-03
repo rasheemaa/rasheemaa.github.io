@@ -8,7 +8,7 @@ const sameWords=text=>{
   "mustn't":'must not',"haven't":'have not',"hasn't":'has not',"hadn't":'had not'}))value=value.replace(new RegExp('\\b'+short+'\\b','gu'),long);
  return (value.match(/[\p{L}\p{N}]+/gu)||[]).join(' ');
 };
-const emoji=text=>[...new Intl.Segmenter(undefined,{granularity:'grapheme'}).segment(text)].map(x=>x.segment).filter(x=>/[\p{Extended_Pictographic}\p{Regional_Indicator}\u20e3]/u.test(x)).map(x=>x.replace(/[\p{Emoji_Modifier}\ufe0f]/gu,''));
+const emoji=text=>(text.match(/\p{Extended_Pictographic}(?:\ufe0f|\p{Emoji_Modifier})*(?:\u200d\p{Extended_Pictographic}(?:\ufe0f|\p{Emoji_Modifier})*)*|\p{Regional_Indicator}{1,2}|[0-9#*]\ufe0f?\u20e3/gu)||[]).map(x=>x.replace(/[\p{Emoji_Modifier}\ufe0f]/gu,''));
 const matchesProposal=(proposal,checked)=>{
  if(sameWords(proposal)!==sameWords(checked))return false;
  const allowed=emoji(proposal);for(const item of emoji(checked)){const index=allowed.indexOf(item);if(index<0)return false;allowed.splice(index,1);}return true;
