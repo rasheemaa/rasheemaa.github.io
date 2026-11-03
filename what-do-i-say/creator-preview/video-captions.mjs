@@ -12,7 +12,7 @@ function busy(value){
   $('caption-editor').setAttribute('aria-busy',String(value));
   if(value){
     $('caption-result').dataset.state='working';$('caption-empty').hidden=true;
-    if(!elapsedTimer){startedAt=performance.now();const tick=()=>{const seconds=Math.floor((performance.now()-startedAt)/1000);$('caption-elapsed').textContent=seconds+'s elapsed'+(seconds>=30?' · Still analyzing. Longer clips can take more time.':' · Your caption will appear here.');};tick();elapsedTimer=setInterval(tick,1000);}
+    if(!elapsedTimer){startedAt=performance.now();const tick=()=>{const seconds=Math.floor((performance.now()-startedAt)/1000);$('caption-elapsed').textContent=seconds+'s elapsed'+(seconds>=30?' · Checking your clip and wording can take a few minutes.':' · Your caption will appear here.');};tick();elapsedTimer=setInterval(tick,1000);}
     $('caption-elapsed').hidden=false;
   }else{
     const wasRunning=Boolean(elapsedTimer),completed=$('caption-result').dataset.state==='ready';

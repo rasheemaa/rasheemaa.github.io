@@ -8,7 +8,14 @@ const MESSAGES={caption_voice_allowance:'The shared free writing allowance is us
  caption_interrupted:'Video analysis was interrupted. Your previous caption is preserved.',rate_limited:'Please wait a moment before trying again.',
  caption_upload_incomplete:'The video analysis upload was interrupted. Retry to resume it.',request_conflict:'Your video or caption options changed. Start a new analysis.',
  caption_unavailable:'Video captioning is unavailable right now. Your video and draft are preserved.'};
-export class CaptionFailure extends Error{constructor(code='caption_unavailable'){super(MESSAGES[code]||MESSAGES.caption_unavailable);this.code=code;}}
+export class CaptionFailure extends Error{
+ constructor(code='caption_unavailable',retryAt){
+  const timed=code==='caption_daily_limit'&&Number.isSafeInteger(retryAt)&&retryAt>Date.now()/1000&&retryAt<Date.now()/1000+90000;
+  const reset=timed?new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'}).format(new Date(retryAt*1000)):'';
+  super(timed?'The free caption allowance is used. It resets '+reset+'. Your caption is safe.':MESSAGES[code]||MESSAGES.caption_unavailable);
+  this.code=code;if(timed)this.retryAt=retryAt;
+ }
+}
 export class CaptionClient{
   constructor(fetcher=(...args)=>fetch(...args)){this.fetcher=fetcher;this.owner=random(32);this.pending=null;}
   async request(path,{method='GET',body,signal,timeoutMs=15000}={}){
@@ -22,7 +29,7 @@ export class CaptionClient{
       try{for(;;){const next=await reader.read();if(next.done)break;size+=next.value.length;if(size>16384){await reader.cancel();throw new CaptionFailure();}parts.push(next.value);}}
       finally{reader.releaseLock();}
       const bytes=new Uint8Array(size);let offset=0;for(const p of parts){bytes.set(p,offset);offset+=p.length;}
-      const value=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));if(!r.ok)throw new CaptionFailure(value?.error);return value;
+      const value=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));if(!r.ok)throw new CaptionFailure(value?.error,value?.retryAt);return value;
     }catch(error){if(error instanceof CaptionFailure)throw error;throw new CaptionFailure();}
     finally{clearTimeout(timer);signal?.removeEventListener('abort',abort);}
   }

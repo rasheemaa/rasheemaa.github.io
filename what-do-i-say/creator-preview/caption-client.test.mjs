@@ -58,3 +58,8 @@ test('creative proposals are explicitly unverified and cannot bypass the existin
  const fake=new CaptionClient(async()=>Response.json({candidates,requiresVideoVerification:false,profile:'x'}));
  await assert.rejects(fake.voice('a'.repeat(32),{context:'',tone:'natural',previous:[]}),e=>e.code==='caption_voice_unverified');
 });
+test('daily limit errors show the actual reset time instead of a misleading tomorrow',async()=>{
+ const retryAt=(Math.floor(Date.now()/86400000)+1)*86400;
+ const client=new CaptionClient(async()=>Response.json({error:'caption_daily_limit',retryAt},{status:429}));
+ await assert.rejects(client.create({}),error=>error.code==='caption_daily_limit'&&error.retryAt===retryAt&&/resets/.test(error.message)&&!/tomorrow/.test(error.message));
+});
