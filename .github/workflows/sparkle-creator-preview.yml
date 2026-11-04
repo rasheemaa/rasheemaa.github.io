@@ -8,6 +8,7 @@ on:
       - '.github/scripts/video-planner-browser.mjs'
       - '.github/scripts/video-editor-browser.mjs'
       - '.github/scripts/video-caption-browser.mjs'
+      - '.github/scripts/device-check-browser.mjs'
       - '.github/scripts/service-worker-privacy.test.mjs'
       - 'what-do-i-say/service-worker.js'
       - '.github/fixtures/caption-audio-test.*'
@@ -20,6 +21,7 @@ on:
       - '.github/scripts/video-planner-browser.mjs'
       - '.github/scripts/video-editor-browser.mjs'
       - '.github/scripts/video-caption-browser.mjs'
+      - '.github/scripts/device-check-browser.mjs'
       - '.github/scripts/service-worker-privacy.test.mjs'
       - '.github/fixtures/caption-audio-test.*'
       - '.github/fixtures/video-editor-test.*'
@@ -79,6 +81,7 @@ jobs:
           node .github/scripts/video-planner-browser.mjs
           node .github/scripts/video-editor-browser.mjs
           node .github/scripts/video-caption-browser.mjs
+          node .github/scripts/device-check-browser.mjs
       - name: Save screenshots and browser results
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -89,4 +92,5 @@ jobs:
             .github/reports/video-planner/
             .github/reports/video-editor/
             .github/reports/video-captions/
+            .github/reports/device-check/
           retention-days: 1
