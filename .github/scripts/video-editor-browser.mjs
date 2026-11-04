@@ -1,5 +1,7 @@
-// Synthetic transport and colored-grid media exercise the real browser editor.
-// This never asserts model quality, moderation approval or live generation.
+// Synthetic transport exercises the real browser editor. Default media is a
+// colored grid; an explicitly selected preserved original failure is allowed
+// only for engineering component verification. Neither mode asserts model
+// quality, moderation approval, public release or live generation.
 import assert from 'node:assert/strict';
 import http from 'node:http';
 import {readFile,mkdir} from 'node:fs/promises';
@@ -7,9 +9,16 @@ import {createHash} from 'node:crypto';
 import {resolve,extname,sep} from 'node:path';
 import {chromium,webkit} from 'playwright';
 import AxeBuilder from '@axe-core/playwright';
-const root=resolve('.'),reports=resolve('.github/reports/video-planner');await mkdir(reports,{recursive:true});
-const fixture=await readFile('.github/fixtures/video-editor-test.mp4');
-assert.equal(createHash('sha256').update(fixture).digest('hex'),'122067c6070e488c3f9f1d6eae86ea1eb406be357c46ce861303842df63cc694');
+const root=resolve('.'),artifact=process.env.SPARKLE_EDITOR_ORIGINAL_ARTIFACT;
+const reports=artifact?resolve('../../outputs/editor-original-component-20261104'):resolve('.github/reports/video-planner');await mkdir(reports,{recursive:true});
+const fixture=await readFile(artifact||'.github/fixtures/video-editor-test.mp4'),fixtureSha256=createHash('sha256').update(fixture).digest('hex');
+let originalCase=null;
+if(artifact){
+  const evidence=JSON.parse(await readFile('../../outputs/SPARKLE-ORIGINAL-QUALITY-20261104.json','utf8'));
+  originalCase=evidence.cases.find(value=>value.videoSha256===fixtureSha256);
+  assert(originalCase&&originalCase.manual.qualityAccepted===false&&originalCase.manual.publicReleaseApproved===false,'Engineering artifact must match the preserved rejected original evidence');
+  console.log('ENGINEERING COMPONENT ONLY: preserved original failure '+originalCase.id+' '+fixtureSha256+'; synthetic transport; no moderation, quality or launch approval.');
+}else assert.equal(fixtureSha256,'122067c6070e488c3f9f1d6eae86ea1eb406be357c46ce861303842df63cc694');
 let refuse=false;const submissions=[];
 const job='d'.repeat(32),json=(res,value,status=200)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(value));};
 const server=http.createServer(async(req,res)=>{
@@ -36,12 +45,16 @@ try{
       const page=await context.newPage(),errors=[],external=[];
       page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(!r.url().startsWith(origin)&&!r.url().startsWith('blob:'))external.push(r.url());});
       await page.goto(origin+'/what-do-i-say/video-planner/');
-      await page.locator('#concept').fill('An original glass sphere rolling across a table.');
+      await page.locator('#concept').fill(originalCase?.request.prompt||'An original glass sphere rolling across a table.');
       await page.locator('#generate-video').click();await page.locator('#video-result').waitFor();
       await page.waitForFunction(()=>{const v=document.querySelector('#generated-video');return v.readyState>=1||v.error;});
       const original=await page.locator('#download-original').getAttribute('href');
       const canPlay=await page.locator('#generated-video').evaluate(v=>!v.error);
       if(canPlay){
+        await page.locator('#generated-video').evaluate(v=>v.play());
+        await page.waitForFunction(()=>document.querySelector('#generated-video').currentTime>.12);
+        await page.locator('#generated-video').evaluate(v=>v.pause());
+        await page.screenshot({path:resolve(reports,name+'-preview.png'),fullPage:true});
         assert.equal(await page.locator('#video-editor').isVisible(),true);await page.locator('#video-editor summary').click();
         await page.locator('#trim-start').fill('4');await page.locator('#trim-end').fill('2');await page.locator('#trim-video').click();
       }else{
@@ -55,6 +68,10 @@ try{
         await page.waitForFunction(()=>/Your 3.00-second edit is ready/.test(document.querySelector('#edit-progress').textContent),{},{timeout:90000});
         await page.waitForFunction(()=>document.querySelector('#generated-video').readyState>=1);
         const duration=await page.locator('#generated-video').evaluate(v=>v.duration);assert(Math.abs(duration-3)<.06,String(duration));
+        await page.locator('#generated-video').evaluate(v=>v.play());
+        await page.waitForFunction(()=>document.querySelector('#generated-video').currentTime>.12);
+        await page.locator('#generated-video').evaluate(v=>v.pause());
+        await page.screenshot({path:resolve(reports,name+'-edited.png'),fullPage:true});
         assert.equal(await page.locator('#download-original').getAttribute('href'),original);
         const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#download-video').click()]);
         assert.match(download.suggestedFilename(),/^sparkle-video-edited\.(mp4|webm)$/);
@@ -79,7 +96,7 @@ try{
       const a11y=await new AxeBuilder({page}).analyze();assert.deepEqual(a11y.violations.filter(v=>['critical','serious'].includes(v.impact)).map(v=>v.id),[]);
       await page.screenshot({path:resolve(reports,name+'.png'),fullPage:true});
       assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
-      console.log(`PASS ${name}: ${canPlay?'real media preview':'honest unsupported-codec fallback'}, ${canEncode?'accurate local trim and edited download':'original-download fallback'}, exact original download, preserved refinement/failure, mobile fit and accessibility. Synthetic API/media only.`);
+      console.log(`PASS ${name}: ${canPlay?'real media preview':'honest unsupported-codec fallback'}, ${canEncode?'accurate local trim and edited download':'original-download fallback'}, exact original download, preserved refinement/failure, mobile fit and accessibility. ${artifact?'Preserved rejected original; synthetic transport; engineering component only.':'Synthetic API/media only.'}`);
       await context.close();
     }finally{await browser.close();}
   }
