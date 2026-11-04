@@ -1,0 +1,15 @@
+---
+layout: null
+---
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; worker-src 'self' blob:; connect-src 'self' https://cdn.jsdelivr.net https://huggingface.co https://*.huggingface.co https://*.hf.co; media-src 'self' blob:; style-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'none'">
+<title>Sparkle · Local voice synthesis check</title><link rel="stylesheet" href="device-check.css"></head><body>
+<a href="#voice" class="skip">Skip to voice check</a><main id="voice"><a href="./">← Device check</a><p class="eyebrow">OWNER ACCEPTANCE</p>
+<h1>Hear her generated voice.</h1><p>This generates two short, fixed sentences using Sparkle’s existing local voice engine and approved recording. Model files download to this browser. No recording or text is sent for remote inference.</p>
+<p>A first load can be large. This tests synthesis and playback separately from the conversation service and microphone.</p>
+<div class="buttons"><button id="synth-start" type="button">Generate two voice checks</button><button id="synth-cancel" type="button" disabled>Cancel</button></div>
+<p id="synth-status" role="status" aria-live="polite">Ready.</p><section aria-labelledby="result-title"><h2 id="result-title">Generated voice checks</h2><div id="synth-results"></div>
+<button id="synth-report" type="button">Download technical results</button><p id="synth-report-status" role="status"></p></section>
+<p>Play each result and judge clarity and resemblance to the approved voice. Numerical delivery or speech recognition cannot establish voice identity or a physical conversation pass.</p></main>
+<script type="module" src="voice-synthesis.mjs"></script></body></html>

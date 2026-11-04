@@ -15,7 +15,7 @@ const server=http.createServer(async(req,res)=>{
     let data=await readFile(file);
     if(file.endsWith('.html'))data=Buffer.from(data.toString().replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/,''));
     if(wrongVoice&&file.endsWith('Sparkle_reference.wav')){data=Buffer.from(data);data[100]^=1;}
-    res.setHeader('Content-Type',({'.html':'text/html','.mjs':'application/javascript','.css':'text/css','.wav':'audio/wav'})[extname(file)]||'application/octet-stream');res.end(data);
+    res.setHeader('Content-Type',({'.html':'text/html','.mjs':'application/javascript','.js':'application/javascript','.css':'text/css','.wav':'audio/wav'})[extname(file)]||'application/octet-stream');res.end(data);
   }catch{res.writeHead(404).end();}
 });
 await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+server.address().port;
@@ -52,6 +52,14 @@ try{
       assert.equal(report.microphone.length,name==='pc-synthetic-microphone'?2:0);
       assert.equal(await page.evaluate(()=>localStorage.length),0);assert.deepEqual(errors,[]);
       results.push({name,passed:true,accessibilityViolations:scan.violations.length,physicalDevice:false,report});
+      await page.goto(origin+'/what-do-i-say/creator-preview/device-check/voice-synthesis.html');
+      await page.locator('#synth-report').waitFor();
+      const voiceScan=await new AxeBuilder({page}).analyze();assert.deepEqual(voiceScan.violations,[]);
+      const [voiceDownload]=await Promise.all([page.waitForEvent('download'),page.locator('#synth-report').click()]);
+      const voiceReport=JSON.parse(await readFile(await voiceDownload.path(),'utf8'));
+      assert.equal(voiceReport.complete,false);assert.equal(voiceReport.launchReady,false);
+      assert.equal(voiceReport.liveConversationVerified,false);assert.equal(voiceReport.physicalVoiceIdentityVerified,false);
+      assert.equal(voiceReport.runs.length,0);assert.deepEqual(errors,[]);
     }finally{await browser.close();}
   }
   assert(requests.every(r=>r.method==='GET'));
