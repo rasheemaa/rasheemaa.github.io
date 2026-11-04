@@ -13,6 +13,8 @@
 .video-caption #caption-context{min-height:88px}.video-caption #caption-text{min-height:150px;resize:vertical}
 .caption-workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:start;margin-top:24px}
 .caption-inputs{min-width:0}.caption-output-jump{margin-top:6px}
+.caption-connection{padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:#fffcfa;margin:20px 0 14px}
+.caption-connection .hint{margin:0 0 10px}.caption-connection button{min-height:44px;padding:9px 14px}
 #caption-result{min-width:0;border:1px solid var(--line);border-radius:18px;background:#fffcfa;padding:24px;scroll-margin-top:24px}
 #caption-result h3{font-size:28px;line-height:1.2;margin:6px 0 18px;color:#42234e}
 #caption-result .eyebrow{margin:0}.caption-empty{color:var(--muted);line-height:1.65;margin:0}

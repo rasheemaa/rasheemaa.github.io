@@ -10,12 +10,12 @@ import AxeBuilder from '@axe-core/playwright';
 const root=resolve('.'),reports=resolve('.github/reports/video-captions');await mkdir(reports,{recursive:true});
 const fixture=resolve('.github/fixtures/caption-audio-test.mp4'),bytes=await readFile(fixture);
 assert.equal(createHash('sha256').update(bytes).digest('hex'),'2bc562f418ca4fafd5b6fc22e77060fac4253a3cb8fa769b3a33f1d5d500026a');
-const job='d'.repeat(32),parts=new Map();let manifest,refuse=false,creates=0,polls=0;
+const job='d'.repeat(32),parts=new Map();let manifest,refuse=false,available=false,creates=0,polls=0;
 const json=(res,value,status=200)=>{res.writeHead(status,{'Content-Type':'application/json'});res.end(JSON.stringify(value));};
 const server=http.createServer(async(req,res)=>{
   try{
     const path=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
-    if(path==='/api/captions/capabilities')return json(res,{ready:true,kind:'social-caption',maxSeconds:120,maxFileBytes:64*1024*1024,framesAnalyzed:'sampled',audioAnalyzed:true});
+    if(path==='/api/captions/capabilities')return json(res,{ready:available,kind:'social-caption',maxSeconds:120,maxFileBytes:64*1024*1024,framesAnalyzed:'sampled',audioAnalyzed:true});
     if(path.startsWith('/api/captions/')){
       let body='';for await(const chunk of req){body+=chunk;if(body.length>98304)throw Error('Oversize test request');}
       if(path==='/api/captions/jobs'&&req.method==='POST'){
@@ -39,7 +39,7 @@ try{
   const browser=await chromium.launch({headless:true});
   try{
     for(const [name,width] of [['desktop',1280],['phone',390]]){
-      refuse=false;polls=0;parts.clear();const before=creates,context=await browser.newContext({viewport:{width,height:900},acceptDownloads:true,permissions:['clipboard-read','clipboard-write']});
+      refuse=false;available=false;polls=0;parts.clear();const before=creates,context=await browser.newContext({viewport:{width,height:900},acceptDownloads:true,permissions:['clipboard-read','clipboard-write']});
       const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
       await page.route('https://fonts.googleapis.com/**',route=>route.abort());await page.route('https://fonts.gstatic.com/**',route=>route.abort());
       await page.goto(origin+'/what-do-i-say/creator-preview/');
@@ -55,11 +55,29 @@ try{
       await page.locator('#caption-file').setInputFiles(fixture);
       await page.waitForFunction(()=>document.querySelector('#caption-preview').readyState>=1);
       assert.equal(creates,before,'Choosing a video alone must not upload media');
+      await page.getByText('Video captioning is temporarily unavailable. Your selected video and caption stay here. Check again to reconnect; nothing will be sent.',{exact:true}).waitFor();
+      assert.equal(await page.locator('#caption-analyze').isDisabled(),true);
+      await page.locator('.caption-options > summary').click();
+      await page.locator('#caption-context').fill('Keep the clean lines as the focus.');
+      await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));
+      await page.screenshot({path:resolve(reports,name+'-caption-reconnect.png'),fullPage:true});
+      available=true;await page.locator('#caption-refresh').click();
+      await page.waitForFunction(()=>!document.querySelector('#caption-analyze').disabled);
+      assert.equal(await page.locator('#caption-context').inputValue(),'Keep the clean lines as the focus.','Reconnection preserves caption options');
+      assert.equal(await page.locator('#caption-file').evaluate(node=>node.files[0]?.name),'caption-audio-test.mp4','Reconnection preserves the selected video');
+      assert.equal(creates,before,'Checking availability must not upload selected media');
+      await page.locator('.caption-options > summary').click();
       await page.locator('#caption-analyze').click();
       await page.waitForFunction(()=>document.querySelector('#caption-result').dataset.state==='working');
       assert.equal(await page.locator('#caption-elapsed').isVisible(),true);
       assert.equal(await page.locator('#caption-result #caption-cancel').isVisible(),true,'Cancellation stays beside the visible progress');
+      assert.equal(await page.locator('#caption-refresh').isDisabled(),true,'Availability checks stay out of an active upload and analysis');
+      await page.locator('#start-creator-draft').click();
+      await page.locator('#idea').fill('Keep my other Studio work while the caption finishes.');
       await page.locator('#caption-editor').waitFor({state:'visible',timeout:60000});
+      assert.equal(await page.locator('#idea').evaluate(node=>document.activeElement===node),true,'A late caption result must not steal focus from another tool');
+      assert.equal(await page.locator('#idea').inputValue(),'Keep my other Studio work while the caption finishes.');
+      await page.locator('#studio-tools > summary').click();
       assert.equal(manifest.audioMode,'included');assert.equal(manifest.videoSha256,createHash('sha256').update(bytes).digest('hex'));
       assert(manifest.parts.some(p=>p.kind==='audio'));assert(manifest.parts.filter(p=>p.kind==='frame').length>=3);
       for(const part of manifest.parts){const received=parts.get(part.kind+':'+part.index);assert(received);assert.equal(received.length,part.bytes);assert.equal(createHash('sha256').update(received).digest('hex'),part.sha256);}
@@ -68,6 +86,8 @@ try{
       assert.match(await page.locator('#caption-text').inputValue(),/Plum tones/);assert(polls>=2,'A controlled page must receive fresh status responses');
       assert.equal(await page.locator('#caption-result').getAttribute('data-state'),'ready');
       assert.match(await page.locator('#caption-elapsed').textContent(),/^Ready in \d+s\.$/);
+      await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));
+      await page.screenshot({path:resolve(reports,name+'-caption-ready.png'),fullPage:true});
       const download=page.waitForEvent('download');await page.locator('#caption-download').click();
       const downloaded=await download;assert.equal((await readFile(await downloaded.path(),'utf8')),await page.locator('#caption-text').inputValue());
       await page.locator('#caption-copy').click();
@@ -89,10 +109,12 @@ try{
       assert.equal(await page.locator('#caption-text').inputValue(),'My edited caption about the plum grid.');
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
       const a11y=await new AxeBuilder({page}).analyze(),violations=a11y.violations.filter(v=>['critical','serious'].includes(v.impact));
+      await writeFile(resolve(reports,name+'-accessibility-all.json'),JSON.stringify(a11y.violations,null,2));
       await writeFile(resolve(reports,name+'-accessibility.json'),JSON.stringify(violations,null,2));
       assert.deepEqual(violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))})),[]);
+      await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));
       await page.screenshot({path:resolve(reports,name+'-caption.png'),fullPage:true});assert.deepEqual(errors,[]);
-      console.log('PASS '+name+': explicit upload consent, actual sampled frames and full PCM audio, content hashes, caption review, preserved failure and accessibility; synthetic API replies only.');
+      console.log('PASS '+name+': explicit upload consent, reconnect without reload or data loss, late-result focus preservation, actual sampled frames and full PCM audio, content hashes, caption review, preserved failure and accessibility; synthetic API replies only.');
       await context.close();
     }
   }finally{await browser.close();}

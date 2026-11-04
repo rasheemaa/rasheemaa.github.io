@@ -2,11 +2,12 @@ import {CaptionClient,CaptionFailure} from './caption-client.mjs';
 import {prepareCaptionMedia} from './caption-media.mjs';
 const $=id=>document.getElementById(id),client=new CaptionClient();
 let available=false,file=null,previewURL=null,prepared=null,active=null,pendingId=null,wake=null,suggestion=null,sourceName='',history=[];
-let elapsedTimer=null,startedAt=0;
+let elapsedTimer=null,startedAt=0,availabilityChecking=false;
 const stages={uploading:'Preparing your video for analysis.',queued:'Your video is waiting for analysis.',analyzing:'Sparkle is analyzing the visuals and speech. This may take a few minutes.',drafting:'Writing fresh captions based on your video.',verifying:'Checking that the caption matches your clip and is different from earlier suggestions.'};
 function status(text){$('caption-status').textContent=text;}
 function busy(value){
-  $('caption-analyze').disabled=value||!available||!file;$('caption-cancel').hidden=!value;
+  $('caption-analyze').disabled=value||availabilityChecking||!available||!file;$('caption-cancel').hidden=!value;
+  $('caption-refresh').disabled=value||availabilityChecking;
   $('caption-editor').setAttribute('aria-busy',String(value));
   if(value){
     $('caption-result').dataset.state='working';$('caption-empty').hidden=true;
@@ -33,11 +34,11 @@ function remember(){
   $('caption-history-select').replaceChildren(...history.map((item,index)=>{const option=document.createElement('option');option.value=String(index);option.textContent=item.name+' · '+item.text.slice(0,60);return option;}));
   $('caption-history').hidden=false;
 }
-function show(result,name){
+function show(result,name,{focus=true}={}){
   remember();$('caption-text').value=result.caption;$('caption-evidence').textContent=result.summary;sourceName=name;
   $('caption-for').textContent='Caption for '+name+' · review and edit';$('caption-editor').hidden=false;$('caption-empty').hidden=true;$('caption-result').dataset.state='ready';
   $('caption-analyze').textContent='Create another caption';$('caption-use-suggestion').hidden=true;suggestion=null;
-  $('caption-text').focus();status('Your caption is ready. It was checked against your clip. Review it before posting.');
+  if(focus)$('caption-text').focus();status('Your caption is ready. It was checked against your clip. Review it before posting.');
 }
 $('start-video-caption').addEventListener('click',()=>{$('video-caption').hidden=false;$('video-caption-title').focus();$('video-caption').scrollIntoView({block:'start',behavior:'instant'});});
 $('caption-view-output').addEventListener('click',viewOutput);
@@ -74,7 +75,7 @@ $('caption-analyze').addEventListener('click',async()=>{
     }
     if(active!==task||signal.aborted)return;pendingId=null;client.forget();
     if($('caption-text').value!==task.snapshot){suggestion={result:job,name:task.file.name};$('caption-result').dataset.state='ready';$('caption-use-suggestion').hidden=false;status('A new caption is ready. Your current edits were kept. Choose Use new suggestion when you are ready.');}
-    else show(job,task.file.name);
+    else show(job,task.file.name,{focus:$('video-caption').contains(document.activeElement)});
   }catch(error){if(active===task&&!signal.aborted){$('caption-result').dataset.state='error';status(error instanceof CaptionFailure?error.message:error.message||'This video could not be analyzed. Your caption is preserved.');}}
   finally{clearTimeout(timer);if(active===task){active=null;busy(false);}}
 });
@@ -82,11 +83,16 @@ $('caption-use-suggestion').addEventListener('click',()=>{if(suggestion)show(sug
 $('caption-restore').addEventListener('click',()=>{const value=history[Number($('caption-history-select').value)];if(value){const copy={...value};show({caption:copy.text,summary:copy.summary},copy.name);}});
 $('caption-copy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('caption-text').value);status('Caption copied. Nothing was posted.');}catch{$('caption-text').focus();$('caption-text').select();status('Select and copy your caption from the text box.');}});
 $('caption-download').addEventListener('click',()=>{const blob=new Blob([$('caption-text').value],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='sparkle-caption.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
-let availabilityRequest=0;
 async function refreshAvailability(){
-  const version=++availabilityRequest,value=await client.capabilities();if(version!==availabilityRequest)return;
-  available=Boolean(value);$('caption-availability').textContent=available?'Video analysis is available. Sparkle checks the clip before writing; each new suggestion is checked for duplicates.':'Video captioning is not connected right now. You can select and preview a clip; nothing will be sent.';busy(Boolean(active));
+  if(active||availabilityChecking)return;
+  availabilityChecking=true;$('caption-refresh').textContent='Checking…';busy(false);
+  try{
+    const value=await client.capabilities();available=Boolean(value);
+    $('caption-availability').textContent=available?'Video analysis is available. Sparkle checks the clip before writing; each new suggestion is checked for duplicates.':'Video captioning is temporarily unavailable. Your selected video and caption stay here. Check again to reconnect; nothing will be sent.';
+  }finally{availabilityChecking=false;$('caption-refresh').textContent='Check again';busy(Boolean(active));}
 }
+$('caption-refresh').addEventListener('click',()=>{void refreshAvailability();});
+window.addEventListener('online',()=>{void refreshAvailability();});
 void refreshAvailability();
 if('serviceWorker' in navigator){
   navigator.serviceWorker.addEventListener('controllerchange',()=>{void refreshAvailability();});
