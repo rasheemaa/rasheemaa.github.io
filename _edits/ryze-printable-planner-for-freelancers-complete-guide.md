@@ -13,7 +13,7 @@ category_key: "lifestyle"
 edit_type: "The edit"
 cover_note: "Printable planner for freelancers: complete 2026 guide"
 read_time: "10 min read"
-image: "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/6789bde7-9445-4a7d-a250-5600ca9624ca/featured.jpg"
+image: "/assets/images/ryze/printable-planner-for-freelancers-complete-guide/featured.jpg"
 image_alt: "Printable planner for freelancers: complete 2026 guide"
 ---
 <p>A printable planner for freelancers is a paper workspace for organizing client commitments, personal needs, and work boundaries so you can see what fits before saying yes. This guide focuses on flexible weekly planning for freelancers who are also moms, where a deadline and a school pickup can both be nonnegotiable.</p>
@@ -130,7 +130,7 @@ image_alt: "Printable planner for freelancers: complete 2026 guide"
 </tr>
 </tbody></table>
 <p>A weekly page and a project worksheet can work together, but that doesn&#x27;t mean you need both. Add a page only when you can name the problem it solves.</p>
-<figure><img src="https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/6789bde7-9445-4a7d-a250-5600ca9624ca/body-883d65cbc5ac4f3479aed9a7559f9a8d.jpg" alt="Four paper planning formats: undated weekly page, dated weekly page, project worksheet, and reflection page." loading="lazy" decoding="async"><figcaption>Choose a page for the question you need answered, rather than collecting every format.</figcaption></figure><h2>Common mistakes that make freelance planning feel heavier</h2>
+<figure><img src="/assets/images/ryze/printable-planner-for-freelancers-complete-guide/body-883d65cbc5ac4f3479aed9a7559f9a8d.jpg" alt="Four paper planning formats: undated weekly page, dated weekly page, project worksheet, and reflection page." loading="lazy" decoding="async"><figcaption>Choose a page for the question you need answered, rather than collecting every format.</figcaption></figure><h2>Common mistakes that make freelance planning feel heavier</h2>
 <p>A planner can become another place to feel behind if the rules around it are too demanding. Watch for these specific traps, especially when paid work and family responsibilities share the same week.</p>
 <h3>Scheduling paid work into every available gap</h3>
 <p>A gap between appointments isn&#x27;t necessarily enough space to begin a demanding task. You still need room to eat, change gears, and be a person. <strong>Leave some space without assigning it a purpose.</strong></p>

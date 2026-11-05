@@ -13,7 +13,7 @@ category_key: "lifestyle"
 edit_type: "The edit"
 cover_note: "Self care planner for remote workers: complete 2026 guide"
 read_time: "10 min read"
-image: "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/83a82af9-082a-4e6c-b32e-549de92dac8f/featured.jpg"
+image: "/assets/images/ryze/self-care-planner-for-remote-workers-complete-guide/featured.jpg"
 image_alt: "Self care planner for remote workers: complete 2026 guide"
 ---
 <p>Remote workers’ self care planning is making room for personal needs alongside paid work, with the aim of keeping work from occupying every corner of home life. A self care planner for remote workers should help you notice what you need, especially when you’re also a mom, without turning your wellbeing into another assignment.</p>
@@ -67,7 +67,7 @@ image_alt: "Self care planner for remote workers: complete 2026 guide"
 <li>Put feelings, preferences, and requests under Personal needs.</li>
 <li>Use Flexible intentions for possibilities you’re allowed to move or leave behind.</li>
 </ul>
-<figure><img src="https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/83a82af9-082a-4e6c-b32e-549de92dac8f/body-516a14a5aafc70e29707b24af18e85df.jpg" alt="Three planning spaces separate fixed commitments, personal needs, and flexible intentions." loading="lazy" decoding="async"><figcaption>An appointment, a personal need, and an intention don’t need the same kind of space.</figcaption></figure><h3>Write an ending for the workday</h3>
+<figure><img src="/assets/images/ryze/self-care-planner-for-remote-workers-complete-guide/body-516a14a5aafc70e29707b24af18e85df.jpg" alt="Three planning spaces separate fixed commitments, personal needs, and flexible intentions." loading="lazy" decoding="async"><figcaption>An appointment, a personal need, and an intention don’t need the same kind of space.</figcaption></figure><h3>Write an ending for the workday</h3>
 <p>If your workday tends to dissolve into the rest of the evening, write down what ending work looks like. Not an elaborate closing ceremony. A practical stopping point that fits your job and responsibilities.</p>
 <p>You might note the next work task, close your work materials, and decide when you’ll return. If your role includes evening coverage, reflect that honestly rather than choosing a boundary you can’t use.</p>
 <p>Your 2026 planner doesn’t need a beautiful shutdown routine. It needs language that distinguishes work you’ve agreed to do from work you keep reopening out of habit.</p>

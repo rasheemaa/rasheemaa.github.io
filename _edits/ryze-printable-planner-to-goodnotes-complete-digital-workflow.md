@@ -13,7 +13,7 @@ category_key: "lifestyle"
 edit_type: "The edit"
 cover_note: "Printable planner to GoodNotes: complete 2026 digital workflow"
 read_time: "10 min read"
-image: "https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/10ee6bef-a1e6-4a58-85fc-72b043dd965f/featured.jpg"
+image: "/assets/images/ryze/printable-planner-to-goodnotes-complete-digital-workflow/featured.jpg"
 image_alt: "Printable planner to GoodNotes: complete 2026 digital workflow"
 ---
 <p>Instead of rewriting the same weekly layout, import your printable planner PDF into Goodnotes, keep a blank copy, and duplicate it whenever you want a fresh page. This 2026 guide walks through the iPad setup, a gentle weekly workflow, and the small PDF details that can make the process unexpectedly annoying.</p>
@@ -105,7 +105,7 @@ image_alt: "Printable planner to GoodNotes: complete 2026 digital workflow"
 <li>What would make this week feel more manageable?</li>
 </ul>
 <p>These aren&#x27;t extra assignments. Pick a question that helps, or skip the questions and write the dentist appointment. Both count as using the page.</p>
-<figure><img src="https://gwvckixiegkllthleuyt.supabase.co/storage/v1/object/public/workspace-article-images-public/10ee6bef-a1e6-4a58-85fc-72b043dd965f/body-3225ecb324286f4fcf8ef14733bf2af3.jpg" alt="Three connected stages showing a PDF imported, duplicated, and written on" loading="lazy" decoding="async"><figcaption>Keep the blank source separate from the page you use.</figcaption></figure><h2>Add a reflection page when you need one</h2>
+<figure><img src="/assets/images/ryze/printable-planner-to-goodnotes-complete-digital-workflow/body-3225ecb324286f4fcf8ef14733bf2af3.jpg" alt="Three connected stages showing a PDF imported, duplicated, and written on" loading="lazy" decoding="async"><figcaption>Keep the blank source separate from the page you use.</figcaption></figure><h2>Add a reflection page when you need one</h2>
 <p>A weekly planner answers what needs doing. A reflection page gives you room for what doesn&#x27;t belong in a task box.</p>
 <p>You can use the same import process for a journal PDF and keep it as a separate notebook. That separation has a practical benefit: you can open appointments without putting personal writing on the same screen.</p>
 <ol>
