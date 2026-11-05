@@ -40,7 +40,19 @@ function show(result,name,{focus=true}={}){
   $('caption-analyze').textContent='Create another caption';$('caption-use-suggestion').hidden=true;suggestion=null;
   if(focus)$('caption-text').focus();status('Your caption is ready. It was checked against your clip. Review it before posting.');
 }
-$('start-video-caption').addEventListener('click',()=>{$('video-caption').hidden=false;$('video-caption-title').focus();$('video-caption').scrollIntoView({block:'start',behavior:'instant'});});
+function openCaptionWorkspace(){
+  $('video-caption').hidden=false;$('video-caption-title').focus();$('video-caption').scrollIntoView({block:'start',behavior:'instant'});
+}
+$('start-video-caption').addEventListener('click',openCaptionWorkspace);
+if(window.location.hash==='#video-caption'){
+  openCaptionWorkspace();
+  // Native fragment navigation can reset focus after module initialization.
+  // Restore it after load only if the visitor has not started using a control.
+  const focusEntry=()=>requestAnimationFrame(()=>{
+    if(document.activeElement===document.body||document.activeElement===$('video-caption'))$('video-caption-title').focus({preventScroll:true});
+  });
+  if(document.readyState==='complete')focusEntry();else window.addEventListener('load',focusEntry,{once:true});
+}
 $('caption-view-output').addEventListener('click',viewOutput);
 $('caption-file').addEventListener('change',()=>{
   stop();prepared=null;suggestion=null;$('caption-use-suggestion').hidden=true;

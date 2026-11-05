@@ -42,7 +42,10 @@ try{
       refuse=false;available=false;polls=0;parts.clear();const before=creates,context=await browser.newContext({viewport:{width,height:900},acceptDownloads:true,permissions:['clipboard-read','clipboard-write']});
       const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
       await page.route('https://fonts.googleapis.com/**',route=>route.abort());await page.route('https://fonts.gstatic.com/**',route=>route.abort());
-      await page.goto(origin+'/what-do-i-say/creator-preview/');
+      await page.goto(origin+'/what-do-i-say/creator-preview/#video-caption');
+      await page.locator('#video-caption').waitFor({state:'visible'});
+      await page.waitForFunction(()=>document.activeElement===document.querySelector('#video-caption-title'));
+      assert.equal(await page.locator('#video-caption-title').evaluate(node=>document.activeElement===node),true,'A direct caption link opens and focuses the actual workspace');
       await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
       await page.evaluate(async id=>{const cache=await caches.open('wdis-v47');await cache.put('/api/captions/jobs/'+id,Response.json({id,state:'analyzing',expires:2000000000,staleTestFixture:true}));},job);
       await page.locator('#start-video-caption').click();
