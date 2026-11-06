@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {CaptionThread,feedbackIntent} from './caption-thread.mjs';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
 const result=n=>({id:String(n).padStart(32,'0'),hook:'POV: Mom offered to send you home with supplies '+n,caption:'Same supplier '+n+' 😭',summary:'A fictional fixture.'});
 test('short rejections ask for a fresh idea; flow and catchier keep the concept',()=>{
   for(const text of ['Another one','No','Again','C’mon a good one','Try again','A different scenario please'])assert.equal(feedbackIntent(text).action,'another',text);
@@ -36,4 +38,18 @@ test('empty or oversize feedback and empty reference fields are not sent',()=>{
   const t=new CaptionThread();t.accept(result(1),'video');
   for(const text of [' ','x'.repeat(501)])assert.throws(()=>t.request(text));
   assert.throws(()=>t.request('Catchier','both',{hook:'',caption:'A caption'}));
+});
+
+test('opening another tool cannot steal focus back after the visitor starts typing',()=>{
+  const source=readFileSync(new URL('./entry.js',import.meta.url),'utf8');
+  for(const visitorStartedTyping of [false,true]){
+    let click,frame,moves=0;
+    const start={addEventListener:(_,fn)=>{click=fn;}},tools={open:false},idea={};
+    const task={focus:()=>{moves++;doc.activeElement=task;},scrollIntoView:()=>{}};
+    const doc={body:{},activeElement:start,getElementById:id=>({'start-creator-draft':start,'studio-tools':tools,task})[id]};
+    vm.runInNewContext(source,{document:doc,requestAnimationFrame:fn=>{frame=fn;}});
+    click();if(visitorStartedTyping)doc.activeElement=idea;frame();
+    assert.equal(moves,visitorStartedTyping?0:1);
+    assert.equal(doc.activeElement,visitorStartedTyping?idea:task);
+  }
 });
