@@ -59,7 +59,7 @@ assert.doesNotMatch(html,/unsafe-inline|unsafe-eval|\son(?:click|load|error|subm
 for(const tag of html.match(/<script\b[^>]*>/gi)||[])assert.match(tag,/\bsrc=/,'Executable code must be in a CSP-protected local file');
 assert.match(html,/creator-preview\/config.js\?v=2/);
 assert.match(html,/creator-preview\/profile.js\?v=3/);
-assert.match(html,/creator-preview\/entry.js\?v=1/);
+assert.match(html,/creator-preview\/entry.js\?v=2/);
 assert.match(html,/Realistic AI video generation is not available yet/);
 assert.match(html,/Create and edit videos/);
 assert.match(html,/Write or plan something/);
