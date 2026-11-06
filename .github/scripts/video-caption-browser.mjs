@@ -7,11 +7,20 @@ import {createHash} from 'node:crypto';
 import {resolve,extname,sep} from 'node:path';
 import {chromium} from 'playwright';
 import AxeBuilder from '@axe-core/playwright';
-const root=resolve('.'),reports=resolve('.github/reports/video-captions');await mkdir(reports,{recursive:true});
+const root=resolve('.'),reports=resolve(process.env.SPARKLE_CAPTION_REPORT_DIR||'.github/reports/video-captions');await mkdir(reports,{recursive:true});
 const fixture=resolve('.github/fixtures/caption-audio-test.mp4'),bytes=await readFile(fixture);
 assert.equal(createHash('sha256').update(bytes).digest('hex'),'2bc562f418ca4fafd5b6fc22e77060fac4253a3cb8fa769b3a33f1d5d500026a');
 const job='d'.repeat(32),parts=new Map();let manifest,refuse=false,available=false,creates=0,polls=0;
 const json=(res,value,status=200)=>{res.writeHead(status,{'Content-Type':'application/json'});res.end(JSON.stringify(value));};
+async function assertHeroFits(page){
+  const fit=await page.evaluate(()=>{
+    const art=document.querySelector('.video-feature-art'),frame=document.querySelector('.video-feature-frame'),panel=document.querySelector('.video-feature');
+    if(getComputedStyle(art).display==='none')return true;
+    const r=frame.getBoundingClientRect();
+    return [art,panel].every(node=>{const p=node.getBoundingClientRect();return r.left>=p.left-.5&&r.right<=p.right+.5&&r.top>=p.top-.5&&r.bottom<=p.bottom+.5;});
+  });
+  assert.equal(fit,true,'The visible hero card must fit inside its art column and panel, including clipping ancestors');
+}
 const server=http.createServer(async(req,res)=>{
   try{
     const path=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
@@ -38,14 +47,28 @@ await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.
 try{
   const browser=await chromium.launch({headless:true});
   try{
-    for(const [name,width] of [['desktop',1280],['phone',390]]){
-      refuse=false;available=false;polls=0;parts.clear();const before=creates,context=await browser.newContext({viewport:{width,height:900},acceptDownloads:true,permissions:['clipboard-read','clipboard-write']});
+    for(const [name,width,height] of [['desktop',1280,900],['phone',390,900],['tablet-768',768,1024],['tablet-820',820,1180],['tablet-1024',1024,1366]]){
+      refuse=false;available=false;polls=0;parts.clear();const before=creates,context=await browser.newContext({viewport:{width,height},reducedMotion:'reduce',acceptDownloads:true,permissions:['clipboard-read','clipboard-write']});
       const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
       await page.route('https://fonts.googleapis.com/**',route=>route.abort());await page.route('https://fonts.gstatic.com/**',route=>route.abort());
+      await page.goto(origin+'/what-do-i-say/creator-preview/');
+      await page.keyboard.press('Tab');
+      assert.equal(await page.locator('.skip-link').evaluate(node=>document.activeElement===node),true,'Keyboard entry must expose the skip link');
+      await page.keyboard.press('Enter');
+      assert.equal(await page.locator('#creator-workspace').evaluate(node=>document.activeElement===node),true,'Skip link must focus the Studio workspace');
+      assert.equal(await page.evaluate(()=>matchMedia('(prefers-reduced-motion: reduce)').matches),true);
+      assert.equal(await page.evaluate(()=>getComputedStyle(document.documentElement).scrollBehavior),'auto','Reduced motion disables smooth page scrolling');
+      // Do not abort the first service-worker installation with the extra
+      // cold-entry reload introduced by this independent keyboard check.
+      await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
       await page.goto(origin+'/what-do-i-say/creator-preview/#video-caption');
+      // Verify the existing cold-entry hash contract after the independent
+      // keyboard check; same-document hash navigation does not re-run modules.
+      await page.reload();
       await page.locator('#video-caption').waitFor({state:'visible'});
       await page.waitForFunction(()=>document.activeElement===document.querySelector('#video-caption-title'));
       assert.equal(await page.locator('#video-caption-title').evaluate(node=>document.activeElement===node),true,'A direct caption link opens and focuses the actual workspace');
+      await assertHeroFits(page);
       await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
       await page.evaluate(async id=>{const cache=await caches.open('wdis-v47');await cache.put('/api/captions/jobs/'+id,Response.json({id,state:'analyzing',expires:2000000000,staleTestFixture:true}));},job);
       await page.locator('#start-video-caption').click();
@@ -114,13 +137,36 @@ try{
       await page.getByText('Analysis cancelled. Your video and caption are preserved.',{exact:true}).waitFor();
       assert.equal(await page.locator('#caption-text').inputValue(),'My edited caption about the plum grid.');
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+      const settledCreates=creates;
+      if(name!=='desktop'){
+        await page.setViewportSize({width:height,height:width});
+        await assertHeroFits(page);
+        assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'Landscape simulation must fit');
+        assert.equal(await page.locator('#caption-text').inputValue(),'My edited caption about the plum grid.','Orientation changes preserve edited output');
+        await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));
+        await page.screenshot({path:resolve(reports,name+'-landscape.png'),fullPage:true});
+        await page.setViewportSize({width,height});
+      }
+      // Desktop/tablet half-width reflow simulates a 200% CSS viewport. The
+      // phone additionally checks 320 CSS px; neither is native zoom/pinch.
+      const reflowWidth=width>=640?Math.round(width/2):320;
+      await page.setViewportSize({width:reflowWidth,height:Math.round(height/2)});
+      await assertHeroFits(page);
+      assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'Narrow viewport-reflow simulation must fit');
+      assert.equal(await page.locator('#caption-text').inputValue(),'My edited caption about the plum grid.','Reflow preserves the current caption');
+      await page.locator('#caption-text').focus();
+      assert.equal(await page.locator('#caption-text').evaluate(node=>document.activeElement===node),true,'Caption remains keyboard-focusable after reflow');
+      await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));
+      await page.screenshot({path:resolve(reports,name+(width>=640?'-reflow-200.png':'-reflow-320.png')),fullPage:true});
+      await page.setViewportSize({width,height});
+      assert.equal(creates,settledCreates,'Orientation and reflow must not resubmit media');
       const a11y=await new AxeBuilder({page}).analyze(),violations=a11y.violations.filter(v=>['critical','serious'].includes(v.impact));
       await writeFile(resolve(reports,name+'-accessibility-all.json'),JSON.stringify(a11y.violations,null,2));
       await writeFile(resolve(reports,name+'-accessibility.json'),JSON.stringify(violations,null,2));
       assert.deepEqual(violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))})),[]);
       await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));
       await page.screenshot({path:resolve(reports,name+'-caption.png'),fullPage:true});assert.deepEqual(errors,[]);
-      console.log('PASS '+name+': explicit upload consent, reconnect without reload or data loss, late-result focus preservation, actual sampled frames and full PCM audio, content hashes, caption review, preserved failure and accessibility; synthetic API replies only.');
+      console.log('PASS '+name+': explicit upload consent, reconnect without reload or data loss, late-result focus preservation, actual sampled frames and full PCM audio, content hashes, caption review, preserved failure, keyboard/reduced-motion/layout reflow'+(name!=='desktop'?'/orientation':'')+' and accessibility; synthetic API replies only.');
       await context.close();
     }
   }finally{await browser.close();}
