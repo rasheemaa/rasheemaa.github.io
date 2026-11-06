@@ -120,7 +120,10 @@ async function analyze(conversation=null,feedback=''){
     if(active!==task||signal.aborted)return;pendingId=null;client.forget();
     if(data.format==='hook-caption'&&!job.hook)throw new CaptionFailure('caption_unverified');
     if($('caption-text').value!==task.snapshot||$('caption-hook').value!==task.hookSnapshot){suggestion={result:job,name:task.file.name,task};$('caption-result').dataset.state='ready';$('caption-use-suggestion').hidden=false;status('A new caption is ready. Your current edits were kept. Choose Use new suggestion when you are ready.');}
-    else show(job,task.file.name,{task,focus:!feedback&&$('video-caption').contains(document.activeElement)});
+    // A background result must never move keyboard focus, including when
+    // another Studio tool or Safari's keyboard is already in use. Explicit
+    // restore/use-suggestion actions may focus their selected result instead.
+    else show(job,task.file.name,{task,focus:false});
     if(feedback&&$('caption-feedback').value.trim()===feedback)$('caption-feedback').value='';
   }catch(error){if(active===task&&!signal.aborted){
     if(error?.code==='caption_conversation_expired')conversationExpired=true;

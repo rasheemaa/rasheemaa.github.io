@@ -71,14 +71,17 @@ try{
       assert.equal(creates,before,'Checking availability must not upload selected media');
       await page.locator('.caption-options > summary').click();
       await page.locator('#caption-analyze').click();
+      await page.evaluate(()=>{window.captionFocusTrace=[];document.addEventListener('focusin',event=>window.captionFocusTrace.push(event.target.id||event.target.tagName));});
       await page.waitForFunction(()=>document.querySelector('#caption-result').dataset.state==='working');
       assert.equal(await page.locator('#caption-elapsed').isVisible(),true);
       assert.equal(await page.locator('#caption-result #caption-cancel').isVisible(),true,'Cancellation stays beside the visible progress');
       assert.equal(await page.locator('#caption-refresh').isDisabled(),true,'Availability checks stay out of an active upload and analysis');
       await page.locator('#start-creator-draft').click();
       await page.locator('#idea').fill('Keep my other Studio work while the caption finishes.');
+      assert.equal(await page.locator('#idea').evaluate(node=>document.activeElement===node),true,'The visitor has focused and edited the other tool');
       await page.locator('#caption-editor').waitFor({state:'visible',timeout:60000});
-      assert.equal(await page.locator('#idea').evaluate(node=>document.activeElement===node),true,'A late caption result must not steal focus from another tool');
+      const focusAfterResult=await page.evaluate(()=>({active:document.activeElement?.id||document.activeElement?.tagName,trace:window.captionFocusTrace}));
+      assert.equal(focusAfterResult.active,'idea','A late caption result must not steal focus from another tool: '+JSON.stringify(focusAfterResult));
       assert.equal(await page.locator('#idea').inputValue(),'Keep my other Studio work while the caption finishes.');
       await page.locator('#studio-tools > summary').click();
       assert.equal(manifest.audioMode,'included');assert.equal(manifest.videoSha256,createHash('sha256').update(bytes).digest('hex'));
