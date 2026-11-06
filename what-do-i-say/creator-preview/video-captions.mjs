@@ -12,8 +12,11 @@ function conversationControls(working=false){
   for(const id of ['caption-another','caption-catchier','caption-flow','caption-reply-send','caption-reply-target'])$(id).disabled=working||!available||!canReply();
 }
 function logReply(role,text){
+  const log=$('caption-thread-log');
+  const followLatest=role==='user'||log.scrollHeight-log.scrollTop-log.clientHeight<48;
   const item=document.createElement('p');item.className='caption-thread-message';item.dataset.role=role;item.textContent=(role==='user'?'You: ':'Sparkle: ')+text;
-  $('caption-thread-log').append(item);while($('caption-thread-log').children.length>16)$('caption-thread-log').firstChild.remove();
+  log.append(item);while(log.children.length>16)log.firstChild.remove();
+  if(followLatest)log.scrollTop=log.scrollHeight;
 }
 function busy(value){
   $('caption-analyze').disabled=value||availabilityChecking||!available||!file;$('caption-cancel').hidden=!value;
