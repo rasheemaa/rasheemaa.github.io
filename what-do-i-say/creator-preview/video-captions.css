@@ -22,6 +22,15 @@
 #caption-result[data-state="working"]{border-color:#9a74a3;box-shadow:0 0 0 2px #eadfff}
 #caption-for{overflow-wrap:anywhere}.caption-evidence{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65;color:var(--muted)}
 .video-caption button:disabled{opacity:.58;cursor:default}
+.video-caption #caption-hook,.video-caption #caption-feedback{font-size:16px;resize:vertical;min-height:84px}
+#caption-hook-section{margin:22px 0;padding:18px 0;border-top:1px solid var(--line)}
+#caption-conversation{border-top:1px solid var(--line);padding-top:18px;margin-top:22px}
+.caption-quick-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.caption-quick-actions button,#caption-reply-send,#caption-copy-hook{min-height:44px;padding:10px 14px;font-size:16px}
+.caption-thread-log{display:grid;gap:10px;max-height:280px;overflow:auto;overscroll-behavior:contain;margin-bottom:16px;overflow-wrap:anywhere}
+.caption-thread-log:empty{display:none}.caption-thread-message{margin:0;padding:12px 14px;border-radius:12px;background:#f0e7f2;white-space:pre-wrap;font-size:15px;line-height:1.6}
+.caption-thread-message[data-role="sparkle"]{background:#f6f0eb}
+#caption-reply-target{font-size:16px;min-height:44px;width:100%;max-width:100%}
 .video-caption :focus-visible{outline:3px solid #83528b;outline-offset:4px}
 @media(max-width:900px){.caption-workspace{grid-template-columns:minmax(0,1fr);gap:24px}}
 @media(max-width:650px){.video-caption .button-row{flex-wrap:wrap}.video-caption .button-row button{flex:1 1 100%}.video-caption{padding:20px}#caption-result{padding:20px}}

@@ -4,6 +4,7 @@ const MESSAGES={caption_busy:'Sparkle is analyzing another video. Please try aga
  caption_unverified:'Sparkle could not verify a fresh caption for this clip. Your previous caption is preserved.',
  caption_interrupted:'Video analysis was interrupted. Your previous caption is preserved.',rate_limited:'Please wait a moment before trying again.',
  caption_upload_incomplete:'The video analysis upload was interrupted. Retry to resume it.',request_conflict:'Your video or caption options changed. Start a new analysis.',
+ caption_conversation_expired:'This caption conversation has expired. Your edits are preserved. Analyze the selected video again to start a fresh conversation.',
  caption_unavailable:'Video captioning is unavailable right now. Your video and draft are preserved.'};
 export class CaptionFailure extends Error{constructor(code='caption_unavailable'){super(MESSAGES[code]||MESSAGES.caption_unavailable);this.code=code;}}
 export class CaptionClient{
@@ -27,7 +28,8 @@ export class CaptionClient{
   job(v,id){
     if(!v||!ID.test(v.id||'')||id&&v.id!==id||!STATES.has(v.state)||!Number.isSafeInteger(v.expires))throw new CaptionFailure();
     if(v.state==='ready'&&(typeof v.caption!=='string'||!v.caption.trim()||v.caption.length>2200||typeof v.summary!=='string'||!v.summary.trim()||v.summary.length>1200))throw new CaptionFailure();
-    return {id:v.id,state:v.state,expires:v.expires,...(v.state==='ready'?{caption:v.caption,summary:v.summary}:{}),...(typeof v.error==='string'?{error:v.error}:{})};
+    if(v.state==='ready'&&v.hook!==undefined&&(typeof v.hook!=='string'||!v.hook.trim()||v.hook.length>240))throw new CaptionFailure();
+    return {id:v.id,state:v.state,expires:v.expires,...(v.state==='ready'?{caption:v.caption,summary:v.summary,...(v.hook!==undefined?{hook:v.hook}:{})}:{}),...(typeof v.error==='string'?{error:v.error}:{})};
   }
   async create(spec,signal){
     const key=JSON.stringify(spec);if(!this.pending||this.pending.key!==key)this.pending={key,requestId:random(16)};

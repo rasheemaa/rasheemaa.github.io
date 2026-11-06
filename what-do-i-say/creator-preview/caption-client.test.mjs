@@ -48,3 +48,9 @@ test('a server error preserves a useful stable error and never exposes private d
   const client=new CaptionClient(async()=>reply({error:'caption_unverified',internal:'private model details'},503));
   await assert.rejects(client.create({context:''}),error=>error.code==='caption_unverified'&&!error.message.includes('private'));
 });
+
+test('paired results retain both editable parts and reject malformed hooks',async()=>{
+  const pair={...job,state:'ready',hook:'POV: a source aligned fictional situation 😭',caption:'A short companion caption 😭',summary:'Fixture evidence.'};
+  const client=new CaptionClient(async()=>reply(pair));assert.equal((await client.status(id)).hook,pair.hook);
+  for(const hook of ['',null,{},'x'.repeat(241)]){client.fetcher=async()=>reply({...pair,hook});await assert.rejects(client.status(id),CaptionFailure);}
+});

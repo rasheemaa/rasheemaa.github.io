@@ -1,4 +1,4 @@
-const CACHE = 'wdis-v47';
+const CACHE = 'wdis-v48';
 const SHELL = [
   '/assets/css/tool-editorial.css?v=2',
   '/what-do-i-say/creator-preview/',
