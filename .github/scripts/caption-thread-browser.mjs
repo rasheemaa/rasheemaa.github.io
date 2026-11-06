@@ -77,6 +77,7 @@ try{
       await page.locator('#caption-feedback').fill('A reply I am still writing');await page.locator('#caption-refresh').click();await page.waitForFunction(()=>!document.querySelector('#caption-refresh').disabled);assert.equal(await page.locator('#caption-feedback').inputValue(),'A reply I am still writing');
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'No horizontal overflow');
       for(const id of ['caption-copy-hook','caption-copy','caption-reply-send','caption-reply-target'])assert((await page.locator('#'+id).boundingBox()).height>=44,id+' has a phone sized touch target');
+      await page.locator('#caption-thread-log').focus();assert.equal(await page.locator('#caption-thread-log').evaluate(node=>document.activeElement===node),true,'Scrollable history is reachable by keyboard, including Safari');
       let axeViolations=null;if(AxeBuilder){const a=await new AxeBuilder({page}).analyze();axeViolations=a.violations.filter(v=>['critical','serious'].includes(v.impact));assert.deepEqual(axeViolations,[]);}
       await page.screenshot({path:resolve(reports,name+'.png'),fullPage:true});
       const beforeNew=requests.length;await page.locator('#caption-file').setInputFiles({name:'different-video.mp4',mimeType:'video/mp4',buffer:await readFile(fixture)});

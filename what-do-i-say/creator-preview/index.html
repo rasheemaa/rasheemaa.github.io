@@ -87,7 +87,7 @@ permalink: /what-do-i-say/creator-preview/
         <div class="button-row"><button id="caption-copy" type="button">Copy caption</button><button id="caption-download" type="button" class="secondary">Download text</button><button id="caption-use-suggestion" type="button" class="secondary" hidden>Use new suggestion</button></div>
         <div id="caption-conversation" hidden>
           <p id="caption-reply-help" class="hint">Each reply uses this same clip for analysis. Tell Sparkle what to change. Replies and versions stay here for this visit.</p>
-          <div id="caption-thread-log" class="caption-thread-log" role="log" aria-label="Caption conversation" aria-live="polite" aria-relevant="additions"></div>
+          <div id="caption-thread-log" class="caption-thread-log" role="log" tabindex="0" aria-label="Caption conversation" aria-live="polite" aria-relevant="additions"></div>
           <form id="caption-reply-form">
             <label for="caption-reply-target">What should change?</label><select id="caption-reply-target"><option value="both">The pair</option><option value="hook">On screen caption only</option><option value="caption">Post caption only</option></select>
             <label for="caption-feedback">Reply to Sparkle</label><textarea id="caption-feedback" maxlength="500" rows="2" aria-describedby="caption-reply-help" placeholder="Keep that idea, just make it catchier…"></textarea>
