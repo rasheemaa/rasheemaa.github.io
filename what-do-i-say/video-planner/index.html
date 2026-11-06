@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; media-src blob:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+  <meta name="description" content="Start with your video idea. Build a simple, editable scene plan and save it in your browser.">
+  <title>Create a Video | Sparkle Creator Studio</title>
+  <link rel="icon" href="/assets/images/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./planner.css?v=2">
+  <link rel="stylesheet" href="./generation.css?v=2">
+  <script type="module" src="./app.mjs?v=2"></script>
+  <script type="module" src="./generation.mjs?v=2"></script>
+</head>
+<body>
+  <a class="skip" href="#workspace">Skip to video workspace</a>
+  <header class="header"><a class="brand" href="/what-do-i-say/creator-preview/"><span aria-hidden="true">✦</span>Sparkle<span class="brand-section">Creator Studio</span></a><nav aria-label="Sparkle navigation"><a href="#library" id="open-library">Saved plans</a><a href="/what-do-i-say/creator-preview/">Back to Studio</a></nav></header>
+  <main id="workspace" tabindex="-1">
+    <section class="intro" aria-labelledby="page-title"><p class="eyebrow">Your idea. A clear next step.</p><h1 id="page-title">What’s your video idea?</h1><p class="lede">Start with what you have in mind. Make the details yours as you go.</p></section>
+    <section class="direction panel" aria-label="Start your video plan">
+      <label for="concept" class="prompt-label">Describe your video</label><textarea id="concept" maxlength="2000" placeholder="A short film about my handmade jewelry. Warm light, close details, and a slow reveal of the finished piece…" aria-describedby="local-note"></textarea>
+      <div class="start-row"><p class="hint" id="local-note">Your words stay in this browser.</p><button id="start-plan" type="button" aria-controls="plan-workspace">Continue <span aria-hidden="true">→</span></button></div>
+      <div class="generation-actions"><button id="generate-video" type="button" hidden disabled>Generate video</button><button id="cancel-video" type="button" class="secondary" hidden disabled>Cancel generation</button></div>
+      <p id="generation-details" class="hint" hidden></p>
+      <p id="video-progress" class="notice" role="status" aria-live="polite"></p>
+      <details id="creative-settings" class="settings"><summary>Format, length &amp; creative details <span class="summary-hint">Optional</span></summary>
+        <div class="settings-body"><div class="field-pair"><div><label for="format">Frame</label><select id="format"><option value="9:16">9:16 · Vertical</option><option value="16:9">16:9 · Landscape</option><option value="1:1">1:1 · Square</option></select></div><div><label for="duration">Target length</label><select id="duration"><option value="15">15 seconds</option><option value="30">30 seconds</option><option value="60">60 seconds</option></select></div></div>
+        <label for="style">Visual direction</label><select id="style"><option>Cinematic realism</option><option>Product film</option><option>3D animation</option><option>Illustrated story</option></select>
+        <label for="continuity">Keep these details consistent</label><textarea id="continuity" class="short" maxlength="1000" placeholder="Colors, lighting, location, or details that matter to you…"></textarea>
+        <label for="sound">Sound direction</label><textarea id="sound" class="short" maxlength="600" placeholder="Music, ambience, silence, or spoken words…"></textarea>
+        <button class="text-button" id="sample" type="button">Try an example plan</button></div>
+      </details>
+    </section>
+    <p class="availability" id="generation-availability" aria-label="Availability"><strong>Planning is available now.</strong> Video creation and editing are not available yet. Your idea is placed into an editable scene plan; no AI or footage is generated.</p>
+    <section id="video-result" class="panel" hidden aria-labelledby="video-result-title">
+      <h2 id="video-result-title" tabindex="-1">Your generated video</h2>
+      <video id="generated-video" controls playsinline preload="metadata" aria-label="Generated video preview"></video>
+      <div class="video-actions"><a id="download-video" download="sparkle-video.mp4">Download video</a><button id="refine-video" class="secondary" type="button">Refine prompt</button></div>
+      <details id="video-editor" class="video-editor" hidden><summary>Trim your video</summary>
+        <p class="hint">Choose a part of the original. Your edit stays on this device and keeps the original frame size. Saving a trim encodes a new file.</p>
+        <div class="field-pair"><div><label for="trim-start">Start · seconds</label><input id="trim-start" type="number" min="0" step="0.01" value="0" inputmode="decimal"></div><div><label for="trim-end">End · seconds</label><input id="trim-end" type="number" min="0.25" step="0.01" inputmode="decimal"></div></div>
+        <div class="video-actions"><button id="preview-trim" type="button" class="secondary">Preview selection</button><button id="trim-video" type="button">Save trim</button><button id="cancel-trim" type="button" class="secondary" hidden>Cancel edit</button><button id="restore-video" type="button" class="text-button" hidden>Restore original</button></div>
+      </details>
+      <p id="edit-progress" class="notice" role="status" aria-live="polite"></p>
+      <p class="hint"><a id="download-original" download="sparkle-video-original.mp4">Download original MP4</a></p>
+    </section>
+    <div id="plan-workspace" hidden>
+      <section class="overview panel" aria-labelledby="preview-heading">
+        <div class="section-top"><div><p class="eyebrow">Your scene outline</p><h2 id="preview-heading" tabindex="-1">Here’s your starting point.</h2></div><span id="scene-count" class="tag">1 scene</span></div>
+        <div class="plan-heading" id="frame" data-format="9:16"><h3 id="overview-title">Your video plan</h3><p><span id="frame-label">9:16</span><span aria-hidden="true"> · </span><span id="frame-meta">15 seconds · Cinematic realism</span></p></div>
+        <ol id="timeline" class="timeline" aria-label="Scene timeline"></ol>
+        <p class="hint">This is your written scene outline. No video preview or media has been created.</p>
+        <div class="preview-actions"><button type="button" class="secondary" id="edit-scenes" aria-controls="scene-editor">Edit scenes</button><button type="button" class="text-button" id="show-plan">Review full plan</button></div>
+      </section>
+      <details id="scene-editor" class="panel editor"><summary>Scene details <span class="summary-hint">Timing, camera &amp; sound</span></summary>
+        <section class="shots" aria-labelledby="shots-title"><h2 id="shots-title">Make it yours.</h2><p class="section-copy">Keep one scene or build out your story. You control every word.</p><div class="timing"><p id="timing" role="status" aria-live="polite"></p><button type="button" class="text-button" id="fit">Fit timing</button></div><div id="scenes"></div><button type="button" class="secondary wide" id="add-scene">＋ Add a scene</button></section>
+      </details>
+      <section class="panel keep" aria-labelledby="keep-title"><div class="save-copy"><p class="eyebrow">Pick up where you left off</p><h2 id="keep-title">Keep your idea.</h2><p class="hint">Save this plan on this device. Nothing is posted or sent to a video service.</p></div><div class="save-fields"><label for="title">Project name</label><input id="title" maxlength="80" placeholder="Name your video plan" autocomplete="off"><div class="actions"><button type="button" id="save">Save plan</button><button type="button" class="text-button" id="new">Start fresh</button></div></div></section>
+    </div>
+    <p class="notice" id="status" role="status" aria-live="polite">Start with an idea. You can adjust the details later.</p>
+    <section id="plan-review" class="panel" hidden aria-labelledby="plan-title"><h2 id="plan-title">Your full video plan</h2><p class="hint">This text is your production brief. It contains your direction and scene timing.</p><pre id="plan-text" tabindex="0"></pre></section>
+    <details id="library" class="panel library"><summary>Saved plans &amp; backups <span class="summary-hint">Stored on this device</span></summary><label for="saved-projects">Saved video projects</label><select id="saved-projects"><option value="">Choose a project</option></select><div class="actions"><button type="button" class="secondary" id="load">Open project</button></div><details><summary>Copy, backup and restore</summary><p class="hint">Backups contain the plan only. Keep a backup before clearing browser data or moving to another Sparkle address.</p><div class="actions"><button type="button" class="secondary" id="copy">Copy plan</button><button type="button" class="secondary" id="download-plan">Download text plan</button><button type="button" class="secondary" id="backup">Download backup</button><button type="button" class="secondary" id="restore">Restore backup</button><button type="button" class="text-button" id="delete-project">Delete selected project</button></div><input id="backup-file" type="file" accept=".json,application/json" hidden aria-label="Choose a video plan backup"></details><p class="hint">Projects do not sync between devices or website addresses.</p></details>
+    <footer><p class="signature">With Love, Sheema</p><p>Space for the story you want to tell.</p><a href="/what-do-i-say/privacy.html">Privacy</a><a href="/what-do-i-say/terms.html">Terms</a><a href="./third-party.html">Open source notices</a><a href="/what-do-i-say/creator-preview/">Back to Sparkle</a></footer>
+  </main>
+  <template id="scene-template"><article class="scene"><div class="scene-top"><h3></h3><div class="scene-controls"><button type="button" data-action="up">↑</button><button type="button" data-action="down">↓</button><button type="button" data-action="remove">Remove</button></div></div><div class="field-pair"><div><label data-label="title">Scene name</label><input data-field="title" maxlength="80"></div><div><label data-label="seconds">Seconds</label><input data-field="seconds" type="number" min="1" max="60" step="1" inputmode="numeric"></div></div><label data-label="action">What happens?</label><textarea data-field="action" maxlength="1000" placeholder="One clear action. One moment to remember."></textarea><label data-label="camera">Camera direction</label><select data-field="camera"><option>Locked frame</option><option>Slow push in</option><option>Slow pull back</option><option>Tracking shot</option><option>Close detail</option><option>Overhead</option></select><label data-label="audio">Sound or spoken words</label><textarea data-field="audio" maxlength="400" class="short" placeholder="Optional. Describe what we hear."></textarea></article></template>
+</body>
+</html>

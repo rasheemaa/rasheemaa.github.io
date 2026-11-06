@@ -28,6 +28,7 @@ jobs:
         run: |
           node .github/scripts/free-access-smoke.mjs
           node .github/scripts/sparkle-message-meaning-test.mjs
+          node .github/scripts/sparkle-guided-writing-test.cjs
       - name: Voice regression
         run: |
           node --check what-do-i-say/voice-beta/lab.js

@@ -1,0 +1,36 @@
+---
+layout: null
+---
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; connect-src 'self'; style-src 'self'; media-src 'self' blob:; img-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'none'">
+<title>Sparkle · Device check</title><link rel="stylesheet" href="device-check.css"></head>
+<body><a href="#checks" class="skip">Skip to checks</a><main id="checks"><a href="../">← Sparkle Studio</a>
+<p class="eyebrow">OWNER ACCEPTANCE</p><h1>Check this device.</h1>
+<p>Use a real browser and microphone. This check keeps audio in memory on this device. It sends no recordings or test results to a server.</p>
+<p id="build" role="status">Reading staging build…</p>
+<section aria-labelledby="mic-title"><h2 id="mic-title">1. Microphone and recovery</h2>
+<p>Choose <strong>Check microphone</strong>, allow this site to use your microphone, and speak for five seconds. Listen to the recording. Repeat once to check that the microphone reopens.</p>
+<div class="buttons"><button id="mic-start" type="button">Check microphone</button><button id="mic-stop" type="button" disabled>Stop recording</button></div>
+<p id="mic-status" role="status" aria-live="polite">Microphone is off.</p>
+<label for="mic-level">Input level</label><meter id="mic-level" min="0" max="1" value="0">0</meter>
+<audio id="mic-playback" controls hidden aria-label="Your microphone test recording"></audio>
+<label class="confirmation"><input id="mic-heard" type="checkbox" disabled>I heard my words clearly in both test recordings.</label>
+<ol id="mic-attempts" aria-label="Microphone attempts"></ol></section>
+<section aria-labelledby="voice-title"><h2 id="voice-title">2. Sparkle’s approved voice</h2>
+<button id="voice-load" type="button">Load approved voice</button><p id="voice-status" role="status" aria-live="polite">Ready to check the unchanged approved recording.</p>
+<audio id="voice-playback" controls hidden aria-label="Sparkle’s approved voice recording"></audio>
+<label class="confirmation"><input id="voice-heard" type="checkbox" disabled>I heard Sparkle’s approved voice clearly.</label>
+<p>This tests the reference recording and device playback. You can also <a href="voice-synthesis.html">check her locally generated voice</a>. <a href="../../voice-beta/">A live voice conversation</a> still requires a separate two-turn and microphone-recovery test.</p></section>
+<section aria-labelledby="manual-title"><h2 id="manual-title">3. Physical browser checks</h2>
+<label for="device">Device, OS and browser version</label><input id="device" maxlength="180" placeholder="For example: Windows PC, Windows 11, Chrome version…">
+<label class="confirmation"><input id="physical" type="checkbox">I performed these checks on the physical device described above.</label>
+<p>In <a href="../" target="_blank" rel="noopener">Studio</a>, verify keyboard focus and zoom, save and reopen two projects, and copy/download a caption from an uploaded clip. Keep your existing work.</p>
+<label class="confirmation"><input id="layout" type="checkbox">Layout, zoom and keyboard navigation worked.</label>
+<label class="confirmation"><input id="projects" type="checkbox">Both saved projects reopened with their changes.</label>
+<label class="confirmation"><input id="captions" type="checkbox">Uploaded-video caption, copy and text download worked.</label>
+<label for="notes">Any failures or limitations</label><textarea id="notes" maxlength="1500" rows="3"></textarea>
+<button id="download" type="button">Download device check</button><p id="report-status" role="status" aria-live="polite"></p>
+<p>PC results do not establish physical Safari acceptance. Original video generation, full safety, render quality and reboot recovery are separate acceptance gates.</p></section>
+</main><script type="module" src="device-check.mjs"></script></body></html>
