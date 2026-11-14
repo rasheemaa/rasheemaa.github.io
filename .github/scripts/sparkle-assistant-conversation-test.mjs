@@ -124,3 +124,17 @@ test('message refinements still refine, and new chats clear assistant state', as
   await s.send('Can you loan me a dollar?');
   assert.equal(s.writeCalls.at(-1).mode, 'write');
 });
+
+
+test('creative requests are not mistaken for messages to send someone', async () => {
+  const s = setup();
+  await s.send('Write a poem about the sunrise');
+  assert.equal(s.askCalls.length, 1);
+  assert.equal(s.writeCalls.length, 0);
+  s.reset();
+  await s.send('Write a message to my friend about dinner');
+  assert.equal(s.writeCalls.length, 1);
+  s.reset();
+  await s.send('Build me a site for a small photography business');
+  assert.equal(s.askCalls.at(-1).task, 'website');
+});
