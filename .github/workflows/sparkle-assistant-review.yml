@@ -9,6 +9,7 @@ on:
       - 'what-do-i-say/site-draft.js'
       - 'what-do-i-say/styles.css'
       - '.github/scripts/sparkle-assistant-test.mjs'
+      - '.github/scripts/sparkle-assistant-conversation-test.mjs'
       - '.github/workflows/sparkle-assistant-review.yml'
   workflow_dispatch:
 
@@ -33,5 +34,11 @@ jobs:
           node --check what-do-i-say/chat-app.js
           node --check what-do-i-say/assistant-client.js
           node --check what-do-i-say/site-draft.js
-      - name: Exercise assistant client and safe HTML exporter
-        run: node .github/scripts/sparkle-assistant-test.mjs
+      - name: Exercise assistant client, safe website drafts and actual chat routing
+        run: |
+          node .github/scripts/sparkle-assistant-test.mjs
+          node .github/scripts/sparkle-assistant-conversation-test.mjs
+      - name: Preserve old writing behavior
+        run: |
+          node .github/scripts/free-access-smoke.mjs
+          node .github/scripts/sparkle-message-meaning-test.mjs
