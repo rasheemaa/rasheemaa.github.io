@@ -1,5 +1,6 @@
 (() => {
-  const S = { last: '', base: null, pending: false, working: null, retry: null, installPrompt: null };
+  const S = { last: '', base: null, pending: false, working: null, retry: null, installPrompt: null,
+    assistantMode: false, assistantHistory: [], websitePending: false, lastUserText: '' };
   const $ = s => document.querySelector(s);
   const $$ = s => [...document.querySelectorAll(s)];
   const el = {
@@ -99,7 +100,7 @@
     };
     more.onclick = () => { const open = more.getAttribute('aria-expanded') === 'true'; more.setAttribute('aria-expanded',String(!open)); more.textContent = open ? 'More options' : 'Fewer options'; options.hidden = open; };
     Object.entries(labels).forEach(([key,label]) => { const b=document.createElement('button'); b.type='button'; b.textContent=label; b.onclick=()=>{ if(!S.pending) refine(key,label,'',{message:text,base}); }; options.append(b); });
-    actions.append(right,more,options); m.stack.append(actions); scrollDown();
+    actions.append(right,more,options); m.stack.append(actions); scrollDown(); return m;
   }
 
   // One composer, no mode chooser. Older desktop models still need an internal task
@@ -149,10 +150,90 @@
     } finally { loading(false); el.prompt.focus(); }
   }
 
+  function isWritingRequest(text) {
+    const value = String(text || '').trim();
+    if (/^(?:please\s+)?(?:write|draft|compose)\s+(?:code|a\s+website|a\s+webpage|a\s+site)\b/i.test(value)) return false;
+    return /^(?:please\s+)?(?:write|draft|compose|fix|rewrite|reword|edit|polish|proofread|reply|respond|text|message|tell)\b/i.test(value)
+      || /^(?:i\s+(?:want|need)\s+to\s+say|how\s+do\s+i\s+(?:tell|say)|what\s+do\s+i\s+say\s+to)\b/i.test(value);
+  }
+
+  function isWebsiteRequest(text) {
+    return /\b(?:create|build|design|make|generate|draft)\b/i.test(text) &&
+      /\b(?:website|web\s*site|webpage|web\s*page|landing\s*page)\b/i.test(text);
+  }
+
+  function hasWebsiteDetails(text) {
+    const value = String(text || '').trim();
+    return /(?:\b(?:for|about|called|selling|business|portfolio|showcase|services)\b)\s+\S.{3,}/i.test(value)
+      || value.split(/\s+/).length >= 12;
+  }
+
+  function wantsAssistant(text) {
+    const value = String(text || '').trim();
+    if (isWritingRequest(value)) return false;
+    return isWebsiteRequest(value)
+      || /^(?:no[,! ]+)?(?:i(?:'m| am)\s+asking\s+you|i\s+(?:want|need)\s+you\s+to\s+do\s+(?:it|that)|do\s+(?:it|that)\s+for\s+me)\b/i.test(value)
+      || /^(?:please\s+)?(?:create|build|design|make|plan|explain|analyze|brainstorm|summarize|research|teach|help\s+me\s+(?:build|create|plan|understand|figure\s+out))\b/i.test(value)
+      || /^(?:what|why|how|when|where|who|is|are|do|does|can\s+you|could\s+you|tell\s+me\s+about)\b/i.test(value);
+  }
+
+  async function askAssistant(text, retry = false) {
+    if (S.pending) return;
+    const original = String(text || '').trim();
+    if (!original) return;
+    if (!retry) {
+      message('user', original);
+      el.prompt.value = '';
+      resize();
+    }
+    if (!S.assistantMode && S.last && S.lastUserText) {
+      S.assistantHistory = [
+        { role: 'user', content: S.lastUserText },
+        { role: 'assistant', content: S.last }
+      ];
+      if (isWebsiteRequest(S.lastUserText)) S.websitePending = true;
+    }
+    S.assistantMode = true;
+    S.last = '';
+    S.base = null;
+    if (isWebsiteRequest(original)) S.websitePending = true;
+    if (/^(?:cancel|never mind|forget (?:the|that) website)\b/i.test(original)) S.websitePending = false;
+    const task = S.websitePending && hasWebsiteDetails(original) ? 'website' : 'chat';
+    S.retry = { assistant: true, text: original };
+    clearError();
+    loading(true, task === 'website' ? 'Sparkle is creating your website draft…' : 'Sparkle is thinking…');
+    try {
+      if (!window.SparkleAssistant?.ask) throw new Error('Sparkle assistant has not loaded. Refresh the page.');
+      const data = await window.SparkleAssistant.ask(original, S.assistantHistory, task, status);
+      const answer = String(data.message || '').trim();
+      const result = assistant(answer, false);
+      if (data.type === 'website' && data.website) {
+        if (!window.SparkleSiteDraft?.show) throw new Error('Website preview is not ready. Refresh the page.');
+        window.SparkleSiteDraft.show(data.website, result.stack);
+        S.websitePending = false;
+      }
+      S.assistantHistory.push({ role: 'user', content: original }, { role: 'assistant', content: answer });
+      S.assistantHistory = S.assistantHistory.slice(-8);
+      el.prompt.placeholder = 'Ask a follow up or request a change…';
+      updateAccess();
+    } catch (error) {
+      if (error?.code === 'sparkle_cancelled') status({ phase: 'idle', message: 'Stopped. Your request was not sent again.' });
+      else {
+        status({ phase: 'error', message: 'Sparkle could not finish that request.' });
+        showError(error?.message || 'Sparkle could not answer right now.');
+      }
+      if (!el.prompt.value) { el.prompt.value = original; resize(); }
+    } finally {
+      loading(false);
+      el.prompt.focus();
+    }
+  }
+
   async function first(text) {
     if (S.pending) return;
     text = text.trim(); if (!text) return;
     message('user',text); el.prompt.value=''; resize();
+    S.lastUserText = text;
     const payload=initialPayload(text); S.retry={payload,kind:''}; await generate(payload,'');
   }
   async function refine(kind, display, instruction='', selection=null) {
@@ -163,14 +244,21 @@
 
   function reset() {
     if (S.pending) return;
-    S.last=''; S.base=null; S.retry=null; el.conversation.innerHTML=''; el.welcome.hidden=false; el.newTop.hidden=true; el.prompt.value=''; el.prompt.placeholder='Tell Sparkle what you need, or paste a message…';
+    S.last=''; S.base=null; S.retry=null; S.assistantMode=false; S.assistantHistory=[]; S.websitePending=false; S.lastUserText=''; el.conversation.innerHTML=''; el.welcome.hidden=false; el.newTop.hidden=true; el.prompt.value=''; el.prompt.placeholder='Tell Sparkle what you need, or paste a message…';
     clearError(); status({phase:'idle',message:'Sparkle is ready.'}); resize(); el.prompt.focus();
   }
 
-  el.form.onsubmit = e => { e.preventDefault(); const text=el.prompt.value.trim(); if(!text)return; S.last ? refine('custom',text,text) : first(text); };
+  el.form.onsubmit = e => { e.preventDefault(); const text=el.prompt.value.trim(); if(!text)return;
+    if (S.assistantMode && isWritingRequest(text)) { S.assistantMode=false; S.assistantHistory=[]; S.websitePending=false; S.last=''; S.base=null; }
+    if (S.assistantMode || wantsAssistant(text)) askAssistant(text);
+    else S.last ? refine('custom',text,text) : first(text);
+  };
   el.prompt.oninput = resize;
-  el.stop.onclick = () => window.Sparkle?.cancel();
-  el.retry.onclick = () => { if(S.retry && !S.pending) generate(S.retry.payload,S.retry.kind,S.retry.base); };
+  el.stop.onclick = () => { window.SparkleAssistant?.cancel(); window.Sparkle?.cancel(); };
+  el.retry.onclick = () => { if(!S.retry || S.pending) return;
+    if (S.retry.assistant) askAssistant(S.retry.text, true);
+    else generate(S.retry.payload,S.retry.kind,S.retry.base);
+  };
   el.newTop.onclick = reset;
   window.addEventListener('beforeinstallprompt', event => {
     event.preventDefault(); S.installPrompt = event;
