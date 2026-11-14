@@ -170,6 +170,12 @@
       || value.split(/\s+/).length >= 12;
   }
 
+  function isWritingRefinement(text) {
+    const value = String(text || '').trim();
+    if (isWebsiteRequest(value)) return false;
+    return /^(?:make\s+it|make\s+this|can\s+you\s+make\s+it|try\s+another|shorter|softer|firmer|more\s+(?:concise|warm|natural|professional|direct|friendly|formal)|less\s+(?:formal|wordy|harsh)|keep\s+the\s+same\s+message|change\s+the\s+(?:tone|wording)|add\s+(?:a\s+)?(?:greeting|closing))\b/i.test(value);
+  }
+
   function wantsAssistant(text) {
     const value = String(text || '').trim();
     if (isWritingRequest(value)) return false;
@@ -255,7 +261,8 @@
 
   el.form.onsubmit = e => { e.preventDefault(); const text=el.prompt.value.trim(); if(!text)return;
     if (S.assistantMode && isWritingRequest(text)) { S.assistantMode=false; S.assistantHistory=[]; S.websitePending=false; S.currentWebsite=null; S.last=''; S.base=null; }
-    if (S.assistantMode || wantsAssistant(text)) askAssistant(text);
+    if (S.last && isWritingRefinement(text)) refine('custom',text,text);
+    else if (S.assistantMode || wantsAssistant(text)) askAssistant(text);
     else S.last ? refine('custom',text,text) : first(text);
   };
   el.prompt.oninput = resize;
