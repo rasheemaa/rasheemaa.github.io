@@ -153,6 +153,8 @@
   function isWritingRequest(text) {
     const value = String(text || '').trim();
     if (/^(?:please\s+)?(?:write|draft|compose)\s+(?:code|a\s+website|a\s+webpage|a\s+site)\b/i.test(value)) return false;
+    if (/^(?:they|he|she|someone|my\s+\w+)\s+(?:said|sent|texted|asked|wrote|messaged)\b/i.test(value)) return true;
+    if (/^can\s+you\s+(?:loan|lend)\s+me\b/i.test(value)) return true;
     return /^(?:please\s+)?(?:write|draft|compose|fix|rewrite|reword|edit|polish|proofread|reply|respond|text|message|tell)\b/i.test(value)
       || /^(?:i\s+(?:want|need)\s+to\s+say|how\s+do\s+i\s+(?:tell|say)|what\s+do\s+i\s+say\s+to)\b/i.test(value);
   }
