@@ -1,6 +1,6 @@
 (() => {
   let controller = null;
-  async function ask(message, history = [], task = 'chat', onStatus) {
+  async function ask(message, history = [], task = 'chat', onStatus, existingWebsite = null) {
     if (controller) throw new Error('Sparkle is already working.');
     const base = String(window.WDIS_API_BASE || '').replace(/\/$/, '');
     if (!base) throw new Error('Sparkle AI is not configured.');
@@ -13,7 +13,7 @@
       const response = await fetch(base + '/api/assistant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, history, task }),
+        body: JSON.stringify({ message, history, task, existingWebsite: task === 'website' ? existingWebsite : null }),
         signal: requestController.signal,
         cache: 'no-store'
       });
