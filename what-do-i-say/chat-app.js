@@ -160,8 +160,8 @@
   }
 
   function isWebsiteRequest(text) {
-    return /\b(?:create|build|design|make|generate|draft)\b/i.test(text) &&
-      /\b(?:website|web\s*site|webpage|web\s*page|landing\s*page)\b/i.test(text);
+    return /\b(?:create|build|design|make|generate|draft|write)\b/i.test(text) &&
+      /\b(?:website|web\s*site|webpage|web\s*page|landing\s*page|site)\b/i.test(text);
   }
 
   function hasWebsiteDetails(text) {
