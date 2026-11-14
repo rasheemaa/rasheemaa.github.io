@@ -38,7 +38,26 @@ async function check(engine,name){
   });
   const page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(String(e)));
-  const send=async text=>{await page.locator('#prompt').fill(text);await page.locator('#generate').click();await page.waitForFunction(()=>!document.querySelector('#generate')?.disabled);};
+  const send=async text=>{
+    const before=await page.locator('.message-row.assistant:not(.working)').count();
+    await page.locator('#prompt').fill(text);
+    await page.locator('#generate').click();
+    try {
+      await page.waitForFunction(previous=>
+        document.querySelectorAll('.message-row.assistant:not(.working)').length>previous
+        || !document.querySelector('#ai-error')?.hidden, before, {timeout:22000});
+    }catch(err){
+      const details=await page.evaluate(()=>({
+        error:document.querySelector('#ai-error-message')?.textContent,
+        input:document.querySelector('#prompt')?.value,
+        assistantLoaded:!!window.SparkleAssistant?.ask,
+        messages:document.querySelectorAll('.message-row.assistant').length
+      }));
+      throw new Error(name+' timed out after '+text+': '+JSON.stringify(details)+': '+String(err));
+    }
+    const visibleError=await page.locator('#ai-error').isVisible();
+    if(visibleError)throw new Error(name+' response error: '+(await page.locator('#ai-error-message').textContent()));
+  };
   try{
     await page.goto('http://127.0.0.1:'+port+'/what-do-i-say/',{waitUntil:'domcontentloaded'});
     await send('Create me a website');
