@@ -9,7 +9,7 @@ assert(!/data-mode=|class="mode|class="mode-tabs"|id="paywall"|data-checkout-off
 const schema = JSON.parse(html.match(/application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
 assert.equal(schema.isAccessibleForFree, true);
 assert.equal(schema.offers.price, '0');
-assert(html.includes('chat-app.js?v=30'), 'Fresh chat controller is referenced');
+assert(html.includes('chat-app.js?v=31'), 'Fresh chat controller is referenced');
 
 class Element {
   set innerHTML(value) { this.children = []; this.html = value; }
