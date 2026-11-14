@@ -32,7 +32,7 @@ permalink: /what-do-i-say/
 <meta name="twitter:image" content="https://thesheemaedit.com/assets/images/social-card.png">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"What Do I Say?","alternateName":"Sparkle","url":"https://thesheemaedit.com/what-do-i-say/","description":"AI communication tool that helps people write texts, replies, rewrites, boundaries, and hard-to-word messages.","applicationCategory":"CommunicationApplication","operatingSystem":"Web","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD","url":"https://thesheemaedit.com/what-do-i-say/"},"creator":{"@type":"Person","@id":"https://thesheemaedit.com/#rasheema-abdullah","name":"Rasheema Abdullah","alternateName":"Sheema"}}</script>
 <script src="/what-do-i-say/bootstrap.js?v=2"></script>
-<link rel="stylesheet" href="/what-do-i-say/styles.css?v=10">
+<link rel="stylesheet" href="/what-do-i-say/styles.css?v=11">
 <link rel="stylesheet" href="/what-do-i-say/sparkle.css?v=2">
 <link rel="stylesheet" href="/what-do-i-say/trust.css?v=1">
 <link rel="stylesheet" href="/assets/css/tool-editorial.css?v=1">
@@ -53,7 +53,7 @@ permalink: /what-do-i-say/
       <div>
         <p class="eyebrow">Sparkle ✦</p>
         <h1>Say what you mean.</h1>
-        <p>I’ll help with the words.</p>
+        <p>Talk it through, write it better, or create something new.</p>
       </div>
       <button id="new-message-top" class="new-message-button" type="button" hidden>New message</button>
     </header>
@@ -61,7 +61,7 @@ permalink: /what-do-i-say/
     <div id="chat-thread" class="chat-thread" aria-live="polite" aria-relevant="additions text">
       <section id="welcome-card" class="welcome-card">
         <p class="welcome-question">What’s on your mind?</p>
-        <p class="welcome-hint">Start typing. Sparkle will figure out how to help.</p>
+        <p class="welcome-hint">Ask a question, plan a project, create a website draft, or get help with a message.</p>
       </section>
       <div id="conversation" class="conversation"></div>
     </div>
@@ -79,11 +79,11 @@ permalink: /what-do-i-say/
     <form id="message-form" class="chat-composer">
       <label class="sr-only" for="prompt" id="prompt-label">What are you trying to say?</label>
       <div class="composer-box">
-        <textarea id="prompt" rows="1" maxlength="3500" required placeholder="Tell Sparkle what you need, or paste a message…"></textarea>
+        <textarea id="prompt" rows="1" maxlength="3500" required placeholder="Ask Sparkle anything, or paste a message…"></textarea>
         <button class="send-button" id="generate" type="submit" aria-label="Send to Sparkle">Send</button>
       </div>
       <button class="stop-button" id="sparkle-cancel" type="button" hidden>Stop Sparkle</button>
-      <p class="privacy-note">On iPhone and iPad, your message is sent securely to Sparkle’s Cloudflare AI service for generation. Don’t enter passwords or card numbers.</p>
+      <p class="privacy-note">Assistant requests use Sparkle’s Cloudflare AI service. Some message writing on desktop runs on your device. Don’t enter passwords or card numbers.</p>
     </form>
 
     <p class="founder-status">Sparkle is free for everyone. No trial, subscription, or payment required.</p>
@@ -103,6 +103,8 @@ permalink: /what-do-i-say/
 <script src="/what-do-i-say/sparkle-quality-hotfix.js?v=5"></script>
 <script src="/what-do-i-say/sparkle-first-draft-polish.js?v=1"></script>
 <script src="/what-do-i-say/chat-handoff.js?v=2" defer></script>
-<script src="/what-do-i-say/chat-app.js?v=30" defer></script>
+<script src="/what-do-i-say/assistant-client.js?v=1" defer></script>
+<script src="/what-do-i-say/site-draft.js?v=1" defer></script>
+<script src="/what-do-i-say/chat-app.js?v=31" defer></script>
 </body>
 </html>
