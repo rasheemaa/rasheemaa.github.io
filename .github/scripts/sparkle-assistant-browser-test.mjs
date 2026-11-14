@@ -14,7 +14,7 @@ const server=createServer((req,res)=>{
     const f=resolve('.'+file);
     if(!f.startsWith(resolve('what-do-i-say/'))&&!f.startsWith(resolve('assets/')))throw Error('Invalid path');
     let data=readFileSync(f);
-    if(file.endsWith('index.html'))data=Buffer.from(data.toString().replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/,''));
+    if(file.endsWith('index.html'))data=Buffer.from(data.toString().replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/,'').replace('; upgrade-insecure-requests','')); // localhost-only test server: production CSP remains unchanged
     res.writeHead(200,{'Content-Type':file.endsWith('.js')?'application/javascript':file.endsWith('.css')?'text/css':'text/html'});
     res.end(data);
   }catch{res.writeHead(404);res.end();}
@@ -36,8 +36,9 @@ async function check(engine,name){
     const result=p.task==='website'?{type:'website',message:'I created a website draft. Not published.',website:draft}:{type:'chat',message:'What kind of website do you want?'};
     await r.fulfill({status:200,contentType:'application/json',headers:{'Access-Control-Allow-Origin':'*'},body:JSON.stringify(result)});
   });
-  const page=await context.newPage(),errors=[];
+  const page=await context.newPage(),errors=[],failed=[];
   page.on('pageerror',e=>errors.push(String(e)));
+  page.on('requestfailed',req=>failed.push(req.url()+' '+req.failure()?.errorText));
   const send=async text=>{
     const before=await page.locator('.message-row.assistant:not(.working)').count();
     await page.locator('#prompt').fill(text);
@@ -53,7 +54,7 @@ async function check(engine,name){
         assistantLoaded:!!window.SparkleAssistant?.ask,
         messages:document.querySelectorAll('.message-row.assistant').length
       }));
-      throw new Error(name+' timed out after '+text+': '+JSON.stringify(details)+': '+String(err));
+      throw new Error(name+' timed out after '+text+': '+JSON.stringify({...details,errors,failed:failed.slice(0,8)})+': '+String(err));
     }
     const visibleError=await page.locator('#ai-error').isVisible();
     if(visibleError)throw new Error(name+' response error: '+(await page.locator('#ai-error-message').textContent()));
