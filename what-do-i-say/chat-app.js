@@ -152,7 +152,7 @@
 
   function isWritingRequest(text) {
     const value = String(text || '').trim();
-    if (/^(?:please\s+)?(?:write|draft|compose)\s+(?:code|a\s+website|a\s+webpage|a\s+site)\b/i.test(value)) return false;
+    if (/^(?:please\s+)?(?:write|draft|compose)\s+(?:(?:a|an|some|the)\s+)?(?:code|website|webpage|site|app|program|poem|story|song|script|article|blog|essay|report|recipe|game|presentation|plan)\b/i.test(value)) return false;
     if (/^(?:they|he|she|someone|my\s+\w+)\s+(?:said|sent|texted|asked|wrote|messaged)\b/i.test(value)) return true;
     if (/^can\s+you\s+(?:loan|lend)\s+me\b/i.test(value)) return true;
     return /^(?:please\s+)?(?:write|draft|compose|fix|rewrite|reword|edit|polish|proofread|reply|respond|text|message|tell)\b/i.test(value)
