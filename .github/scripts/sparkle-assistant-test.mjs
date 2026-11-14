@@ -68,7 +68,7 @@ test('main page actually includes assistant modules, a single composer and a san
   const chat = readFileSync('what-do-i-say/chat-app.js', 'utf8');
   assert.match(html, /assistant-client\.js\?v=1/);
   assert.match(html, /site-draft\.js\?v=1/);
-  assert.match(html, /frame-src 'self'/);
+  assert.match(html, /frame-src 'none'/);
   assert.match(html, /id="message-form"/);
   assert.match(chat, /window\.SparkleAssistant\.ask/);
   assert.match(chat, /window\.SparkleSiteDraft\.show/);
