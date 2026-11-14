@@ -10,6 +10,7 @@ on:
       - 'what-do-i-say/styles.css'
       - '.github/scripts/sparkle-assistant-test.mjs'
       - '.github/scripts/sparkle-assistant-conversation-test.mjs'
+      - '.github/scripts/sparkle-assistant-browser-test.mjs'
       - '.github/workflows/sparkle-assistant-review.yml'
   workflow_dispatch:
 
@@ -42,3 +43,10 @@ jobs:
         run: |
           node .github/scripts/free-access-smoke.mjs
           node .github/scripts/sparkle-message-meaning-test.mjs
+
+      - name: Install browser test engines
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.55.0
+          npx playwright install --with-deps chromium webkit
+      - name: Verify desktop and simulated iPhone WebKit interactions
+        run: node .github/scripts/sparkle-assistant-browser-test.mjs
