@@ -1,6 +1,6 @@
 (() => {
   const S = { last: '', base: null, pending: false, working: null, retry: null, installPrompt: null,
-    assistantMode: false, assistantHistory: [], websitePending: false, lastUserText: '' };
+    assistantMode: false, assistantHistory: [], websitePending: false, currentWebsite: null, lastUserText: '' };
   const $ = s => document.querySelector(s);
   const $$ = s => [...document.querySelectorAll(s)];
   const el = {
@@ -88,7 +88,7 @@
 
   function assistant(text, refinable = true) {
     const m = message('assistant', text);
-    if (!refinable) return;
+    if (!refinable) return m;
     const base = { ...(S.base || initialPayload(text)) };
     const actions = document.createElement('div'); actions.className = 'response-actions';
     const right = document.createElement('button'); right.type = 'button'; right.className = 'just-right'; right.textContent = 'Just right ✓';
@@ -174,7 +174,8 @@
     return isWebsiteRequest(value)
       || /^(?:no[,! ]+)?(?:i(?:'m| am)\s+asking\s+you|i\s+(?:want|need)\s+you\s+to\s+do\s+(?:it|that)|do\s+(?:it|that)\s+for\s+me)\b/i.test(value)
       || /^(?:please\s+)?(?:create|build|design|make|plan|explain|analyze|brainstorm|summarize|research|teach|help\s+me\s+(?:build|create|plan|understand|figure\s+out))\b/i.test(value)
-      || /^(?:what|why|how|when|where|who|is|are|do|does|can\s+you|could\s+you|tell\s+me\s+about)\b/i.test(value);
+      || /^(?:what|why|how|when|where|who|is|are|do|does|can\s+you|could\s+you|tell\s+me\s+about)\b/i.test(value)
+      || !/^(?:hi|hello|hey|dear|i\s+(?:wanted\s+to\s+let\s+you\s+know|am\s+writing\s+to|just\s+wanted\s+to\s+say)|thank\s+you\s+for)\b/i.test(value);
   }
 
   async function askAssistant(text, retry = false) {
@@ -198,18 +199,20 @@
     S.base = null;
     if (isWebsiteRequest(original)) S.websitePending = true;
     if (/^(?:cancel|never mind|forget (?:the|that) website)\b/i.test(original)) S.websitePending = false;
-    const task = S.websitePending && hasWebsiteDetails(original) ? 'website' : 'chat';
+    const revision = !!S.currentWebsite && /^(?:make|change|update|add|remove|switch|redesign|revise|edit|give\s+it|use\s+(?:a|the))\b/i.test(original);
+    const task = revision || (S.websitePending && hasWebsiteDetails(original)) ? 'website' : 'chat';
     S.retry = { assistant: true, text: original };
     clearError();
     loading(true, task === 'website' ? 'Sparkle is creating your website draft…' : 'Sparkle is thinking…');
     try {
       if (!window.SparkleAssistant?.ask) throw new Error('Sparkle assistant has not loaded. Refresh the page.');
-      const data = await window.SparkleAssistant.ask(original, S.assistantHistory, task, status);
+      const data = await window.SparkleAssistant.ask(original, S.assistantHistory, task, status, task === 'website' ? S.currentWebsite : null);
       const answer = String(data.message || '').trim();
       const result = assistant(answer, false);
       if (data.type === 'website' && data.website) {
         if (!window.SparkleSiteDraft?.show) throw new Error('Website preview is not ready. Refresh the page.');
         window.SparkleSiteDraft.show(data.website, result.stack);
+        S.currentWebsite = data.website;
         S.websitePending = false;
       }
       S.assistantHistory.push({ role: 'user', content: original }, { role: 'assistant', content: answer });
@@ -244,12 +247,12 @@
 
   function reset() {
     if (S.pending) return;
-    S.last=''; S.base=null; S.retry=null; S.assistantMode=false; S.assistantHistory=[]; S.websitePending=false; S.lastUserText=''; el.conversation.innerHTML=''; el.welcome.hidden=false; el.newTop.hidden=true; el.prompt.value=''; el.prompt.placeholder='Tell Sparkle what you need, or paste a message…';
+    S.last=''; S.base=null; S.retry=null; S.assistantMode=false; S.assistantHistory=[]; S.websitePending=false; S.currentWebsite=null; S.lastUserText=''; el.conversation.innerHTML=''; el.welcome.hidden=false; el.newTop.hidden=true; el.prompt.value=''; el.prompt.placeholder='Tell Sparkle what you need, or paste a message…';
     clearError(); status({phase:'idle',message:'Sparkle is ready.'}); resize(); el.prompt.focus();
   }
 
   el.form.onsubmit = e => { e.preventDefault(); const text=el.prompt.value.trim(); if(!text)return;
-    if (S.assistantMode && isWritingRequest(text)) { S.assistantMode=false; S.assistantHistory=[]; S.websitePending=false; S.last=''; S.base=null; }
+    if (S.assistantMode && isWritingRequest(text)) { S.assistantMode=false; S.assistantHistory=[]; S.websitePending=false; S.currentWebsite=null; S.last=''; S.base=null; }
     if (S.assistantMode || wantsAssistant(text)) askAssistant(text);
     else S.last ? refine('custom',text,text) : first(text);
   };
